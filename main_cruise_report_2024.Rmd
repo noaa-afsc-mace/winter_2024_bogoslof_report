@@ -1,0 +1,708 @@
+---
+output: 
+  officedown::rdocx_document:
+    reference_docx: reference_report_doc_2024.docx
+    tables:
+      style: Table
+      layout: autofit
+      width: 1.0
+      topcaption: true
+      tab.lp: 'tab:'
+      caption:
+        style: Table Caption
+        pre: 'Table '
+        sep: '. '
+        fp_text: !expr officer::fp_text_lite(bold = FALSE)
+      conditional:
+        first_row: true
+        first_column: false
+        last_row: false
+        last_column: false
+        no_hband: false
+        no_vband: true
+    plots:
+      style: Normal
+      align: center
+      topcaption: false
+      fig.lp: 'fig:'
+      caption:
+        style: Image Caption
+        pre: 'Figure '
+        sep: '. -- '
+        fp_text: !expr officer::fp_text_lite(bold = FALSE)
+bibliography: "cruise_report_references.bib"   
+csl: ecology.csl
+nocite: | 
+  @Foote_Traynor_1988, @Traynor_1996, @Guttormsen_Wilson_2009, @Ona_2003, @Foote_1987,
+  @DeRobertis_Taylor_2014, @Kang_et_al_2005, @Gauthier_Horne_2004, @Demer_Conti_2005
+
+
+---
+  
+  
+<!-- This document is currently written to produce a 'first draft' of the winter Shelikof/Shumagins cruise report-->
+<!-- All of the parameters you'll need to set are in the first code chunk below. Set those, and then click the 'Knit' button above-->
+  
+  
+```{r setup, include=FALSE}
+# Set all the parameters in this first section of code, then click 'Knit' to make the document
+
+# clear old stuff
+rm(list = ls())
+
+#########################################################################################
+# All of the parameters to update are listed below:
+
+# Do you want to update the data from macebase?  This takes a while and will get all the historical survey data as well!
+# It should be set to TRUE most of the time, but if you are just adding features/working on code/etc, can be set to FALSE to
+# save re-querying. NOTE: After you do all the queries, the output is saved here so we can know exactly what base data we used to
+# make the report!
+update_datasets <- FALSE
+
+# set database parameters and the basic info if we're updating datasets
+if (update_datasets == TRUE) {
+  db_name <- "afsc-64"
+  user_name <-  rstudioapi::askForPassword("Enter your Macebase2 username")
+  pword <- rstudioapi::askForPassword("Enter your Macebase2 password")
+}
+
+# set a location to save your database queries to (SHOULD BE in G:/Cruisefolder!)
+data_set_path <- "G:/DY2402/cruise report/"
+
+# set your current survey parameters for the BOGOSLOF survey. 
+current_survey <- TRUE # set to FALSE if no survey!
+# IF no survey- put 0 for parameters!
+ship <- 157 
+survey <- 202402
+data_set <- 1
+analysis <- 1
+zones <- c(0)
+# IF you don't have a bottom referenced survey or dataset, enter 0 for those.
+bot_ref_data_set <- 0
+bot_ref_analysis <- 0
+# set the comparison datasets for the bogoslof (if none, put 0)
+comp_data_sets <- 0
+comp_analyses <- 0
+# Identify the umnak report number
+# (see macebase2.report_definitions to check for the right number)
+report_number_umnak <- 1
+report_number_samalga <- 2
+
+# specify if pocketnets were attached to the LFS trawl during the survey
+pocketnets_used <- FALSE # TRUE or FALSE
+
+# Sea surface temperatures: set the primary and backup temperature sensors you want to use
+# (see clamsbase2.underway_data table for what's available)
+primary_sensor <- "TSG-SBE38-Temp_1_min_avg"
+backup_sensor <- "Mid-SeaTemp-C-Cal-VALUE_1_min_avg"
+
+# set pollock_size_cutoff
+# we have been plotting big and little pollock as separate bars in stickplots; we have also been plotting the surface- and bottom- referenced figures in relation to this cutoff. This number is the fork length (cm) that will be used (i.e. 30 cm creates a bar <= 30 and a bar > 30)
+pollock_size_cutoff <- 30
+
+# we also present by age class (when possible), set the cutoff here (i.e. 3 would put all ages >= 3 together and <3 together)
+pollock_age_cutoff <- 3
+
+# specify max age for consolidating data in age bubbleplots
+max_age <- 12
+
+# set the minimum length for abundance-weighting- i.e. the length at which to exclude juveniles. These are excluded from weighting because they can be disproportionally abundant as compared to the maturity sample. Leave at 30 to keep comparable with previous survey reports!
+haul_weighting_cutoff <- 30
+
+# EVA estimates- as of right now, they are done via the virtual box outside this script- put region-wide summary value here (in percent)
+# If no survey in a given year, just put NA
+# values are percent
+# right now, there are no other survey/regions allowed than what is listed below! If we do another region, we'll deal with it then.
+
+# bogoslof
+eva_perc <- 4.6
+
+# set a few options for the methods text
+
+# Specify maximum survey depth - in any of the survey regions for the winter
+max_depth <- 1000
+
+# enter EK80/EV versions as strings
+EK80_version <- "2.0.1"
+echoview_version <- "14.0.206"
+########
+# the next options you probably won't need to adjust, but they are included should you want to tweak figures, etc...
+
+# stickplots options- for Shelikof and shumagins surveys
+# units:
+# rotation = degrees relative to plot, clockwise (i.e. 0 = parallel to y axis, 30 deg =  30 clockwise from y-axis)
+
+# max_bar_height = the maximum height of the bars, in degees (i.e. 2.0 = 2 degrees =~ 60 nmi tall)
+
+# bogoslof
+rotation <- 5
+max_bar_height <- 2
+
+
+# do you want only 'random' fish in maturity calculations (i.e. no non-random grabs)
+# this is mostly relevant to the Bogoslof survey- otherwise, all fish (or nearly all) are random;
+# set as TRUE if you want only random fish, FALSE if random and non-random should be included
+maturities_random_fish_only <- TRUE
+
+# what areas do you want to label? All the available labels are available by running:
+# all_labels <- MACEReports::available_labels()
+
+goa_labels_to_get <- c(
+  "Shumagin Islands", "Alaska Peninsula", "Shelikof Strait",
+  "Kodiak Island", "Cape Kekurnoi", "Cape Nukshak",
+  "Kalsin Bay", "Cape Igvak", "Morzhovoi Bay", "Pavlof Bay", "Sanak Island",
+  "Marmot Bay", "Chirikof Shelfbreak")
+
+# of this list, should any of these be indicated with an arrow? I.e. are they in a really crowded area?
+goa_arrow_list <- c("Shumagin Islands", "Shelikof Strait",
+  "Cape Kekurnoi", "Cape Nukshak",
+  "Kalsin Bay", "Cape Igvak", "Morzhovoi Bay", "Pavlof Bay", 
+  "Marmot Bay")
+
+# Specifying one or multiple SBE profiles to be plotted
+SBE_Nset <- 1
+# only configured for plotting 1 or 2 profiles at this time based on class (i.e. SS1 or SS2 hauls)
+
+# Specify hauls by event number for each profile that you wish to plot
+if (SBE_Nset > 1) {
+  SBE_set.ls <- list(
+    "haul_set1" = c(1:12, 14, 16, 18, 19), # specify event numbers for subset 1 of hauls you wish to plot
+    "haul_set2" = c(13, 15, 17, 21)
+  ) # specify event numbers for subset 2 of hauls you wish to plot
+} else {
+  SBE_set.ls <- NULL
+}
+
+# have you saved output for SSMA? When you want to, here's the idea:
+# 1. Feel like it's time to share results? Go into the 'stock_assessment_output' folder
+# 2. Copy the results to G:/
+# 3. put the path here. This will allow us to 'check' any future updates against the intially shared data, and will
+# point out any changes (see the cover sheets generated in 'stock_assessment_output' folder)
+# if you don't have anything to share yet- leave path as ""
+stock_assessment_path <- "stock_assessment_output/"
+
+
+# Nothing more to update!
+#####################################################################################################################
+
+# gather the historical data and parameters from previous surveys 
+
+# parameters:
+# selectivity-corrected estimates- we'll query macebase2 based on the parameters here
+# TODO: replace this with analysis_tags table when it is ready!
+survey_params_selectivity_corrected_surveys <- "historical_data/parameters_length_age_time_series_selectivity_corrected.csv"
+
+# historical bottom-and surface-referenced dataset info
+# TODO:: use analysis_tags table when it is ready!
+surf_and_bot_historical_path <- "historical_data/bot_and_surf_ref_historical.csv"
+
+# data:
+# historical biomass and numbers at length figure- these are used for Shelikof Stait + Shumagin Island 
+# nums/biomass at length figures, so only contain those two regions
+# lengths updated by ALM 9/14/23 to be just the pre-selectivity values
+pre_selectivity_biomass_nums_path <- 'historical_data/historical_biomass_nums.rds'
+
+# Historical ages- unlike the lengths, these include every year in the time series
+pre_selectivity_biomass_nums_ages_path <- 'historical_data/historical_biomass_nums_ages.rds'
+
+# historical trawl weights and GSI for abundance-weighted maturity
+historical_trawl_weights_path <- "historical_data/historical_trawl_weights.rds"
+historical_GSI_path <- "historical_data/historical_gsi.rds"
+
+# and we're creating historic plot comparisons using pre-selectivity corrected values in the Shumagins (pre-2009) and Shelikof (pre-2008)
+# datasets
+non_sel_corr_total_biomass <- "historical_data/pre_selectivity_total_biomass.rds"
+
+# EVA historical estimates path
+eva_path <- "historical_data/historical_eva.rds"
+
+# Historical sea surface temperature at trawl locations (SBE data, 1980-present)
+historical_trawl_sst <- "historical_data/winter_historical_surface_temps.rds"
+
+# Historical sea surface temperature from ship's flow-through system (SCS data, 2006-present)
+historical_scs_sst_path <- "historical_data/SST_from_SCS.rds"
+
+##################################################################################
+# get the functions, shapefiles, and database connection
+
+# get some libraries
+
+# this packages is used for managing conflicts for package function names
+library(conflicted)
+# this is for the database connections
+library(DBI)
+# misc stats needs
+library(grid)
+library(MASS)
+# making tables, integrating with word docs
+library(MACEReports)
+library(flextable)
+library(officedown)
+library(officer)
+library(rmarkdown)
+library(knitr)
+# mapping and spatial stuff
+library(gstat)
+library(sf)
+library(RGeostats)
+library(cowplot)
+# data munging, plotting, etc.
+library(ggridges)
+library(ggpubr)
+library(ggrepel)
+library(RColorBrewer)
+library(lubridate)
+library(janitor)
+library(tidyverse)
+library(patchwork)
+
+# this is just because of conflicts between function names in different packages
+# use the package 'conflicted' to be safe
+# to be safe ensure this version is the only one that gets called:
+conflict_prefer("summarize", "dplyr")
+conflict_prefer("filter", "dplyr")
+conflict_prefer("select", "dplyr")
+
+# if you want to explore any other function name conflicts, use conflict_scout()
+
+# this just keeps a dplyr warning from the new 1.0 version from annoying folks- we always use 'group_by') default behavior
+options(dplyr.summarise.inform = FALSE)
+
+######################
+
+# Get a bunch of shapefiles
+
+# for the report, we're projecting everything as NAD1983/Alaska Albers conic since it should be reasonably accurate if we need to measure things.
+# #units are meters, more info at https://epsg.io/3338
+
+# load shapefiles-bathymetery, land, some place labels and survey regions
+ak_land <- MACEReports::get_shapefile("alaska_land")
+russia_land <- MACEReports::get_shapefile("russia_land")
+ak_labels <- MACEReports::get_shapefile("alaska_area_labels.gpkg")
+management_regions <- MACEReports::get_shapefile("alaska_NMFS_management_regions")
+# adding in the shelikof boundaries for the COG plot
+shelikof_basemap <- st_read("shapefiles/winterShelikof_95pcent_domain_1995-21/spPoly.05_edited_v5.shp")
+shelikof_basemap <- st_transform(shelikof_basemap, crs = 3338)
+
+# get the high-res bathymetry xyz file- for west of 180 only!
+# This is already projected in as NAD1983/Alaska Albers conic
+# it was created using the package 'marmap' in the script:
+# G:\ARCVIEW\exported_shapefiles\high_res_bathy\create_high_res_bathy.R
+bathy_w <- MACEReports::get_shapefile("alaska_bathy_raster")
+
+# get the bathymetry raster ready for display:
+# to maximize visibility only display negative (i.e. depth) values from -1000 m - 0 m
+bathy_w$z <- ifelse(bathy_w$z < -1000, -1000, bathy_w$z)
+bathy_w$z <- ifelse(bathy_w$z > 0, 1, bathy_w$z)
+
+# define a colorscale for the high-res bathymetry- this is greyscale, and adds extra contrast to
+# the area from 250m- 0m. Land is set as the shallowest value-
+# we cover up the bathy-derived land with a higher-res shapefile because the bathy isn't
+# quite dense enough at small scales!
+bathy_colors <- scale_fill_gradientn(
+  values = scales::rescale(c(
+    min(bathy_w$z, na.rm = TRUE), -250, 0,
+    max(bathy_w$z, na.rm = TRUE)
+  )),
+  colors = c("#737373", "#969696", "#d9d9d9", "#d9d9d9"),
+  # if user wants a legend, present units as positive (depth)
+  # instead of negative (altitude)
+  labels = function(x) {
+    abs(x)
+  }
+)
+
+# keep the area labels that have been requested
+goa_labels <- ak_labels[ak_labels$area_name %in% c(goa_labels_to_get), ]
+
+# set font to times new roman
+windowsFonts(Times = windowsFont("Times New Roman"))
+
+# set a plot theme
+cruise_report_plots_theme <- theme(
+  text = element_text(family = "Times"),
+  axis.text = element_text(size = 12),
+  axis.title = element_text(size = 12),
+  panel.grid.minor = element_blank(),
+  panel.grid.major = element_blank()
+)
+
+# and a theme for maps- simple, without any axis labels our fill!
+cruise_report_maps_theme <- theme(
+  legend.box.background = element_rect(fill = alpha("white", 0.55), color = "transparent"),
+  legend.key = element_rect(fill = "transparent"),
+  legend.text = element_text(color = "black", family = "Times", size = 12),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  legend.background = element_blank(),
+  axis.title.x = element_blank(),
+  axis.title.y = element_blank(),
+  axis.text = element_text(color = "black", family = "Times", size = 12)
+)
+
+# add a colorblind-safe qualitative color pallete
+# (this comnbes the 'Okabe-ito' and 'R4' palettes- both colorblind-safe )
+cb_safe_palette <- c(
+  "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#DF536B",
+  "#61D04F", "#2297E6", "#28E2E5", "#CD0BBC", "#F5C710", "#9E9E9E"
+)
+
+
+######################
+
+
+# call the functions we're using
+
+# update historical datasets with new info, set parameters, etc
+source("scripts/update_params.R")
+source('scripts/update_eva.R')
+source("scripts/open_and_update_maturity_data.R")
+source("scripts/open_and_update_sel_corr_survey_params.R")
+source("scripts/open_and_update_bot_ref_params.R")
+source("scripts/open_and_update_sst_at_fishing_locs.R")
+
+# database queries
+source("scripts/get_macebase_data.R")
+source("scripts/get_all_gear_types.R")
+source("scripts/get_event_and_interval_data_function.R")
+source("scripts/get_biomass_and_nums_data_by_interval_function.R")
+source("scripts/get_biomass_and_nums_data_by_layer_and_length_function.R")
+source("scripts/get_biomass_and_nums_data_by_layer_and_age_function.R")
+source("scripts/get_biomass_and_nums_age_data_function.R")
+source("scripts/get_haul_table_data.R")
+source("scripts/get_specimen_table_data.R")
+source("scripts/get_sbe_by_survey.R")
+source("scripts/get_nice_region_names.R")
+source("scripts/get_biological_data.R")
+source("scripts/get_survey_weights_lengths.R")
+source("scripts/get_analysis_comparison_data.R")
+source("scripts/get_ts_relationships.R")
+source("scripts/get_net_statistics.R")
+source("scripts/get_catch_table_data.R")
+source("scripts/check_if_age_data.R")
+source("scripts/calculate_mean_historical_biomass_function.R")
+source("scripts/get_sst_data.R")
+source("scripts/get_event_type.R")
+source("scripts/get_specimen_data.R")
+source("scripts/get_maturity_by_age.R")
+
+# build tables (many tables now built via MACEReports)
+source("scripts/build_specimen_table_function.R")
+source("scripts/build_biomass_and_variance_table_function.R")
+source("scripts/build_catch_table_by_region.R")
+
+# build figures
+source("scripts/plot_intervals_hauls_map_function.R")
+source("scripts/plot_interpolated_survey_comparisons_winter_function.R")
+source("scripts/plot_sst_map.R")
+source("scripts/biomass_nums_plot_function.R")
+source("scripts/biomass_nums_ages_plot_function.R")
+source("scripts/plot_historical_biomass_nums_function.R")
+source("scripts/plot_depth_violins.R")
+source("scripts/plot_length_at_age.R")
+source("scripts/plot_historical_age_comps_bubble_function.R")
+source("scripts/plot_analyses_comparisons.R")
+source("scripts/plot_SBE_profile_by_class.R")
+source("scripts/plot_SBE_profile_grid_winter.R")
+source("scripts/plot_abundance_weighted_maturity.R")
+source("scripts/plot_biomass_sticks_by_class_function.R")
+source("scripts/get_fig_height.R")
+source("scripts/plot_historical_sst_anomalies.R")
+source("scripts/plot_historical_biomass_comparison_by_region.R")
+source("scripts/plot_survey_overview_map.R")
+
+# formatting/misc
+source("scripts/print_n_decimal.R")
+source("scripts/print_species_name.R")
+source("scripts/Mode.R")
+source("scripts/get_modes.R")
+source("scripts/.simpleCap.R")
+
+# sharing data with stock assessment
+source("scripts/compile_stock_assessment_output.R")
+source("scripts/make_survey_location_comparison_map.R")
+
+########################
+
+###
+# These are formatting specifications for knitr- allows for some fine tuning of word output...
+
+# this allows for the list output in figures (i.e. ## [[1]], ##[[2]], etc) to be supressed
+# see: https://stackoverflow.com/questions/54300147/suppress-list-notation-in-rmarkdown-from-lapply
+
+# set for chunks using suppress = T
+def <- knitr::knit_hooks$get("output")
+knitr::knit_hooks$set(output = function(x, options) {
+  x <- def(x, options)
+  ifelse(!is.null(options$suppress), gsub(pattern = "```.*```", "", x), x)
+})
+
+# this allows for conditional captions- see
+# https://stackoverflow.com/questions/32944715/conditionally-display-block-of-markdown-text-using-knitr?noredirect=1&lq=1
+
+# will output r code as markdown-formatted text
+# use caption heading {asis, echo = TRUE} to get it to print
+knit_engines$set(asis = function(options) {
+  if (options$echo && options$eval) knit_child(text = options$code)
+})
+
+# set the parameters for landscape section pages; call these to switch to landscape pages
+landscape_section <- prop_section(
+  type = "continuous",
+  page_size = page_size(orient = "landscape"),
+  page_margins = page_mar(
+    bottom = 1.0,
+    top = 1.0,
+    right = 1.0,
+    left = 1.0,
+    footer = 0.5,
+    gutter = 0
+  )
+)
+
+# set the parameters for portrait section pages; call these to switch to portrait pages
+portrait_section <- prop_section(
+  type = "continuous",
+  page_size = page_size(orient = "portrait"),
+  page_margins = page_mar(
+    bottom = 1.0,
+    top = 1.0,
+    right = 1.0,
+    left = 1.0,
+    footer = 0.5,
+    gutter = 0
+  )
+)
+
+
+# this will let us grab info that's been run in a chunk for the figure captions
+opts_knit$set(eval.after = "fig.cap")
+
+# set the general knitr options for the report- don't print code, messages, or warnings in the document
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+# get the current survey year based on MACE naming conventions
+current_year <- as.numeric(substr(survey, 1, 4))
+
+```
+
+
+<!--If the user requested that datasets get updated- go get the data from macebase -->
+<!--otherwise, load the current datasets from the last query -->
+```{r update_macebase_data, echo = FALSE, message=FALSE, warning=FALSE, suppress = TRUE}
+if (update_datasets == TRUE) {
+  # open the database connection
+  db <- dbConnect(odbc::odbc(), dsn = db_name, uid = user_name, pwd = pword)
+  
+  # make sure you are connected to G:/, stop if not
+  if (!dir.exists(paths = data_set_path)){
+    stop('Are you connected to G:? Please make sure you can get to the G: drive!')
+  }
+
+  # update the historical parameters with the new survey
+  update_params()
+  
+  # open and update the eva values for the current survey
+  update_eva()
+  
+  # run the queries to get/update data
+  get_macebase_data()
+
+  # close the database connection
+  dbDisconnect(db)
+
+  # and load the datasets
+  load(file = paste0(data_set_path, "winter_", current_year,  "_dataset.RData"))
+  
+}
+
+if (update_datasets == FALSE) {
+  
+  # make sure you are connected to G:/, stop if not
+  if (!dir.exists(paths = data_set_path)){
+    stop('Are you connected to G:? Please make sure you can get to the G: drive!')
+  }
+  
+  # and load the datasets
+  load(file = paste0(data_set_path, "winter_", current_year,  "_dataset.RData"))
+}
+```
+
+
+<!--provide a cover sheet showing the basic parameters -->
+```{r cover_sheet, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+
+cover_sheet <- knitr::knit_child("cover_sheet.Rmd", quiet = TRUE)
+cat(cover_sheet)
+
+```
+
+
+<!--Add the title page  -->
+```{r print_abstract, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+
+title_page <- knitr::knit_child("title_page.Rmd", quiet = TRUE)
+cat(title_page)
+
+```
+
+
+\pagebreak
+
+<!--build the abstract section  -->
+```{r print_title_page, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+abstract_doc <- knitr::knit_child("abstract.Rmd", quiet = TRUE)
+cat(abstract_doc)
+```
+
+\pagebreak
+
+<!--build the Table of Contents  -->
+##### CONTENTS
+
+```{r, echo = FALSE}
+# define and print a table of contents
+# the parameter 'level' below determines what makes it into the table of contents. For example- if it is set a 2
+# you get headings from level 1 (# Heading name in Rmarkdown text) or 2 (## Heading name)
+table_of_contents <- block_toc(level = 2)
+table_of_contents
+```
+\pagebreak
+
+<!--TODO:: intro, methods, results text! -->
+
+<!--build the introduction section  -->
+```{r print_intro, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+intro_doc <- knitr::knit_child("intro.Rmd", quiet = TRUE)
+cat(intro_doc)
+```
+
+<!--TODO:: check on common methods with Dave before calling this done! -->
+```{r print_methods, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+methods_doc <- knitr::knit_child("methods.Rmd", quiet = TRUE)
+cat(methods_doc)
+```
+
+\pagebreak
+
+<!--Compile the common results- cal results, etc  -->
+```{r common_results, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+common_results <- knitr::knit_child("results_common.Rmd", quiet = TRUE)
+cat(common_results)
+```
+
+<!--Compile the Shelikof-only results  -->
+```{r shelikof_results, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+common_results <- knitr::knit_child("results.Rmd", quiet = TRUE)
+cat(common_results)
+```
+
+\pagebreak
+# REFERENCES
+
+<div id="refs"></div>
+
+<!-- Set as portrait- this extends back to the last 'block_section' call-->
+`r  block_section(portrait_section)`
+
+
+<!--Compile tables  -->
+\newpage
+
+# TABLES {#tables}
+```{r print_common_tables, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+# this compiles the common tables shared between Shumagins + Shelikof
+common_tables_doc <- knitr::knit_child("tables_common.Rmd", quiet = TRUE)
+cat(common_tables_doc)
+```
+
+\newpage
+
+<!--Shelikof Strait specific tables  -->
+<!--TODO:: EVA/historical biomass table -->
+```{r shelikof_tables, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+if (current_shelikof_survey == TRUE) {
+  shelikof_tables_doc <- knitr::knit_child("tables_shelikof.Rmd", quiet = TRUE)
+  cat(shelikof_tables_doc)
+}
+```
+
+\newpage
+
+<!--Compile figures  -->
+
+# FIGURES {#figures}
+<!-- Total survey overview common plots -->
+```{r common_figures, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+common_figures_doc <- knitr::knit_child("figures_common.Rmd", quiet = TRUE)
+cat(common_figures_doc)
+```
+
+
+<!-- Shelikof Strait only plots -->
+```{r shelikof_figures, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+if (current_shelikof_survey == TRUE) {
+  shelikof_figures_doc <- knitr::knit_child("figures_shelikof.Rmd", quiet = TRUE)
+  cat(shelikof_figures_doc)
+}
+```
+\pagebreak
+
+<!--Compile the appendices   -->
+
+<!--build the itinerary appendix-->
+```{r print_itinerary, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+itinerary_doc <- knitr::knit_child("appendix_itinerary.Rmd", quiet = TRUE)
+cat(itinerary_doc)
+```
+
+\pagebreak
+
+<!--build the personnel appendix-->
+```{r print_personnel, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+personnel_doc <- knitr::knit_child("appendix_personnel.Rmd", quiet = TRUE)
+cat(personnel_doc)
+
+```
+
+\pagebreak
+<!--build the calculations appendix-->
+```{r print_abundance_calcs, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+abundance_calcs <- knitr::knit_child("appendix_abundance_calcs.Rmd", quiet = TRUE)
+cat(abundance_calcs)
+
+```
+
+<!-- Set as portrait- this extends back to the last 'block_section' call-->
+`r  block_section(portrait_section)`
+
+# APPENDIX III. REGIONAL SUMMARIES
+
+<!-- Area summaries: for every region other than Shelikof, create a summary with tables, figures, text -->
+```{r region_appendix, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+
+# we'll print these in date order from when the survey was started in a given region
+# we'll also ignore shelikof here, since it's already been reported
+
+# collect the regions to report and order by the start time
+report_regions_list <- current_year_interval_data %>%
+  st_drop_geometry() %>%
+  filter(region != "Shelikof Strait") %>%
+  group_by(region) %>%
+  summarize(start_time = min(START_TIME)) %>%
+  arrange(start_time)
+
+for (i in report_regions_list$region){
+  tmp_doc <- knitr::knit_child("appendix_region_summary.Rmd", quiet = TRUE)
+  cat(tmp_doc)
+}
+
+```
+
+
+<!--compile the stock assessment output whenever you update the database query-->
+```{r compile_stock_assessment_shelikof, echo = FALSE, message=FALSE, warning=FALSE}
+if (update_datasets == TRUE){
+  compile_stock_assessment_output()
+}
+```

@@ -1,0 +1,195 @@
+<!-- Shelikof Strait only tables! Tables for all other regions are presented elsewhere -->
+
+<!-- make catch tables for each gear type in the Shelikof Strait-->
+```{r catch_table_shelikof, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=6.5}
+
+# get the shelikof strait only data
+tmp_tables <- build_catch_table_by_region(region_name = "Shelikof Strait")
+
+# return a list of tables to reference
+catch_tables_shelikof <- c()
+
+# get the region associated with this report
+region_name <- unique(current_year_event_data$region[current_year_event_data$region == "Shelikof Strait"])
+
+# print each item in the list
+  for (j in 1:length(tmp_tables)) {
+    table_to_print <- tmp_tables[[j]][[1]]
+
+    # get the gear type associated with the table
+    gear_type <- tmp_tables[[j]][[3]]
+
+    # get the bookmark name for the table
+    bkm_name <- tolower(str_remove_all(paste0(region_name, gear_type), " "))
+
+    # and keep this for cross-referencing in text
+    catch_tables_shelikof <- rbind(catch_tables_shelikof, bkm_name)
+
+    # add the caption
+    tmp_caption <- block_caption(
+      label = tmp_tables[[j]][[2]],
+      style = "Table Caption",
+      autonum = run_autonum(
+        seq_id = "tab",
+        pre_label = "Table ",
+        post_label = ". -- ",
+        bkm = bkm_name
+      )
+    )
+
+    officedown::knit_print_block(tmp_caption)
+
+    # and add the table
+    flextable_to_rmd(x = table_to_print, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+    # make a pagebreak by adding \pagebreak command into document
+    cat("\\pagebreak")
+  }
+
+```
+
+<!-- biomass and EVA variance tables -->
+```{r biomass_eva_table_shelikof, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=6.5}
+
+##TODO:: update historical data source!
+# return the table and caption
+tmp_table <- build_biomass_and_variance_tables(pre_sel_corr_data_path = pre_selectivity_biomass_nums_path, 
+                                               post_sel_corr_data = sel_corr_surveys_pollock_totals_by_length, 
+                                               historical_eva_vals = historical_eva,
+                                               region_name = "Shelikof Strait")
+
+# print table and caption
+print_table <- set_caption(tmp_table[[1]],
+  caption = tmp_table[[2]],
+  style = "Table Caption",
+  align_with_table = FALSE,
+  autonum = run_autonum(
+    seq_id = "tab",
+    bkm = "shelikofeva",
+    pre_label = "Table ",
+    post_label = ". -- "
+  )
+)
+
+flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+cat("\\pagebreak")
+```
+
+
+<!-- Set as portrait- this extends back to the last 'block_section' call-->
+`r  block_section(portrait_section)`
+
+
+
+<!-- biomass and numbers at length and age tables-->
+
+
+<!-- biomass and numbers at length-->
+```{r nums_at_length_table_shelikof, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=9}
+# return the table and caption
+tmp_table <- MACEReports::build_numbers_at_length_table_winter_goa(biomass_nums_length_data = sel_corr_surveys_pollock_totals_by_length, region_name = "Shelikof Strait")
+
+# print table and caption
+print_table <- set_caption(tmp_table[[1]],
+  caption = tmp_table[[2]],
+  style = "Table Caption",
+  align_with_table = FALSE,
+  autonum = run_autonum(
+    seq_id = "tab",
+    bkm = "shelikofnumlength",
+    pre_label = "Table ",
+    post_label = ". -- "
+  )
+)
+
+flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+cat("\\pagebreak")
+```
+
+
+```{r biomass_at_length_table_shelikof, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=9}
+# return the table and caption
+tmp_table <- MACEReports::build_biomass_at_length_table_winter_goa(biomass_nums_length_data = sel_corr_surveys_pollock_totals_by_length, region_name = "Shelikof Strait")
+
+# print table and caption
+print_table <- set_caption(tmp_table[[1]],
+  caption = tmp_table[[2]],
+  style = "Table Caption",
+  align_with_table = FALSE,
+  autonum = run_autonum(
+    seq_id = "tab",
+    bkm = "shelikofbiolength",
+    pre_label = "Table ",
+    post_label = ". -- "
+  )
+)
+
+flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+cat("\\pagebreak")
+```
+
+
+
+<!-- biomass and numbers at age-->
+```{r bio_at_age_table_shelikof, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=9}
+# if there's a shelikof survey, and ages have been read, make the nums/biomass at age table
+if (isTRUE(age_data)) {
+  # return table and caption
+  # tmp_table = build_biomass_age_tables(post_sel_corr_data = shelikof_sel_corr_surveys_biomass_nums_age, survey = survey_shelikof, report_num = report_number_shelikof)
+
+  tmp_table <- MACEReports::build_biomass_at_age_table_winter_goa(biomass_nums_age_data = shelikof_sel_corr_surveys_biomass_nums_age, region_name = "Shelikof Strait")
+
+  # print table and caption
+  print_table <- set_caption(tmp_table[[1]],
+    caption = tmp_table[[2]],
+    style = "Table Caption",
+    align_with_table = FALSE,
+    autonum = run_autonum(
+      seq_id = "tab",
+      bkm = "shelikofbioage",
+      pre_label = "Table ",
+      post_label = ". -- "
+    )
+  )
+
+  flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+  #cat("\\pagebreak")
+}
+```
+
+
+```{r nums_at_age_table_shelikof, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=9}
+# if there's a shelikof survey, and ages have been read, make the nums/biomass at age table
+if (isTRUE(age_data)) {
+  # tmp_table = build_nums_age_tables(post_sel_corr_data = shelikof_sel_corr_surveys_biomass_nums_age, survey = survey_shelikof, report_num = report_number_shelikof)
+  #
+  tmp_table <- MACEReports::build_numbers_at_age_table_winter_goa(biomass_nums_age_data = shelikof_sel_corr_surveys_biomass_nums_age, region_name = "Shelikof Strait")
+
+  # print table and caption
+  print_table <- set_caption(tmp_table[[1]],
+    caption = tmp_table[[2]],
+    style = "Table Caption",
+    align_with_table = FALSE,
+    autonum = run_autonum(
+      seq_id = "tab",
+      bkm = "shelikofnumage",
+      pre_label = "Table ",
+      post_label = ". -- "
+    )
+  )
+
+  flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+  cat("\\pagebreak")
+}
+```
+
+
+<!-- Set as landscape- this extends back to the last 'block_section' call -->
+`r  block_section(landscape_section)`
+
+

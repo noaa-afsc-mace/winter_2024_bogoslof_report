@@ -1,0 +1,91 @@
+---
+output: 
+  officedown::rdocx_document:
+    reference_docx: reference_report_doc_2024.docx
+    tables:
+      style: Table
+      layout: autofit
+      width: 1.0
+      topcaption: true
+      tab.lp: 'tab:'
+      caption:
+        style: Table Caption
+        pre: 'Table '
+        sep: '. '
+        fp_text: !expr officer::fp_text_lite(bold = FALSE)
+      conditional:
+        first_row: true
+        first_column: false
+        last_row: false
+        last_column: false
+        no_hband: false
+        no_vband: true
+    plots:
+      style: Normal
+      align: center
+      topcaption: false
+      fig.lp: 'fig:'
+      caption:
+        style: Image Caption
+        pre: 'Figure '
+        sep: '. -- '
+        fp_text: !expr officer::fp_text_lite(bold = FALSE)
+bibliography: "cruise_report_references.bib"   
+csl: ecology.csl
+nocite: | 
+  @Foote_Traynor_1988, @Traynor_1996, @Guttormsen_Wilson_2009, @Ona_2003, @Foote_1987,
+  @DeRobertis_Taylor_2014, @Kang_et_al_2005, @Gauthier_Horne_2004, @Demer_Conti_2005
+
+
+---
+  
+
+```{r setup, include=FALSE}
+library(bibtex)
+```
+
+**Writing with bibtex:**
+
+Simple ref:
+
+A camtrawl [@Williams_etal_2010] got used.
+
+Two or more refs:
+
+More fish [@Stienessen_etal_2017; @Simonsen_et_al_2016].
+
+Reference within a sentence:
+
+using procedures described in @Williams_etal_2010. 
+
+Say you want a more complex citation:
+
+Biennial surveys since 2013 [@Jones_etal_2014; -@Jones_etal_2017; -@Jones_etal_2019; and Jones et al. -@Jones_etal_in_prep]
+
+Or with (words and citation in the parentheses)
+
+the fish [as in Jones et al. -@Jones_etal_2014 for details.]
+
+If you need a semicolon, you'll need an escape \\:
+
+[Camtrawl\; Williams et al. -@Williams_etal_2010]
+
+Second, a correction estimate was made for net selectivity [escapement from the midwater net, based on relationships derived from the recapture nets\; Williams et al. -@Williams_etal_2011].
+
+integrated vertically to produce the nautical area scattering coefficient, s~A~ [units of m^2^ nmi^-2^\; MacLennan et al. -@Maclennan_etal_2002]
+
+The mean backscattering cross section [an areal measure of acoustic scattering in m^2^ \-- @Maclennan_etal_2002] of species $s$ of length class $l$ is
+
+
+inclusion of the haul weights, $W_h$, into the model [function glm, @R_software]. 
+
+survey trawl was accounted for in the acoustic-trawl abundance estimate [e.g., De Robertis et al. -@DeRobertis_et_al_2017a;, De Robertis -@DeRobertis_2021].
+
+Want your references to fall somewhere other than the very end of the report. Yeah! Insert them using:
+
+# References
+
+<div id="refs"></div>
+
+
+And they'll show up there.

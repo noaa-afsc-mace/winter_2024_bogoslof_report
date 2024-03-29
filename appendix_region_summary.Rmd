@@ -1,0 +1,685 @@
+<!--This is provides the traditional 'per area' results text, and also adds per-area figures and tables-->
+<!--The text is generated first, then tables and figures-->
+
+<!--get all the transect line stats (amount, depth, dates, etc) we'll need for the text-->
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+#Need all the biomass and numbers separated by survey region. Same for the interval lengths to sum them separately for the different regions. 
+
+# set the region_id to the requested region
+region_id <- i
+
+#subset the region of interest-
+region_interval_data <- current_year_interval_data %>%
+  filter(region == region_id)
+
+#subset the events in the region of interest-
+region_event_data <- current_year_event_data %>%
+  filter(region == region_id)
+
+#subset the specimen table data-
+region_specimen_data <- specimen_table_data %>%
+  filter(region == region_id)
+
+#and the catch table....
+#subset the specimen table data-
+region_catch_data <- catch_table_data %>%
+  filter(region == region_id)
+
+#use the subset of haul data to make sure you are ONLY getting maturity data for the requested region 
+region_maturities_and_weights <- maturities_and_weights %>%
+  filter(region == region_id)
+ 
+#get the value for the previous survey year- this should work in cases where we skip a year as it just 
+#sorts all survey years and finds the next in line
+survey_years <- -desc(sort(unique(sel_corr_surveys_pollock_totals_by_length$year
+[sel_corr_surveys_pollock_totals_by_length$region == region_id])))
+last_year <- survey_years[length(survey_years) - 1]
+
+### Basic survey info: region name, survey dates, total area surveyed, min/max depth, total trackline.
+# format start date/end date as Day Month, i.e. '4 June'
+start_date <- paste(
+  lubridate::day(min(region_interval_data$START_TIME)),
+  lubridate::month(min(region_interval_data$START_TIME), label = TRUE, abbr = FALSE)
+)
+
+
+end_date <- paste(
+  lubridate::day(max(region_interval_data$START_TIME)),
+  lubridate::month(max(region_interval_data$START_TIME), label = TRUE, abbr = FALSE)
+)
+
+# get the total area surveyed as sum(interval_length * interval_width); set all intervals as 0.5 nmi length
+# as this is what's used in calcs
+# report totals in nmi2 and km2
+total_survey_area_nmi2 <- sum(0.5 * region_interval_data$INTERVAL_WIDTH, na.rm = TRUE)
+total_survey_area_km2 <- sum((0.5 * 1.852) * (region_interval_data$INTERVAL_WIDTH * 1.852), na.rm = TRUE)
+
+
+#get total transect length/width by report number; use Mode function to report the most common spacing
+transect_stats <- region_interval_data%>%
+  group_by(REPORT_NUMBER, region)%>%
+  summarize(
+    transect_length_nmi = sum(LENGTH),
+    transect_length_km = sum(LENGTH) * 1.852,
+    min_bot_depth = min(MEAN_BOTTOM_DEPTH, na.rm = TRUE),
+    max_bot_depth = max(MEAN_BOTTOM_DEPTH, na.rm = TRUE),
+    min_spacing_nmi = min(INTERVAL_WIDTH, na.rm = TRUE),
+    min_spacing_km = min(INTERVAL_WIDTH, na.rm = TRUE) * 1.852,
+    max_spacing_nmi = max(INTERVAL_WIDTH, na.rm = TRUE),
+    max_spacing_km = max(INTERVAL_WIDTH, na.rm = TRUE) * 1.852,
+    primary_spacing_nmi = Mode(INTERVAL_WIDTH),
+    primary_spacing_km = Mode(INTERVAL_WIDTH) * 1.852
+    )
+            
+```
+
+## `r region_id`
+
+*Survey timing and extent*
+
+The `r current_year` winter AT survey of pre-spawning pollock in `r region_id` was conducted between `r start_date` and `r end_date`. The entire survey area encompassed `r  print_n_decimal(total_survey_area_km2, 0)` km^2^ (`r print_n_decimal(total_survey_area_nmi2, 0)` nmi^2^). Acoustic backscatter was measured along `r round(transect_stats$transect_length_km, digits=1) ` km (`r round(transect_stats$transect_length_nmi, digits=1) ` nmi) of transects spaced mainly `r round(transect_stats$primary_spacing_km, digits = 1) ` km (`r round(transect_stats$primary_spacing_nmi, digits = 1) ` nmi) apart with spacing varying from `r round(transect_stats$min_spacing_km, digits = 1) ` km to `r round(transect_stats$max_spacing_km, digits = 1) ` km (`r round(transect_stats$min_spacing_nmi, digits = 1)` to `r round(transect_stats$max_spacing_nmi, digits = 1)` nmi) in the survey area (Fig. \@ref(fig:surveylocationmap)). Bottom depths in the survey area ranged from `r round(transect_stats$min_bot_depth, digits=0) ` m to `r round(transect_stats$max_bot_depth, digits=0) ` m. 
+
+*Environmental conditions*
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+#### Pull out the SST data for the region of interest.....
+
+# compare sea surface temps at fishing locations to the historical sea surface temps- these values are returned
+# from the function 'plot_historical_sst_at_fishing_locs' as:
+# list item 2: historical mean
+
+region_sst <-  plot_historical_sst_anomalies(
+  historical_sst_loc = historical_trawl_sst,
+  historical_sst_scs = historical_scs_sst,
+  region = i
+)
+
+annual_mean_sst <- region_sst[[2]]
+
+# pull the historical mean, and last year's value, from here
+mean_sst_loc_1980_lstyr <- mean(annual_mean_sst$mean_sst_loc[annual_mean_sst$year != current_year], na.rm = TRUE)
+mean_sst_loc_2006_lstyr <- mean(annual_mean_sst$mean_sst_loc[annual_mean_sst$year %in% c(2006:last_year)], na.rm = TRUE)
+mean_sst_scs_2006_lstyr <- mean(annual_mean_sst$mean_sst_scs[annual_mean_sst$year %in% c(2006:last_year)], na.rm = TRUE)
+last_year_mean_sst_loc <- mean(annual_mean_sst$mean_sst_loc[annual_mean_sst$year == last_year])
+last_year_mean_sst_scs <- mean(annual_mean_sst$mean_sst_scs[annual_mean_sst$year == last_year])
+survey_year_mean_sst_loc <- mean(annual_mean_sst$mean_sst_loc[annual_mean_sst$year == current_year])
+survey_year_mean_sst_scs <- mean(annual_mean_sst$mean_sst_scs[annual_mean_sst$year == current_year])
+
+# characterize current survey year conditions relative to historical SCS SST mean
+survey_year_conditions <- "average"
+if (annual_mean_sst$sst_scs_anomaly[annual_mean_sst$year == current_year] >= abs(0.5)) {
+  survey_year_conditions <- ifelse(annual_mean_sst$sst_scs_anomaly[annual_mean_sst$year == current_year] >= 0.5, "warmer", "cooler")
+}
+
+
+### SBE profiles by pollock size class
+# get the surface/gear temps for the requested region from the hauls data table
+gear_table_for_region <- haul_table_data %>%
+  filter(region == region_id)
+
+stemp <- NULL
+stemp_sd <- NULL
+gtemp <- NULL
+gtemp_sd <- NULL
+tdiff <- NULL
+
+# If stats for a single set of all SBE profiles is presented
+if (SBE_Nset == 1) {
+  stemp <- list(mean(gear_table_for_region$SURFACE_TEMP, na.rm = TRUE))
+  gtemp <- list(mean(gear_table_for_region$HEAD_ROPE_TEMP, na.rm = TRUE))
+  tdiff <- list(mean(gear_table_for_region$SURFACE_TEMP, na.rm = TRUE) - mean(gear_table_for_region$HEAD_ROPE_TEMP, na.rm = TRUE))
+}
+# If stats for multiple sets of SBE profiles are presented
+if (SBE_Nset >= 2) {
+  for (s in 1:SBE_Nset) {
+    stemp[s] <- list(mean(gear_table_for_region$SURFACE_TEMP[gear_table_for_region$EVENT_ID %in% SBE_set.ls[[s]]], na.rm = TRUE))
+    stemp_sd[s] <- list(sd(gear_table_for_region$SURFACE_TEMP[gear_table_for_region$EVENT_ID %in% SBE_set.ls[[s]]], na.rm = TRUE))
+    gtemp[s] <- list(mean(gear_table_for_region$HEAD_ROPE_TEMP[gear_table_for_region$EVENT_ID %in% SBE_set.ls[[s]]], na.rm = TRUE))
+    gtemp_sd[s] <- list(sd(gear_table_for_region$HEAD_ROPE_TEMP[gear_table_for_region$EVENT_ID %in% SBE_set.ls[[s]]], na.rm = TRUE))
+    tdiff[s] <- list(stemp[[s]] - gtemp[[s]])
+  }
+}
+
+region_scs_summary <- scs_summary %>%
+  filter(region == region_id)
+
+#DAVE- COMMMENTED OUT unless you want to speak about temps by size class! 
+# While mean surface temperatures at haul locations in which catches were dominated by either adult and juvenile pollock were similar (< 0.1°C difference), headrope temperatures were cooler at the locations of hauls where juvenile pollock dominated catches (`r round(gtemp[[2]], digits =1)` ± `r round(gtemp_sd[[2]], digits =1)`°C, mean temperature ± 1 SD for events 13, 15, 17, and 21; Table \@ref(tab:shelikofhaultable)) compared to headrope temperatures for hauls dominated by adult pollock (`r round(gtemp[[1]], digits =1)` ± `r round(gtemp_sd[[1]], digits =1)`°C; Fig. \@ref(fig:shelikofstraitsbe)). The difference in temperature at fishing depth is not due to adult pollock being distributed in deeper waters within Shelikof Strait (Table \@ref(tab:shelikofhaultable)); water temperatures between 100–150 m within Shelikof Strait where adults occurred were approximately 1°C warmer than waters in that depth range near the ends of transects where juvenile pollock were concentrated (Fig. \@ref(fig:shelikofsticks)).
+
+```
+
+Sea surface temperatures (SST) measured in the Shumagin Islands in `r current_year` indicate relatively `r survey_year_conditions` thermal conditions during the survey. SST ranged from `r round(region_scs_summary$min_temp, digits=1)`°C to `r round(region_scs_summary$max_temp, digits=1)`°C as measured by the ship's flow-through instrumentation along acoustic transects and averaged `r round(region_scs_summary$mean_temp, digits =1)`°C (Fig. \@ref(fig:shumaginsSST)). The along-transect mean SST was `r ifelse(round(abs(survey_year_mean_sst_scs - last_year_mean_sst_scs), digits = 1)>0, paste0(round(abs(survey_year_mean_sst_scs - last_year_mean_sst_scs), digits = 1),'°C ',ifelse(survey_year_mean_sst_scs > last_year_mean_sst_scs, 'warmer than', 'cooler than')), 'the same as')` observed during `r last_year` and `r round(abs(survey_year_mean_sst_scs - mean_sst_scs_2006_lstyr), digits = 1)`°C `r ifelse(survey_year_mean_sst_scs >= mean_sst_scs_2006_lstyr, "warmer", "cooler")` than the 2006–`r last_year` historical mean (`r print_n_decimal(mean_sst_scs_2006_lstyr, 1)`°C). The average SST measured by the SBE 39 at all haul locations was `r round(survey_year_mean_sst_loc, digits =1)`°C (Table \@ref(tab:shumaginshaultable)), which was `r round(abs(survey_year_mean_sst_loc - last_year_mean_sst_loc), digits = 1)`°C `r ifelse(survey_year_mean_sst_loc >= last_year_mean_sst_loc, "warmer", "cooler")` than the haul-based mean SST in `r last_year`, `r round(abs(survey_year_mean_sst_loc - mean_sst_loc_2006_lstyr), digits = 1)`°C `r ifelse(survey_year_mean_sst_loc >= mean_sst_loc_2006_lstyr, "warmer", "cooler")` than the 2006–`r last_year` historical mean, and `r round(abs(survey_year_mean_sst_loc - mean_sst_loc_1980_lstyr), digits = 1)`°C `r ifelse(survey_year_mean_sst_loc >= mean_sst_loc_1980_lstyr, "warmer", "cooler")` than the long-term 1995–`r last_year` historical mean. Mean SST anomalies from both sources in `r current_year` were less than ± 0.5, indicating average conditions relative to the 2006–`r last_year` period (Fig. \@ref(fig:shumaginislandssstfishingloc)). Mean temperature between the surface and deepest trawl (i.e. headrope) depth at all haul locations varied by approximately `r abs(round(mean(gear_table_for_region$SURFACE_TEMP, na.rm = TRUE) - mean(gear_table_for_region$HEAD_ROPE_TEMP, na.rm = TRUE), digits=1))`°C (Fig. \@ref(fig:shumaginislandssbe)).
+
+*Trawl catch summary*
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+
+# get all the gear types, and build a list that separates them by commas or 'and' as needed
+gear_names = unique(as.character(region_event_data$'Gear type'))
+
+# get the trawl counts for each gear type
+gear_counts =list()
+  
+for (i in 1:length(gear_names)){
+  gear_counts[i]=sum((region_event_data$'Gear type'==gear_names[i]), na.rm=TRUE)
+}
+
+
+# format the counts of different haul types for the text
+gearboth= paste0(gear_counts, (paste0(" ", gear_names))) 
+gearboth=  knitr::combine_words(gearboth)
+
+# query out counts of fork length measurements and ages for the different hauls...
+#this information has already been gathered for the 's_specimen_table_data' dataset;
+#we'll add the gear information to this dataset
+
+specimen_text_data = left_join(region_specimen_data, 
+                               st_drop_geometry(region_event_data), by = c('SURVEY', 'HAUL' = 'EVENT_ID', 'region'))
+
+#For other years all fish-containing hauls are used
+specimen_region_summary = specimen_text_data%>%
+  rename(gear_type = 'Gear type')%>%
+  summarize(n_lengths = mean(CATCH_LENGTHS, na.rm =TRUE),
+            n_weights = mean(WEIGHTS, na.rm = TRUE),
+            n_maturities = mean(MATURITIES, na.rm = TRUE),
+            n_ages = mean(OTOLITHS, na.rm = TRUE),
+            n_all= mean(c(WEIGHTS,MATURITIES,OTOLITHS,OVARY_WEIGHTS), na.rm = TRUE),
+            n_hauls = n())
+
+# get the catch by area, organized by descending weight, so we can report the top catch by weight
+catchbyarea = region_catch_data%>%
+  #report LFS hauls only from requested region
+  filter(GEAR == 'LFS1421')%>%
+  group_by(GEAR)%>%
+  #make sure table is ordered by weight for reporting in text
+  arrange(desc(TOT_WEIGHT))%>%
+  # get 'nice' names to print
+  mutate(COMMON_NAME = map_chr(COMMON_NAME, print_species_name))
+
+# get the catch by area, organized by descending numbers, so we can report the top catch by numbers
+catchbyarea2 = region_catch_data%>%
+  #report LFS hauls only from requested region
+  filter(GEAR == 'LFS1421')%>%
+  group_by(GEAR)%>%
+  #make sure table is ordered by number for reporting in text
+  arrange(desc(TOT_NUMBER))%>%
+  # get 'nice' names to print
+  mutate(COMMON_NAME = map_chr(COMMON_NAME, print_species_name))
+
+# build the LFS figure bookmark to match that returned from the tables
+region_catch_table_name <- tolower(str_remove_all(paste0(region_id, "LFS1421"), " "))
+
+##TODO: handle cases where there is non-LFS gear! Add a sentence if needed!
+```
+
+Biological data and specimens were collected in the `r region_id` from `r gearboth ` hauls (Fig. \@ref(fig:surveylocationmap), Table \@ref(tab:surveyhaultable)) targeted on backscatter attributed to pollock. The lengths of an average of `r round(specimen_region_summary$n_lengths, digits = 0) `  randomly selected pollock were measured from each haul, with an average of `r round(specimen_region_summary$n_all, digits = 0) ` individuals more extensively sampled for at least one of the following: body weight, maturity, and age (Table \@ref(tab:surveyspecimen)). A total of `r sum(specimen_text_data$OTOLITHS, na.rm = TRUE) ` otoliths used to estimate pollock ages were collected in the `r region_id` (Table \@ref(tab:surveyspecimen)). 
+
+`r .simpleCap(catchbyarea$COMMON_NAME[1]) ` and `r catchbyarea$COMMON_NAME[2] ` were the most abundant species by weight in the LFS1421 hauls, contributing `r round(catchbyarea$TOT_WEIGHT[1]/sum(catchbyarea$TOT_WEIGHT)*100, digits = 1) `% and `r round(catchbyarea$TOT_WEIGHT[2]/sum(catchbyarea$TOT_WEIGHT)*100, digits = 1)`% of the catch by weight respectively (Table A3.\@ref(tab:`r tolower(str_remove_all(paste0(region_id, "LFS1421"), " "))`)). `r .simpleCap(catchbyarea2$COMMON_NAME[1])` and `r catchbyarea2$COMMON_NAME[2]` were the most abundant species by numbers with `r round(catchbyarea2$TOT_NUMBER[1]/sum(catchbyarea2$TOT_NUMBER)*100, digits = 1)`% and `r round(catchbyarea2$TOT_NUMBER[2]/sum(catchbyarea2$TOT_NUMBER)*100, digits = 1)`% of total catch by numbers, respectively. 
+
+*Pollock maturity*
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+
+#the function that makes plots for the figs/tables should return all the needed values here- using region_id here....
+maturity_data <- plot_abundance_weighted_maturity(ship = ship_shelikof, 
+                                                  survey = survey_shelikof,  
+                                                  region_id = region_id)
+
+#get the counts at each stage
+maturity_summary_stage = maturity_data[[2]]
+
+#identify most common stages
+maturities_male = maturity_summary_stage[maturity_summary_stage$SEX == 'Male',]
+maturities_female = maturity_summary_stage[maturity_summary_stage$SEX == 'Female',]
+
+most_common_male = maturities_male$MATURITY[which.max(maturities_male$wt_percent)]
+most_common_female = maturities_female$MATURITY[which.max(maturities_female$wt_percent)]
+
+#get the sample sizes
+maturity_nums = maturity_data[[5]]
+
+#get the L50
+L50_val = maturity_data[[1]]$L50
+
+#and the GSI stats
+GSI_stats = maturity_data[[3]]
+
+#and the minimum fork length used in L50 calcs
+min_L50_length = min(prop_mature$FORK_LENGTH[prop_mature$region == region_id])
+ 
+  
+```
+
+
+Pollock observed in the `r region_id` were generally in `r tolower(most_common_female)` (females) or `r tolower(most_common_male)` (males) maturity stages. The abundance weighted maturity composition for males > 40 cm FL (n = `r maturity_nums$n[maturity_nums$SEX == 'Male']`) in the `r region_id` was `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Male' & maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Male' & maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Male' & maturity_summary_stage$MATURITY == 'Prespawning'], digits = 0)`% pre-spawning, `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Male' & maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Male' & maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent, and for females > 40 cm FL (n = `r maturity_nums$n[maturity_nums$SEX == 'Female']`) the abundance weighted maturity composition was `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Female' & maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Female' & maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Female' & maturity_summary_stage$MATURITY == 'Prespawning'], digits = 0)`% pre-spawning, `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Female' & maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Female' & maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent (Fig. \@ref(fig:shumaginislandsmaturity)a). The length at which 50% of female pollock were determined to be reproductively mature (i.e., pre-spawning, spawning, or spent) is `r L50_val ` cm FL (Fig. \@ref(fig:shumaginislandsmaturity)b). 
+
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+
+
+#get the numbers at length by report number
+num_bio_at_length_summary <- current_year_pollock_biomass_nums%>%
+  #for this report- make sure we're only reporting the requested region
+  filter(region == region_id)%>%
+  group_by(region, LENGTH)%>%
+  summarize(num_individuals = sum(NUMBERS),
+            biomass_kg = sum(BIOMASS))%>%
+  #also report proportions at each length
+  mutate(numprop = num_individuals/sum(num_individuals),
+         bioprop = biomass_kg/sum(biomass_kg))
+
+# identify fish by nomimal 'ages' based on their length (since we don't get ages read outside of Shelikof)
+##TODO: fix these as at: https://github.com/noaa-afsc-mace/winter_2024_goa_report/issues/1
+age1fish = num_bio_at_length_summary%>%
+  filter(LENGTH <= 16)
+age1numpct= (sum(age1fish$numprop))*100
+age1biopct = (sum(age1fish$bioprop))*100
+
+age2fish = num_bio_at_length_summary%>%
+  filter(LENGTH >= 16 & LENGTH <= 24)
+age2numpct= (sum(age2fish$numprop))*100
+age2biopct = (sum(age2fish$bioprop))*100
+
+age3plusfish = num_bio_at_length_summary%>%
+  filter(LENGTH >=  30)
+age3plusnumpct= (sum(age3plusfish$numprop))*100
+age3plusbiopct = (sum(age3plusfish$bioprop))*100
+
+age4plusfish = num_bio_at_length_summary%>%
+  filter(LENGTH >=  41)
+age4plusnumpct= (sum(age4plusfish$numprop))*100
+age4plusbiopct = (sum(age4plusfish$bioprop))*100
+
+#and overall
+rawbio = sum(num_bio_at_length_summary$biomass_kg)
+rawnum = sum(num_bio_at_length_summary$num_individuals)
+
+#compare to last year's biomass/nums
+last_year_vals = sel_corr_surveys_pollock_totals_by_length%>%
+  #for this report- make sure we're only reporting the requested region
+  filter(region == region_id & year == last_year)%>%
+  group_by(year)%>%
+  summarize(num_individuals = sum(NUMBERS),
+            biomass_kg = sum(BIOMASS))
+
+#and get the current survey as a percent of last year biomass
+pctoflastyr=(rawbio/last_year_vals$biomass_kg)*100
+
+# report the proportion of the mean historically
+meanHistBiomass= calculate_mean_historical_biomass_function(pre_sel_corr_data_path = pre_selectivity_biomass_nums_ages_path, post_sel_corr_data = sel_corr_surveys_pollock_totals_by_length, region_id = region_id)
+
+historicmean = meanHistBiomass #historical biomass in thousand tons
+pctofhistoric= ((rawbio/1e6)/historicmean)*100
+
+```
+
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+
+#Update this to use the proper bottom-ref data set.....
+
+#for the bottom-referenced data, report depths as heights and then calculate the total biomass/nums within each layer
+bottom_referenced_summary = vertical_dist_bot_ref_biomass_nums_by_length%>%
+  #limit things to the shelikof survey
+  filter(region == region_id & SPECIES_CODE == 21740)%>%
+  #report height (i.e. inverse of depth) of upper ref line, this will set bottom bin @ o (seafloor);
+  #label observations by size class and year
+  mutate(height = -depth,
+         size_class = ifelse(LENGTH <= pollock_size_cutoff, 'juvenile_layer_biomass', 'adult_layer_biomass'))
+
+#for the surface-referenced data, calculate the total biomass/nums within each layer
+surface_referenced_summary = vertical_dist_surf_ref_biomass_nums_by_length%>%
+  #limit things to the shelikof survey
+  filter(region == region_id & SPECIES_CODE == 21740)%>%
+  #report depth as the range from upper reference to be consistent;
+  #label observations by size class and year
+  mutate(size_class = ifelse(LENGTH <= pollock_size_cutoff, 'juvenile_layer_biomass', 'adult_layer_biomass'))
+
+
+mwd_surf_ref = surface_referenced_summary%>%
+  group_by(year, depth, size_class)%>%
+  summarize(layer_biomass = sum(BIOMASS),
+            layer_nums = sum(NUMBERS))%>%
+  group_by(year, size_class)%>%
+    summarize(mwd = sum((layer_biomass / sum(layer_biomass)) * depth))%>%
+    mutate(ref = 'surface')
+    
+
+#what were the predominant pollock depths for adults?
+#we'll take this as the middle 50% of the distribution from the surface, i.e. the inter-quartile range
+most_common_depth = surface_referenced_summary%>%
+  group_by(year, depth, size_class)%>%
+  #sum biomass/numbers in each layer/size class
+  summarize(layer_biomass = sum(BIOMASS),
+            layer_nums = sum(NUMBERS))%>%
+  #to be safe, arrange by depth
+  arrange(depth)
+
+
+#and calculate the adult 75% depth quantile (0.125- 0.875 of biomass) weighted by biomass
+adult_common_depths = most_common_depth[most_common_depth$size_class == 'adult_layer_biomass' & 
+                                          most_common_depth$year == current_year,]
+
+adult_common_depths = Hmisc::wtd.quantile(adult_common_depths$depth, 
+                    weights = adult_common_depths$layer_biomass, 
+                    probs = c(0.125, 0.875))
+
+
+#and calculate the juveline 75% depth quantile (0.125- 0.875 of biomass) weighted by biomass
+juvenile_common_depths = most_common_depth[most_common_depth$size_class == 'juvenile_layer_biomass' & 
+                                          most_common_depth$year == current_year,]
+
+juvenile_common_depths = Hmisc::wtd.quantile(juvenile_common_depths$depth, 
+                    weights = juvenile_common_depths$layer_biomass, 
+                    probs = c(0.125, 0.875))
+
+ #calculate the middle 50%  off bottom for adults and juveniles as well
+ most_common_height_off_bot = bottom_referenced_summary%>%
+     group_by(year, height, size_class)%>%
+   #sum biomass/numbers in each layer/size class
+   summarize(layer_biomass = sum(BIOMASS),
+             layer_nums = sum(NUMBERS))%>%
+   #to be safe, arrange by depth
+   arrange(height)
+
+ #and pull out the adult/juvenile ranges
+ adult_common_height_off_bot= most_common_height_off_bot[most_common_height_off_bot$size_class == 'adult_layer_biomass' &
+                                           most_common_height_off_bot$year == current_year,]
+
+ adult_common_height_off_bot = Hmisc::wtd.quantile(adult_common_height_off_bot$height,
+                     weights = adult_common_height_off_bot$layer_biomass,
+                     probs = c(0.125, 0.875))
+
+ juv_common_height_off_bot= most_common_height_off_bot[most_common_height_off_bot$size_class == 'juvenile_layer_biomass' &
+                                           most_common_height_off_bot$year == current_year,]
+
+ juv_common_height_off_bot = Hmisc::wtd.quantile(juv_common_height_off_bot$height,
+                     weights = juv_common_height_off_bot$layer_biomass,
+                     probs = c(0.125, 0.875, 0.95))
+
+
+#how much biomass was in the bottom 10m vs the rest of the water column?
+bot_10m_summary = bottom_referenced_summary%>%
+  mutate(bottom_10 = ifelse(height <= 10, 'bottom_10', 'off_bottom_10'))%>%
+  #sum biomass/numbers in each layer/size class
+  group_by(year, size_class, bottom_10)%>%
+  summarize(layer_biomass = sum(BIOMASS),
+            layer_nums = sum(NUMBERS))%>%
+  mutate(perc_biomass =  layer_biomass/sum(layer_biomass) *100)
+
+#how much biomass was in the bottom 50m vs the rest of the water column?
+bot_50m_summary = bottom_referenced_summary%>%
+  mutate(bottom_50 = ifelse(height <= 50, 'bottom_50', 'off_bottom_50'))%>%
+  #sum biomass/numbers in each layer/size class
+  group_by(year, size_class, bottom_50)%>%
+  summarize(layer_biomass = sum(BIOMASS),
+            layer_nums = sum(NUMBERS))%>%
+  mutate(perc_biomass =  layer_biomass/sum(layer_biomass) *100)
+
+#pull out a few values for the text
+adult_within_10_current_year = bot_10m_summary$perc_biomass[bot_10m_summary$year == current_year &
+                                                            bot_10m_summary$size_class == 'adult_layer_biomass' &
+                                                            bot_10m_summary$bottom_10 == 'bottom_10']
+
+adult_within_50_current_year = bot_50m_summary$perc_biomass[bot_50m_summary$year == current_year &
+                                                            bot_50m_summary$size_class == 'adult_layer_biomass' &
+                                                            bot_50m_summary$bottom_50 == 'bottom_50']
+
+```
+
+*Distribution and Abundance*
+
+**Describe your distribution**(Fig. \@ref(fig:shumaginssticks)). **Describe any interesting adult vs juvenile distributions**. Most adult pollock (defined as 75% of the biomass) were detected between depths of `r  adult_common_depths[[1]]`-`r  adult_common_depths[[2]]` m (Fig. \@ref(fig:shumaginislandsviolins)a). Most juvenile pollock were detected between depths of `r juvenile_common_depths[[1]]`-`r juvenile_common_depths[[2]]` m (Fig. \@ref(fig:shumaginislandsviolins)b). Most adult pollock were observed within `r adult_common_height_off_bot[[2]]` m of the bottom with, most juveniles found within `r juv_common_height_off_bot[[2]]` and ranging up to `r juv_common_height_off_bot[[3]]` m (includes 95% of the biomass) off the bottom (Fig. \@ref(fig:shumaginislandsviolins)c and d), computed from bottom-referenced analysis. About `r print_n_decimal(adult_within_10_current_year, 0)`% of the adult pollock biomass was observed within 10m of the seafloor, and `r print_n_decimal(adult_within_50_current_year, 0)`% percent of biomass within 50 m of the seafloor (Fig. \@ref(fig:shumaginislandsviolins)c). 
+
+Pollock with lengths 10-16 cm FL, indicative of age-1 pollock, accounted for `r round(age1numpct, digits=1)`% of the numbers and `r round(age1biopct, digits=1)`% of the biomass of all pollock observed in the Shumagin Islands (Fig. \@ref(fig:shumaginsbionums)). Pollock 17-24 cm FL, indicative of age-2s, accounted for `r round(age2numpct, digits=1)`% by numbers and `r round(age2biopct, digits=1)`% by biomass. Pollock $\ge$ 30 cm FL accounted for `r round(age3plusnumpct, digits=1)`% and `r round(age3plusbiopct, digits=1)`% of the numbers and biomass, respectively.  
+
+A total of `r print_n_decimal(rawnum/1e6 , 1) ` million pollock weighing `r print_n_decimal(rawbio/1000, 1)` t were estimated to be in the Shumagin Islands at the time of the survey. The `r current_year` biomass was `r round(pctoflastyr, digits =1)`% of that observed in 2020 (`r print_n_decimal(last_year_vals$biomass_kg/1000, 0)` t) and `r round(pctofhistoric, digits = 1)` % of the historic mean of `r print_n_decimal(historicmean, 1)` thousand tons (Table \@ref(tab:shumagineva); Fig. \@ref(fig:shumaginislandsbiocomp)). The `r current_year` survey biomass estimate is the largest in the Shumagin survey time series since 2015 (Table \@ref(tab:shumagineva); Fig. \@ref(fig:shumaginislandsbiocomp)). The relative estimation error of the `r current_year` biomass estimate based on the 1-D geostatistical analysis was `r eva_shumagins_perc`%.
+
+\newpage
+<!--tables-->
+<!-- make catch tables for each gear type in the requested region-->
+```{r echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=6.5}
+
+# get the shelikof strait only data
+tmp_tables <- build_catch_table_by_region(region_name = region_id)
+
+# return a list of tables to reference
+catch_tables <- c()
+bkm_names_catch_table <- c()
+
+# print each item in the list
+  for (j in 1:length(tmp_tables)) {
+    table_to_print <- tmp_tables[[j]][[1]]
+
+    # get the gear type associated with the table
+    gear_type <- tmp_tables[[j]][[3]]
+
+    # get the bookmark name for the table
+    bkm_name <- tolower(str_remove_all(paste0(region_id, gear_type), " "))
+    
+    # and keep this for cross-referencing in text
+    bkm_names_catch_table <- rbind(bkm_names_catch_table, bkm_name)
+
+    # add the caption
+    tmp_caption <- block_caption(
+      label = tmp_tables[[j]][[2]],
+      style = "Table Caption",
+      autonum = run_autonum(
+        seq_id = "tab",
+        pre_label = "Table A3.",
+        post_label = ". -- ",
+        bkm = bkm_name,
+        # restart figure labelling for appendix
+        start_at = unlist(ifelse(region_id == report_regions_list$region[1], 1, list(NULL))),
+      )
+    )
+
+    officedown::knit_print_block(tmp_caption)
+
+    # and add the table
+    flextable_to_rmd(x = table_to_print, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+    # make a pagebreak by adding \pagebreak command into document
+    cat("\\pagebreak")
+  }
+
+```
+
+<!-- Set as portrait- this extends back to the last 'block_section' call-->
+`r  block_section(portrait_section)`
+
+<!--figures-->
+
+<!--combined figure 1 stickplot, numbers/biomass at length, historical trend-->
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+#############
+# stickplots:
+
+# get the stickplot data- sum by interval and size class (above/below 30 cm)
+region_stick_summary <- current_year_pollock_biomass_nums %>%
+  filter(region == region_id) %>%
+  mutate(size_class = ifelse(LENGTH <= pollock_size_cutoff, '<= 30 cm', '> 30 cm')) %>%
+  group_by(INTERVAL, size_class) %>%
+  summarize(biomass_nm2 = sum(BIOMASS_NM2))
+
+# add lats, lons for plotting
+region_stick_summary <- left_join(region_stick_summary, 
+                                  select(st_drop_geometry(current_year_interval_data), INTERVAL, lon, lat),
+                                         by = c("INTERVAL"))
+
+# set the rotation and bar height by region
+region_rotation <- ifelse(region_id %in% c("Shelikof Strait", "Chirikof Shelfbreak", "Marmot Bay"),
+                          rotation_shelikof, 
+                          rotation_shumagins)
+
+region_max_bar_height <- ifelse(region_id %in% c("Shelikof Strait"),
+                          max_bar_height_shelikof, 
+                          max_bar_height_shumagins)
+
+
+# build the stick objects
+region_sticks <- MACEReports::build_sf_sticks(x = region_stick_summary$lon, 
+                                              y = region_stick_summary$lat, 
+                                              z = region_stick_summary$biomass_nm2, 
+                                              group_variable = region_stick_summary$size_class,
+                                              rotation = region_rotation,
+                                              bar_scale = region_max_bar_height)
+
+# get a legend
+stick_legend <- MACEReports::build_stick_legend(stick_data = region_sticks)
+
+# get a basemap, with a generous buffer for context
+basemap <- MACEReports::get_basemap_layers(plot_limits_data = region_sticks, bathy = FALSE, contours = c(50,100,200),
+                                           plot_expansion = .20)
+
+# also set factor levels on size classes so that we plot the 'small' size class in front of the 'large' size class
+big_class <- str_subset(unique(region_sticks$size_class), ">")
+small_class <- str_subset(unique(region_sticks$size_class), "<")
+    
+region_sticks$size_class <- factor(region_sticks$size_class, levels = c(big_class, small_class), ordered = TRUE)
+
+
+# make all the intervals into linestrings, grouped by transect number, just to add to plots for context
+intervals_plot <- current_year_interval_data %>%
+  filter(region == region_id) %>%
+  group_by(TRANSECT) %>%
+  summarize(do_union = FALSE) %>%
+  st_cast("LINESTRING") %>%
+  filter(!is.na(TRANSECT)) 
+
+# get the hauls in the region for context
+hauls_plot <- current_year_event_data %>%
+  filter(region == region_id)
+
+# plot it all
+region_stickplot <- 
+basemap +
+  # add intervals for context
+  geom_sf(data = intervals_plot, color = 'black', alpha = 0.6) +
+  # add the sticks
+  geom_sf(data = region_sticks, aes(color = size_class), linewidth = 1.0, alpha = 0.5) +
+  # add the hauls for context
+  geom_sf(data = hauls_plot, color = "#5e3c99", shape = 1, stroke = 2, alpha = 0.5)+
+  geom_text(data = data.frame(x = -Inf, y = Inf, lab = 'a)'), 
+            aes(x =x, y = y, label = lab), hjust = -0.5, vjust = 1, family = 'Times', fontface = 'bold') +
+  scale_color_manual(values = c("#0072B2", "#cb181d")) +
+  guides(
+    color = guide_legend(
+      "Fork length (cm)",
+      nrow = 2,
+      label.theme = element_text(color = "black", family = "Times"),
+      title.theme = element_text(color = "black", family = "Times")
+    ),
+    linetype = guide_legend(override.aes = unit(1, "in")),
+    fill = "none"
+  ) +
+  stick_legend +
+   # use the standard maps + plots theme; shift legend a bit
+    theme_bw() +
+    cruise_report_maps_theme +
+    cruise_report_plots_theme +
+    theme(
+      legend.position = 'bottom',
+      axis.ticks = element_blank(),
+      axis.text = element_blank()
+    )
+
+#############
+# numbers/biomass at length
+region_num_at_length <- MACEReports::plot_biomass_nums_by_length(length_vector = num_bio_at_length_summary$LENGTH, 
+                                         biomass_vector = num_bio_at_length_summary$biomass_kg, 
+                                         numbers_vector = num_bio_at_length_summary$num_individuals,
+                                         add_totals = FALSE)
+
+# add a caption
+region_num_at_length <- region_num_at_length +
+  geom_text(data = data.frame(x = -Inf, y = Inf, lab = 'b)'), 
+            aes(x =x, y = y, label = lab), hjust = -0.5, vjust = 1, family = 'Times', fontface = 'bold')
+  
+
+##############
+#historical trend
+
+# plot for the shelikof strait only; get the plot
+summary_barplot_list <- plot_historical_biomass_comparison_by_region(pre_sel_corr_data_path = pre_selectivity_biomass_nums_ages_path, 
+                                             post_sel_corr_data = sel_corr_surveys_pollock_totals_by_interval, 
+                                             historical_eva_vals = historical_eva,
+                                             region_name = region_id)
+
+# pull out the plot, add a caption
+summary_barplot <- summary_barplot_list[[1]] +
+  geom_text(data = data.frame(x = -Inf, y = Inf, lab = 'c)'), 
+            aes(x =x, y = y, label = lab), hjust = -0.5, vjust = 1, family = 'Times', fontface = 'bold')
+
+
+
+```
+
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width= 10, fig.height= 5.0, results = 'asis'}
+#Need all the biomass and numbers separated by survey region. Same for the interval lengths to sum them separately for the different regions. 
+
+# combine plots
+region_pollock_plot <- ggarrange(
+  ggarrange(region_stickplot),
+  ggarrange(region_num_at_length, summary_barplot, ncol = 1,
+            heights = c(1.75,1), align = 'v'),
+  nrow = 1, widths =  c(0.75,1), align = 'v'
+)
+
+# print it 
+region_pollock_plot
+
+
+# build the caption
+cap_text <- paste0(current_year, " ",region_id, " sampling summary. a) Density (t/nmi^2^) attributed to pollock (vertical lines) along tracklines. Biomass densities are categorized based on haul catches comprised of mostly adult (>", pollock_size_cutoff , " FL, blue) or juvenile (≤ ",  pollock_size_cutoff, " FL, red) pollock. Trawl locations are indicated with purple circles. b) Numbers- (blue bars) and biomass- (red line) at-length estimates of pollock. c) Summary of age-1+ pollock biomass estimates (thousands of metric tons) from ", min(summary_barplot$data$year), " to ", max(summary_barplot$data$year), ". Current survey estimate in red, and shaded area indicates 1-D geostatistical 95% confidence intervals")
+
+# add the caption
+
+# get the bookmark name for the table
+fig_name <- paste0("samplesummary", str_remove_all(tolower(region_id), pattern = " "))
+
+tmp_fig_caption <- block_caption(
+  label = cap_text,
+  style = "Image Caption",
+  autonum = run_autonum(
+    seq_id = "fig",
+    pre_label = "Figure A3.",
+    post_label = ". -- ",
+    # restart figure labelling for appendix
+    start_at = unlist(ifelse(region_id == report_regions_list$region[1], 1, list(NULL))),
+    bkm = fig_name
+  )
+)
+
+officedown::knit_print_block(tmp_fig_caption)
+
+```
+
+<!-- Set as landscape- this extends back to the last 'block_section' call -->
+`r  block_section(landscape_section)`
+
+```{r echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, results = 'asis'}
+
+# plot the abundance-weighted maturity for the region
+maturity_list <- plot_abundance_weighted_maturity(ship = report_regions_list$SHIP[report_regions_list$region == region_id], 
+                                 survey = report_regions_list$SURVEY[report_regions_list$region == region_id], 
+                                 region_id = region_id)
+
+# print the plot
+maturity_list[[4]]
+
+# get a nice caption name
+plot_region <- unique(maturity_list[[3]]$region)
+
+# build the caption
+cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity composition for male and female pollock greater than 40 cm fork length (FL) within each stage; B) proportion mature (i.e. pre-spawning, spawning, or spent) by 1-cm size group for female pollock; C) gonadosomatic index for females greater than 40 cm FL (with historic survey mean ± 1 std. dev.). All maturity quantities are weighted by local pollock abundance.")
+
+##TODO:: get captions together
+
+```
+
+<!-- Set as portrait- this extends back to the last 'block_section' call-->
+`r  block_section(portrait_section)`
+
+\newpage

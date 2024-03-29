@@ -1,0 +1,133 @@
+# APPENDIX III. ABUNDANCE CALCULATIONS
+
+The abundance of target species was calculated by combining the echosounder measurements with size and species distributions from trawl catches and target strength (TS) to length relationships from the literature [see @DeRobertis_et_al_2017b for details]. The echosounder measures volume backscattering strength, which is integrated vertically to produce the nautical area scattering coefficient, $s_{A}$ [units of m^2^ nmi^-2^\; MacLennan et al. -@Maclennan_etal_2002]. The backscatter from an individual fish of species $s$ at length $l$ is referred to as its backscattering cross-section, $\sigma_{bs_{s,l}}$ (m^2^), or in logarithmic terms as its target strength, $TS_{s,l}$ (dB re 1 m^2^): 
+
+$$\begin{equation}
+TS_{s,l} =
+10\log_{10}
+\left(
+\sigma_{bs_{s,l}}
+\right)
+\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eq.}\;i)
+\end{equation}$$
+
+The numbers of individuals of species $s$ in length class $l$ ($N_{s,l}$) captured in the nearest haul $h$ were used to compute the proportion of acoustic backscatter associated with each species and length. First, the number of individuals in the catch were converted to a proportion ($P_{s.l,h}$): 
+
+$$\begin{equation}
+P_{s,l,h} = 
+\frac{N_{s,l,h}}{\sum_{s,l} N_{s,l,h}}
+\;,\;\;\;\textrm{where}
+\sum_{s,l}\nolimits P_{s,l,h} = 1
+\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eq.}\;ii)
+\end{equation}$$ 
+
+In analyses where trawl selectivity was considered, the selectivity-corrected numbers $N_{s_{corr,}l,h}$ were used in place of $N_{s,l,h}$ in Eq. $ii$. This correction corrects the catch for trawl escapement. The corrected catch is that expected for an unselective sampling device. Refer to the main text for a description of the selectivity corrections applied.
+
+The mean backscattering cross-section [an areal measure of acoustic scattering in m^2^\; MacLennan et al -@Maclennan_etal_2002] of species $s$ of length class $l$ is:
+
+$$\begin{equation}
+\sigma_{bs_{s,l}}=
+10^\left(0.1\cdot TS_{s,l}
+\right)
+\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eq.}\;iii)
+\end{equation}$$
+
+where $TS$ is the target strength (dB re m^2^) of species *s* at size *l* (Table \@ref(tab:tsrelationships)).
+
+The proportion of backscatter from species $s$ of length class $l$ in haul $h$ ($PB_{s,l,h}$) is computed from the proportion of individuals of species $s$ and length class $l$ estimated from haul $h$ ($P_{s,l,h}$) and their backscattering cross-section: 
+
+$$\begin{equation}
+PB_{s,l,h} =
+\frac{P_{s,l,h}\cdot \sigma_{bs_{s,l}}}
+{\sum_{s,l}\left(
+P_{s,l,h}\cdot \sigma_{bs_{s,l}}
+\right)}
+\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eq.}\;iv)
+\end{equation}$$ 
+
+The measured nautical area backscattering coefficient ($s_{A}$) at interval $i$ was allocated to species $s$ and length $l$ as follows: 
+
+$$\begin{equation}
+s_{A_{s,l,i}}=
+s_{A_i} \cdot PB_{s,l,h}
+\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eq.}\;v)
+\end{equation}$$
+
+where haul $h$ is the nearest haul within a stratum assigned to represent the species composition in a given 0.5 nmi along-track interval $i$. The nearest geographic haul was determined by using the great-circle distance to find the nearest trawl location (defined as the location where the net is at depth and begins to catch fish) out of the pool of hauls assigned to the same stratum (see above for details) closest to the start of interval $i$.
+
+The abundance of species of length $l$ in an area encompassing a series of transect intervals $i$ was estimated from the area represented by that interval ($A_i$, nmi^2^), the mean areal backscatter attributed to species $s$ in given length/size class $l$ ($s_{A_{s,l,i}}$, m^2^ nmi^-2^), and mean backscattering cross-section of species $s$ at that size ($\sigma_{bs_{s,l}}$ m^2^) as follows: 
+
+$$\begin{equation}
+\textrm{Numbers at length} \; l:
+N_{s,l}=
+\sum_i\nolimits
+\left(
+\frac{s_{A_{s,l,i}}}{4\pi\sigma_{bs_{s,l,i}}}
+\times A_i
+\right)
+\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eq.}\;vi)
+\end{equation}$$
+
+
+
+$$\begin{equation}
+\textrm{Biomass at length} \; l:
+B_{s,l}=
+\sum_i\nolimits
+\left(
+W_{s,l} \times N_{s,l,i}
+\right)
+\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eq.}\;vii)
+\end{equation}$$
+
+where $W_{s,l}$ is the mean weight-at-length for species $s$ in each 1-cm length $l$ derived from length-weight regressions. In the case of pollock, when five or more individuals were measured within a length interval, the mean weight at length was used. Otherwise (i.e., for length classes of pollock with \< 5 weight measurements, or other species), weight-at-length was estimated using a linear regression of the natural log-transformed length-weight data [@DeRobertis_Williams_2008].
+
+The abundance at age was computed from $Q_{s,l,j}$, the proportion of $j$-aged individuals of species $s$ in length class $l$, and the abundance of that species and age class in each surveyed interval follows:
+
+$$\begin{equation}
+\textrm{Numbers at age} \; j:
+N_{s,j}=
+\sum_i\nolimits
+\left(
+Q_{s,l,j} \times N_{s,l} 
+\right)
+\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eq.}\;viii)
+\end{equation}$$
+
+
+$$\begin{equation}
+\textrm{Biomass at age} \; j:
+B_{s,j} =
+\sum_i\nolimits
+\left(
+Q_{s,l,j} \times B_{s,l}
+\right)
+\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eq.}\;ix)
+\end{equation}$$
+
+<!-- Set as portrait- this extends back to the last 'block_section' call-->
+`r  block_section(portrait_section)`
+
+<!-- build the TS relationships table: Shelikof (assumption is this will also cover shumagins!)-->
+```{r ts_table, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=7.5}
+tmp_table <- MACEReports::build_ts_relationships_table(ts_relationships_used = ts_relationships_data$TS_RELATIONSHIP)
+
+# print table and caption
+print_table <- set_caption(tmp_table[[1]],
+  caption = tmp_table[[2]],
+  style = "Table Caption",
+  autonum = run_autonum(
+    seq_id = "tab",
+    bkm = "tsrelationships",
+    pre_label = "Table A",
+    post_label = ". -- ",
+    start_at = 1
+  )
+)
+
+flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, print = TRUE)
+
+```
+
+<!-- Set as landscape- this extends back to the last 'block_section' call -->
+`r  block_section(landscape_section)`

@@ -1,0 +1,425 @@
+# METHODS
+
+All activities were conducted aboard the NOAA Ship *Oscar Dyson*, a 64-m stern trawler equipped for fisheries and oceanographic research. The survey followed established AT methods as specified in NOAA protocols for fisheries acoustics surveys and related sampling[^1]. The acoustic units used here are defined in @Maclennan_etal_2002. Survey itineraries are listed in **Appendix I** and scientific personnel in **Appendix II**.
+
+**In `r current_year` (and since 2020), Shelikof Strait has been surveyed a few days earlier in than in most other years because of the relatively high percentages of spawning and spent female pollock observed in the 2017, 2018, and 2019 winter Shelikof Strait surveys. An earlier start date in Shelikof Strait was intended to increase the chances of surveying when most pollock were in the mature (or pre-spawning) stage, a timing consistent with most prior surveys.**
+
+[^1]: National Marine Fisheries Service (NMFS) 2014. NOAA protocols for fisheries acoustics surveys and related sampling (Alaska Fisheries Science Center), 26 p. Prepared by Midwater Assessment and Conservation Engineering Program, Alaska Fish. Sci. Center, Natl. Mar. Fish. Serv., NOAA.
+
+## Acoustic Equipment, Calibration, and Data Collection
+
+Acoustic measurements were collected with a Simrad EK80 scientific echosounder [@Bodholt_Solli_1992; @Simrad_2018]. Data were collected with five split-beam transducers (18, 38, 70, 120, and 200 kHz) mounted on the bottom of the vessel’s retractable centerboard, which was extended 9.15 m below the water surface. 
+
+Two standard sphere acoustic system calibrations were conducted to measure acoustic system performance (Table \@ref(tab:caltable)). The vessel’s dynamic positioning system was used to maintain the vessel location during calibration. Local water temperature and salinity were measured and used to estimate absorption and sound speed. A tungsten carbide sphere (38.1 mm diameter) suspended below the centerboard-mounted transducers was used to calibrate the 38, 70, 120, and 200 kHz systems. **The tungsten carbide sphere was then replaced with a 64 mm diameter copper sphere to calibrate the 18 kHz system.** A two-stage calibration approach was followed for each frequency. On-axis sensitivity (i.e., transducer gain and s~A~ correction) was estimated from measurements with the sphere placed in the center of the beam following the procedure described in @Foote_etal_1987. Transducer beam characteristics (i.e., beam angles and angle offsets) were estimated by moving the sphere in a horizontal plane using the EK80’s calibration utility [@Jech_etal_2005; @Simrad_2018]. The equivalent beam angle (for characterizing the volume sampled by the beam) and angle sensitivities (for conversion of electrical to mechanical angles) cannot be estimated from the calibration approach used because that requires knowledge of the absolute position of the sphere [see @Demer_etal_2015]. Therefore, the factory default values for equivalent beam angle and angle sensitivities for each transducer were used during calibration.
+
+Raw acoustic data were recorded using EK80 software (version `r EK80_version`) at a nominal ping interval of **1.1 second at water depths < 275m and 2.5 seconds or longer at water depths > 275 m**, and analyzed from 16 m below the sea surface to within 0.5 m of the sounder-detected bottom to a maximum depth of `r max_depth` m. Data shallower than 16 m were excluded to account for the acoustic near-field range of all transducers [@Simmonds_and_MacLennan_2005]. Data within 0.5 m of the seafloor were also excluded to account for the bottom-associated acoustic dead zone [@Ona_and_Mitson_1996]. The raw acoustic data were analyzed using Echoview post-processing software (version `r echoview_version`, Echoview Software Pty Ltd).
+
+## Trawl Gear and Oceanographic Equipment
+
+```{r fishing_gear_summary, echo = FALSE, message=FALSE, warning=FALSE}
+
+# since this is for the winter GOA report, set this param here- for some conditionals below
+season_survey <- "winter GOA"
+
+# report fishing stats from all winter GOA surveys conducted together
+
+#summarize the parameters for the text  
+fishing_parameters_summary = net_statistics_data%>%
+  group_by(GEAR)%>%
+  #get the average trawl speed (nmi), net openings (m)
+  summarize(avgTrawlSp_nmi = mean(SOG, na.rm =  TRUE),
+            minVertOpen_m = min(NET_VERTICAL_OPENING, na.rm =  TRUE),
+            maxVertOpen_m = max(NET_VERTICAL_OPENING, na.rm =  TRUE),
+            avgVertOpen_m = mean(NET_VERTICAL_OPENING, na.rm =  TRUE),
+            n_trawls =  n())%>%
+  #and convert to average trawl speed (m/s), net openings (ft)
+  mutate(avgTrawlSp_ms = avgTrawlSp_nmi *  0.51444444444444,
+         minVertOpen_ft = minVertOpen_m * 3.28084,
+         maxVertOpen_ft = maxVertOpen_m * 3.28084,
+         avgVertOpen_ft = avgVertOpen_m * 3.28084)
+
+#build a sentence that describes bottom trawl used during the survey
+bt_text = " "
+if(length(unique(fishing_parameters_summary$GEAR))>1){
+  if(any(fishing_parameters_summary$GEAR == 'PNE')) { 
+    bt_text = "Near-bottom backscatter was sampled with a poly Nor’eastern (PNE) bottom trawl, which is a 4-panel high-opening trawl equipped with roller gear and constructed with mesh sizes that range from 13 cm (5 in.) in the forward portion of the net to 8.9 cm (3.5 in.) in the codend. The PNE codend was also fitted with a heavy delta nylon 12.7 mm (1/2 in.) mesh, 6.4 mm (1/4 in.) square opening codend liner. Detailed specifications are described in @Guttormsen_et_al_2010." }
+  if(any(fishing_parameters_summary$GEAR == '83-112')) { 
+    bt_text = "Near-bottom backscatter was sampled with an 83-112 Eastern bottom trawl without roller gear and fitted with a heavy delta nylon 12.7 mm (1/2 in.) mesh, 6.4 mm (1/4 in.) square opening codend liner. Detailed specifications are described in @Honkalehto_et_al_2002."
+  }
+}
+
+#build a paragraph to include Methot: DAVE: no need here, we get it later in the paragraph.
+#methot_text = 
+
+#to make things easier in text below, make separate dataframes for each gear type
+lfs_summary = fishing_parameters_summary%>%
+  filter(GEAR == 'LFS1421')
+
+bt_summary = fishing_parameters_summary%>%
+  filter(GEAR %in% c('PNE','83-112'))
+
+methot_summary = fishing_parameters_summary%>%
+  filter(GEAR == 'Methot')
+
+#Tomweight summary assumes you only have one midwater net! Should be a fine assumption for a while, but you'd 
+#have to make some modifications if you want to add to older survey reports that contained an AWT. It will summarize
+#LFS and BT hauls as is now.
+
+#get the tomweights used- in lbs 
+tomweights_used_lb = unique(as.numeric(net_statistics_data$TOMWEIGHT_LB))
+
+#occasionally- there will be an NA for tomweights used (user forgot, or a bottom trawl). Exclude these cases
+tomweights_used_lb = tomweights_used_lb[!is.na(tomweights_used_lb)]
+
+#also convert to kg
+tomweights_used_kg = tomweights_used_lb * 0.453592
+
+#build a description of LFS tomweights used, depending on if a single set or multiple sets were used
+if (length(tomweights_used_lb) == 1 ){
+  
+  tomweights_descrip = paste0('and ', print_n_decimal(tomweights_used_kg, 0), ' kg (', print_n_decimal(tomweights_used_lb, 0), ' lb) tom weights attached to each wingtip')
+  
+}
+
+if (length(tomweights_used_lb) > 1 ){
+  
+  #add the kg/lb totals together in a single statement to print
+  tomweights_list = paste0(print_n_decimal(tomweights_used_kg, 0), ' kg (',  print_n_decimal(tomweights_used_lb, 0), ' lb)')
+  
+  tomweights_descrip = paste0('and either ',  combine_words(tomweights_list, and  = ' or '), ' tom weights attached to each wingtip')
+  
+}
+
+#we often only have one if we only have one bottom trawl- don't report the range of vertical openings, just the value
+if (nrow(bt_summary) > 0){
+  if (bt_summary$n_trawls == 1){
+    bt_statement = paste0('The vertical net opening of the bottom trawl averaged ',print_n_decimal(bt_summary$avgVertOpen_m, 1), ' m (',  print_n_decimal(bt_summary$avgVertOpen_ft, 1), ' ft).')
+  }
+  if (bt_summary$n_trawls > 1){
+    bt_statement = paste0('The vertical net opening of the bottom trawl ranged from ', print_n_decimal(bt_summary$minVertOpen_m, 1), ' to ', print_n_decimal(bt_summary$maxVertOpen_m, 1), ' m (',print_n_decimal(bt_summary$minVertOpen_ft, 1), ' to ', print_n_decimal(bt_summary$maxVertOpen_ft, 1), ' ft) and averaged ',print_n_decimal(bt_summary$avgVertOpen_m, 1), ' m (',  print_n_decimal(bt_summary$avgVertOpen_ft, 1), ' ft).')
+  }
+  
+}
+
+#if no bottom trawls, nothing to report!
+if (nrow(bt_summary) == 0){
+    bt_statement = ''
+}
+
+#build a statement for Methot trawls if they were conducted
+if(nrow(methot_summary)>0){
+  methot_statement = paste0("A Methot trawl [@Methot_1986] was used to target midwater acoustic layers containing macro-zooplankton such as euphausiids, age-0 walleye pollock, and other larval fishes. The Methot trawl had a rigid square frame measuring 2.3 m (7.5 ft) on each side, which formed the mouth of the net. The body of the net consisted of nylon 63.5 mm (2.5 in.) mesh material, lined with delta nylon 1/8 in. mesh material with 2 mm x 3 mm oval openings, and attached to a hard plastic codend bucket lined with 1 mm x 1 mm square opening mesh. A 1.8 m (5.9 ft) dihedral depressor was used to generate additional downward force. A calibrated General Oceanics flowmeter was attached to the mouth of the net; the number of flowmeter revolutions and the total time the net was in the water was used to determine the volume of water filtered during the haul. The Methot trawl was attached to a single cable fed through a stern-mounted A-frame. Real-time haul depths were monitored using a Simrad ITI acoustic link temperature-depth sensor attached to the bottom of the Methot frame. The Methot trawl was towed at an average speed of ",print_n_decimal(methot_summary$avgTrawlSp_ms, 1)," m s^-1^ (",print_n_decimal(methot_summary$avgTrawlSp_nmi, 1)," knots).  ")
+}
+
+#if no Methot trawls, nothing to report!
+if (nrow(methot_summary) == 0){
+    methot_statement = ''
+}
+
+#build a statement for Methot trawl processing if methots were conducted
+if(nrow(methot_summary)>0){
+  methot_processing_statement = "The catch from Methot trawl hauls was transferred to a large tote. Large organisms (such as jellyfish) and small fishes were removed, identified, weighed, and measured. The remainder of the plankton catch was placed on a 1 mm mesh screen to remove excess water and weighed. A subsample of the zooplankton mixture was then weighed and sorted into broad taxonomic groups for which a count and weight were determined. A second subsample was weighed and preserved in a 5% buffered formalin solution for more detailed enumeration at the Polish Sorting Center in Szczecin, Poland."
+}
+
+#if no Methot trawls, nothing to process!
+if (nrow(methot_summary) == 0){
+    methot_processing_statement = ''
+}
+
+#build a statement if pocketnets were attached to the LFS
+# *** IMPORTANT: make sure 'pocketnets_used' has been added & specified as TRUE or FALSE in the 'main_cruise_report.Rmd' after 'ship'
+if(pocketnets_used == TRUE){
+  pocketnet_statement = "To estimate escapement of smaller fishes from the net, recapture (or pocket) nets were placed at several locations along the LFS1421 net as done during previous surveys [@Williams_etal_2010; @Honkalehto_etal_InPrep]. The LFS1421 trawl was fitted with a total of nine recapture nets placed on forward (813 mm mesh), mid (102 mm mesh), and aft (102 mm mesh) sections of the trawl, with one recapture net attached on the top, bottom, and port panel of each section. The recapture nets were constructed from knotless nylon 7.9 mm (5/16 in.) mesh, 3.2 mm (1/8 in.) square opening mesh material (matching the codend liner).  "
+}
+
+#if no pocketnets, nothing to report!
+if(pocketnets_used == FALSE){
+  pocketnet_statement = ''
+}
+
+if(season_survey == c("winter GOA")){
+#report the amount of time each SST sensor was used 
+
+  if (isTRUE(current_shumagins_survey)){
+    shumagins_sst_sensor_stats = scs_stats[scs_stats$SURVEY == survey_shumagins,]
+    
+    #report the amount it was used in each survey
+    shumagins_percent_primary_sentence = paste0('The SBE 38 was used ',round(shumagins_sst_sensor_stats$percent_primary_sensor, 1) , '% of the time in the Shumagin Islands survey.')
+  }
+  
+  if (!isTRUE(current_shumagins_survey)){
+    #report the amount it was used in each survey
+    shumagins_percent_primary_sentence = ''
+  }
+
+}
+### CTD statement by season and survey area
+if(season_survey == c("winter GOA")){
+  CTD_statement <- "the calibration site"
+}
+if(season_survey == "summer GOA"){
+  
+  CTD_statement <- "the calibration site and throughout the survey to describe EBS shelf temperature features associated with pollock and euphausiids. CTD casts were made at either the closest point along a survey transect to 7 nominal stations located in the survey area or the ship's location after sunset each day; these loctions were selected to provide a systematic, representative set of water column observations (P. Stabeno, PMEL, pers. commun.) to complement SBE profiles. This sampling strategy is repeatable each survey year with minimal impact on other survey operations. Salinity bottle samples (e.g., one bottle every other day, alternating at surface and bottom of cast) were collected from the casts to calibrate the CTD conductivity sensor"
+  
+}
+
+if(season_survey == "summer EBS"){
+
+    CTD_statement <- "the calibration site and throughout the survey to describe EBS shelf temperature features associated with pollock and euphausiids. CTD casts were made at the closest point along a survey transect to 16 of 16 nominal stations located in the core area and 4 of 4 nominal stations located in the northern extension, selected to provide a systematic, representative set of water column observations (P. Stabeno, PMEL, pers. commun.) to complement SBE profiles. This sampling strategy is repeatable each survey year with minimal impact on other survey operations. Salinity bottle samples (e.g., one bottle every other day, alternating at surface and bottom of cast) were collected from the casts to calibrate the CTD conductivity sensor"
+
+}
+
+# also find the previous Shelikof survey
+if (season_survey == "winter GOA"){
+  
+  # this assumes the last time we surveyed had a Shelikof survey!
+  previous_survey_years <- historical_selectivity_corrected_params %>%
+    mutate(year = substr(surveys, 1, 4)) %>%
+    arrange(year)
+  
+  previous_survey_year <- previous_survey_years$year[length(previous_survey_years$year) - 1]
+  
+}
+
+
+```
+
+Midwater and near-bottom acoustic backscatter was sampled using an LFS1421 trawl[^2]. The headrope and footrope of the LFS1421 trawl each measure 76.8 m (252 ft), with meshes tapering from 650 cm (256 in.) in the forward sections to 3.8 cm (1.5 in.) in the section immediately preceding the codend (mesh sizes are stretched measurements unless otherwise noted). To increase retention of small organisms, the LFS1421 codend is fitted with a knotless nylon 7.9 mm (5/16 in.) mesh, 3.2 mm (1/8 in.) square opening codend liner. `r bt_text`
+
+The LFS1421 trawl was fished with four 45.7 m (150 ft) bridles (1.9 cm (0.75 in.) dia.), 5 m^2^ Series-2000-V trawl doors with 4" shoes (918 kg (2,024 lb) each), `r tomweights_descrip`. Average trawling speed was `r print_n_decimal(lfs_summary$avgTrawlSp_ms, 1)` m s^-1^ (`r print_n_decimal(lfs_summary$avgTrawlSp_nmi, 1)` knots). LFS1421 trawl vertical net openings and headrope depths were monitored with a Simrad FS70 third-wire netsonde attached to the headrope. The vertical net opening of the LFS1421 trawl ranged from `r  print_n_decimal(lfs_summary$minVertOpen_m, 1)` to `r print_n_decimal(lfs_summary$maxVertOpen_m, 1)` m (`r print_n_decimal(lfs_summary$minVertOpen_ft, 1)` to `r print_n_decimal(lfs_summary$maxVertOpen_ft, 1)` ft) and averaged `r print_n_decimal(lfs_summary$avgVertOpen_m, 1)` m (`r print_n_decimal(lfs_summary$avgVertOpen_ft, 1)` ft) while fishing. `r ifelse(nrow(bt_summary)>0, paste0("Average trawling speed for the bottom trawl was ", print_n_decimal(bt_summary$avgTrawlSp_ms, 1)," m s^-1^ (", print_n_decimal(bt_summary$avgTrawlSp_nmi, 1)," knots). Bottom trawl vertical net openings and seafloor contact were monitored with a Furuno CN-24 netsounder system mounted on the headrope. ",bt_statement),"")`
+
+`r methot_statement`
+
+`r pocketnet_statement`
+
+A stereo camera system [Camtrawl\; Williams et al. -@Williams_etal_2010] was attached to the starboard panel forward of the codend on the LFS1421 trawl. The Camtrawl is used to capture stereo images for species identification and length measurement of individual fish and other taxa as they pass through the net toward the codend. The Camtrawl data are useful for determining the depth and size distribution of fish and other taxa when distinct and separate backscatter layers are sampled by a trawl haul but cannot be differentiated in the codend catch. Images are viewed and annotated using procedures described in @Williams_etal_2010. 
+
+Physical oceanographic data is collected during the cruise at trawl locations, at calibration locations, and continuously along transects. Water temperature profiles are obtained at trawl locations with a temperature-depth probe (SBE 39, Sea-Bird Scientific) attached to the trawl headrope. Additional temperature-depth measurements were taken from conductivity-temperature-depth (CTD) casts with a Sea-Bird CTD (SBE 911plus) system **at `r CTD_statement`.** Sea surface temperature data are measured using the ship’s sea surface temperature system (SBE 38, Sea-Bird Scientific, accuracy $\pm$ 0.002°C) located near the ship’s bow, approximately 1.4 m below the surface. At times when the SBE 38 was not operating, sea surface temperatures are taken from the Furuno T-2000 temperature probe (accuracy $\pm$ 0.2°C) located amidships 1.4 m below the surface. The SBE 38 was used `r round(ifelse(season_survey=="winter GOA", scs_stats$percent_primary_sensor[scs_stats$SURVEY == survey_shelikof], sst_sensor_stats$percent_primary_sensor), 1)`% of the time and the Furuno was used `r 100 - round(ifelse(season_survey=="winter GOA", scs_stats$percent_primary_sensor[scs_stats$SURVEY == survey_shelikof], sst_sensor_stats$percent_primary_sensor), 1)`% of the time in `r ifelse(season_survey=="winter GOA","the Shelikof Strait","this")` survey. `r ifelse(season_survey=="winter GOA", shumagins_percent_primary_sentence,'')` These and other environmental data were recorded using the ship’s Scientific Computing Systems (SCS). 
+
+[^2]: LFS1421 trawl (LFS Marine, NOAA, 1421 Research Trawl, designed and built in 2018/2019 to MACE specifications; hereafter LFS1421)
+
+## Survey Design
+
+The survey consisted of a series of parallel transects except in areas where it was necessary to reorient transects to maintain a perpendicular alignment to the isobaths or navigate around landmasses. Spatial coverage and predetermined transect location and spacing were chosen to be consistent with previous surveys. **The planned transect start and end locations matched those from `r previous_survey_year`, encompassing the largest area that has been historically sampled within Shelikof Strait in winter. The survey was conducted 24 hours per day.**
+
+Trawl hauls were conducted to identify the species and size composition of acoustically-observed fish aggregations and to determine biological characteristics of pollock and other specimens. Catches were sorted to species and weighed. When large numbers of juvenile and adult pollock were encountered, the predominant size groups in the catch were sampled separately (e.g., age-1 vs. larger sizes). Fork length (FL), body weight, sex (FL \> 20 cm), maturity, age (otoliths), and gonad measurements were collected for a random subset of pollock within each size group. Pollock and other fishes were measured to the nearest 1 mm FL, or standard length (SL) for small specimens, with an electronic measuring board [@Towler_Williams_2010]. All lengths measured as SL were converted to FL using an SL to FL regression obtained from historic survey data when necessary. Other invertebrate organisms (e.g., jellyfish, squid) were measured to the nearest 1 mm length using accepted measurements for their class (e.g., jellyfish bell diameter, squid mantle length). Gonad maturity was determined by visual inspection and categorized as immature, developing, mature (hereafter, “pre-spawning”), spawning, or spent[^3]. The ovary weight was determined for pre-spawning females. An electronic motion-compensating scale (Marel M60) was used to weigh individual pollock and selected ovaries to the nearest 2 g. Otoliths that were collected were stored in 50% glycerin/thymol/water solution and interpreted by AFSC Age and Growth Program researchers to determine fish ages. Trawl station information and biological measurements were electronically recorded using the MACE Program’s custom Catch Logger for Acoustic Midwater Surveys (CLAMS) software.
+
+`r methot_processing_statement`
+
+[^3]: Groundfish Survey and Species Codes. 2019. RACE Division, AFSC, NMFS, NOAA; 7600 Sand Point Way NE, Seattle, WA 98115. <https://doi.org/10.25923/kp5e-1g02>.
+
+Additional biological samples were collected for special projects. Pollock ovaries were collected from pre-spawning walleye pollock to investigate interannual variation in fecundity of mature females (Sandi Neidetcher, Sandi.Neidetcher@noaa.gov), and from female walleye pollock of all maturity stages for a histological study. Fin clips were taken from pollock to investigate the genetic population structure within spawning stocks (Ingrid Spies, Ingrid.Spies@noaa.gov), and gill tissues from pollock and Pacific cod (*Gadus microcephalus*) were collected for an evolutionary marker analysis (Einar Arnason, einararn@hi.is). Blood and tissue samples were also taken from pollock and cod to investigate the prevalence of antifreeze proteins (Chi-Hing Christina Cheng, c-cheng@illinois.edu).
+
+## Data analysis
+
+Pollock abundance was estimated by combining acoustic and trawl catch information. The analysis method employed here had three principal steps. First, backscatter was associated with the trawl catches from the nearest geographic haul locations within a stratum. Second, a correction was made for net selectivity [escapement from the midwater net, based on relationships derived from recapture nets\; Williams et al. -@Williams_etal_2011]. Third, backscatter was converted to estimates of abundance using the nearest-haul catch association (step 1) with sample corrections (step 2) and the expected backscatter from each organism given species and size. Biomass was computed from abundance using the mean weight-at-length from all pollock specimens measured in the survey.
+
+*Processing of acoustic data*
+
+Although acoustic data were recorded at five frequencies, the results of this report and the survey time series are based on the 38 kHz data. The sounder-detected bottom was calculated by averaging the bottom detections for the five frequencies [@Jones_DeRobertis_Williamson_2011] and then visually examined to remove any bottom integrations. A minimum S~v~ threshold of --70 dB re 1 m^-1^ was applied to the 38 kHz acoustic data, which were then echo-integrated from 16 m below the surface to 0.5 m above the sounder-detected bottom. Data were averaged at 0.5 nmi horizontal by 10 m vertical resolution intervals and exported to a database.
+
+*Associating size and species composition with acoustic backscatter*
+
+Acoustic backscatter was assigned to strata based on the appearance and vertical distribution of the aggregations in the echogram. Strata containing backscatter not considered to be from pollock (e.g., the near-surface mixture of unidentifiable backscatter, backscatter with frequency response indicative of euphausiids or myctophids [@DeRobertis_et_al_2010], or near-bottom backscatter “haystack” morphology indicative of some rockfishes that could not be sampled) were excluded from further analyses. Each trawl was associated with a stratum, and the backscatter at a given location was associated with the species and size composition of the geographically-nearest haul within that stratum [see De Robertis et al. -@DeRobertis_et_al_2017b for details]. For example, juvenile pollock can be found in shallow, dense schools with a diffuse layer of adult pollock at deeper depths in the same area. In this case, the backscatter dominated by aggregations of juveniles would be assigned to a shallow stratum (A) and the backscatter dominated by adult layers would be assigned to a deep stratum (B). Hauls that sampled the shallow layer would be assigned to stratum A, and hauls that sampled the deeper layer would be assigned to stratum B. Backscatter was apportioned by species and size within a stratum using the selectivity-corrected catch composition from the geographically-nearest trawl in that stratum and converted to abundance. 
+
+*Accounting for catch from non-targeted scattering layers*
+
+As noted above, each trawl was associated with an acoustic stratum. However, trawls may capture animals while passing through non-targeted strata during the trawling process. For example, a trawl targeting a deep stratum may capture acoustically-relevant animals while passing through a shallower stratum during set and retrieval. Because trawls aggregate catch from all the strata sampled, animals from the shallow stratum could then be associated incorrectly with the deeper stratum during analysis. These animals should not be included in the catch that is applied to the deeper stratum.
+
+To avoid incorrectly applying catch from different strata, Camtrawl images collected during LFS1421 trawls were used to identify catch depth and location in the water column. Camtrawl images were captured at a rate of approximately 1 s^-1^ and each image was tagged with collection time and depth. Analysts visually identified and counted animals present in every 100^th^ image (approximately one image per 1.5 minute of trawl time) using SEBASTES Stereo Image Analysis software [@Williams_etal_2016]. For every examined image, the analyst identified all visible fish to the lowest taxonomic level possible, and identified invertebrates to broad taxonomic group (i.e., ‘jellyfish’, ‘squid’, ‘shrimp’). Images were then examined using custom Python applications to identify cases where the trawl retained catch from non-targeted layers. In cases where it was evident that the trawl catch contained acoustically- relevant species and/or size classes from outside of the target stratum, these species and/or size class records were excluded during the analysis process from the trawl catch associated with the target stratum [see Figures 3 and 4 in Levine et al. -@Levine_etal_InPrep for a summary of the review process].
+
+*Selectivity Correction*
+
+Previous research has found that smaller pollock are less likely to be retained in large midwater trawls than larger pollock [@Williams_etal_2011]. To correct for species- and size-related differences in retention, trawl catch compositions were adjusted to that which would be expected from an unselective net. Trawl selectivity was estimated using correction functions developed from catch data collected by recapture nets mounted on the midwater trawl. Net selectivity corrections to trawl species and size composition estimates have been incrementally implemented to winter Shelikof Strait AT surveys conducted since 2008 based on the survey vessel, how backscatter was allocated to species, and the type of midwater net used in the survey [@Lauffenburger_etal_2019; @Stienessen_etal_2019; @Honkalehto_etal_InPrep; @McCarthy_etal_2022]. Trawl selectivity in the `r current_year` survey was estimated for all species observed in the codend using correction functions developed from catch data collected by recapture nets mounted on the LFS1421 trawl during the 2020 and 2021 winter Shelikof Strait AT surveys [see Appendix IV in Honkalehto et al. -@Honkalehto_etal_InPrep]. No selectivity correction has been estimated for the bottom trawl. The counts and weights of fish and other taxa caught in the recapture nets were expanded to provide an estimate of escapement from the entire trawl. The catch of all species was corrected for the estimated probability of escapement by dividing the abundance of a given species and size class by the estimated probability of retention of that species and size class. The probability of retention was calculated using either species-specific trawl selectivity correction functions for the most abundant species or more generic selectivity functions for less abundant species that were pooled together [De Robertis et al. -@DeRobertis_et_al_2017b; Honkalehto et al. -@Honkalehto_etal_InPrep]. Thus, the `r current_year` survey estimates reflect adjustments to the trawl-derived estimates of species and size composition which incorporate the estimated escapement of all organisms from the catch [e.g., De Robertis et al. -@DeRobertis_et_al_2017a].
+
+*Abundance Calculations*
+
+```{r abundance_over_5_percent, echo = FALSE, message=FALSE, warning=FALSE}
+
+if(season_survey=="winter GOA"){
+#in the Shelikof survey, check which species are over 5% by weight or numbers
+#This should be updated in future- right now, the 5% rule is based on CATCH only, but it should be based on the 
+#actual calculated abundance if we keep using it...
+
+  if (isTRUE(current_shumagins_survey)){
+    
+    shumagins_over_5 = catch_table_data%>%
+      # limit to regions that are typically in the Shumagins
+      filter(region %in% c("Shumagin Islands", "Sanak Trough", "Morzhovoi Bay", "Pavlof Bay")) %>%
+      #sum catch across all gear types
+      group_by(SPECIES_CODE, COMMON_NAME, SCIENTIFIC_NAME)%>%
+      summarize(sp_wt = sum(TOT_WEIGHT),
+                sp_num = sum(TOT_NUMBER))%>%
+      group_by()%>%
+      mutate(percent_weight = sp_wt/sum(sp_wt) * 100,
+             percent_num = sp_num/sum(sp_num) * 100)%>%
+      #keep the over 5% species
+      filter(percent_weight > 5 | percent_num > 5)%>%
+      #order by weight
+      arrange(desc(percent_weight))%>%
+      #get 'nice' names to print
+      mutate(sp_name = map_chr(COMMON_NAME, print_species_name))
+      
+      #report which were over 5%
+      shumagins_over_5_statement = paste0('In the ', current_year, ' Shumagins survey, ', combine_words(shumagins_over_5$sp_name), ' contributed more than 5% of the catch in 2021 by weight or numbers.')
+    
+  }
+
+
+  shelikof_over_5 = catch_table_data%>%
+    # limit to regions typically surveyed in the Shelikof survey
+    filter(region %in% c("Marmot Bay", "Shelikof Strait", "Chirikof Shelfbreak")) %>%
+    #sum catch across all gear types
+    group_by(SPECIES_CODE, COMMON_NAME, SCIENTIFIC_NAME)%>%
+    summarize(sp_wt = sum(TOT_WEIGHT),
+              sp_num = sum(TOT_NUMBER))%>%
+    group_by()%>%
+    mutate(percent_weight = sp_wt/sum(sp_wt) * 100,
+           percent_num = sp_num/sum(sp_num) * 100)%>%
+    #keep the over 5% species
+    filter(percent_weight > 5 | percent_num > 5)%>%
+    #order by weight
+    arrange(desc(percent_weight))%>%
+    #get 'nice' names to print
+    mutate(sp_name = map_chr(COMMON_NAME, print_species_name))
+  
+    #keep only the relationships that are in the current survey- this should find matches semi-flexibly and not miss small changes in TS naming conventions
+  check_ts = function(ts_relationship){
+    
+    #find the matching relationship
+    ts_match = ts_relationships_data$TS_RELATIONSHIP[which(str_detect(ts_relationships_data$TS_RELATIONSHIP, ts_relationship))]
+    
+    #if there's a match, return the species name, if not, return NA
+    return(ifelse(length(ts_match) == 1, ts_relationship, NA))
+  }
+  
+  #check all the availble relationships for a match
+  ts_applied = map_chr(shelikof_over_5$sp_name, check_ts)
+  
+  #and print all the non-NA cases
+  ts_applied = ts_applied[!is.na(ts_applied)]
+
+}
+
+```
+
+A series of target strength (TS, dB re 1 m^2^; the expected backscatter from each organism) to length relationships from the literature (Table A\@ref(tab:tsrelationships)) were used along with size and species distributions from selectivity-corrected trawl catches to estimate the proportion of the observed acoustic scattering attributable to each of the species captured in the trawls **(Appendix III)**. For species for which the TS-length relationship was derived using a different length measurement type than the one used for measuring the trawl catch specimens, an appropriate length conversion was applied (e.g., total length to fork length). Species-specific TS-length relationships from the literature were used for pollock, Pacific capelin, eulachon, Pacific herring, and for any species whose contribution to the total backscatter used in survey estimates was \> 5%. Otherwise, species were assigned to one of five group TS-length relationships: fishes with swim bladders, fishes without swim bladders, jellyfish, squid, and pelagic crustaceans (Table A\@ref(tab:tsrelationships)).
+
+Biomass was computed from abundance using the mean weight-at-length from all pollock specimens included in the length-weight key, which in winter is typically all specimens lengthed and weighed in the survey trawl catches **(Appendix III)**. When \< 5 pollock occurred within a 1-cm length interval, weight at a given length interval was estimated from a linear regression of the natural logs of the length and weight data and corrected for a small bias due to back-transformation [**Appendix III**\; Miller -@Miller_1984; De Robertis and Williams -@DeRobertis_Williams_2008].
+
+An age-length key and a proportion-at-age matrix were applied to the population numbers-at-length and biomass-at-length to estimate numbers and biomass at age [**Appendix III**\; Jones et al. -@Jones_etal_2019]. For population estimates at lengths where no otolith specimens were collected, the proportion-at-age was estimated using a Gaussian-model approach based on historical age-at-length data (2000–2014).
+
+
+*Processing of maturity data*
+
+Maturity data by haul were weighted by the local acoustically-estimated abundance of adult pollock (number of individuals \> 30 cm FL). The 30 cm size criterion was selected as the approximate minimum size at which \≥ 5% of pollock are mature. The sum of the local abundance, $A_h$, assigned to the geographically-nearest haul was computed. A weight, $W_h$, was then assigned to each haul by dividing the local abundance $A_h$ by the average abundance per haul $\overline{A}$:
+
+$$\begin{equation}
+W_{h} =
+\frac{A_h}{\overline{A}}
+\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eqn}\;1)
+\end{equation}$$ 
+
+where 
+
+$$\begin{equation}
+\overline{A}=
+\frac{\sum_h\;A_h}{H}
+\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eqn}\;2)
+\end{equation}$$ 
+
+and $H$ is the total number of hauls.
+
+The percent of pollock, $PP_{sex,mat}$ \> 40 cm by sex and maturity stage (immature, developing, pre-spawning, spawning, or spent) was computed for each haul and combined by survey area using a weighted average with $W_h$:
+
+$$\begin{equation}
+PP_{sex,mat} =
+\frac{\sum_h\left(N_{sex,mat,h} \cdot W_h \right)}{\sum_h W_h}
+\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eqn}\;3)
+\end{equation}$$
+
+where $N_(sex,mat,h)$ is the number of pollock \> 40 cm by sex and maturity for each haul. The \> 40 cm cutoff is used for consistency with reporting from past surveys. 
+
+For each haul, the number of female pollock considered mature (pre-spawning, spawning, or spent) and immature (immature or developing) were determined for each cm length bin. The length at 50% maturity ($L50$) was estimated for female pollock as a logistic regression using a weighted generalized linear model following @Williams_2007 with the inclusion of the haul weights, $W_h$, into the model [function glm, @R_software]. 
+
+The gonadosomatic index, $GSI_h$, (GSI: ovary weight/total body weight) was calculated for pre-spawning females in each haul and then a weighted average was computed for each survey area with $W_h$:
+
+$$\begin{equation}
+GSI = \frac{
+\sum_h\left(GSI_h \cdot W_h \right)}
+{\sum_h W_h}
+\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eqn}\;4)
+\end{equation}$$
+
+*Relative estimation error*
+
+Transects were parallel and relative estimation errors for the acoustic-based estimates were derived using a one-dimensional (1-D) geostatistical method [@Petitgas_1993; @Williamson_Traynor_1996; @Walline_2007]. "Relative estimation error" is defined as the ratio of the square root of the 1-D estimation variance ($variance_{sum}$) to the biomass estimate (i.e., the sum of biomass over all transects, $biomass_{sum}$, kg): 
+
+$$\begin{equation}
+Relative\;estimation\;error_{1-D} = 
+\frac{\sqrt{variance_{sum}}}{biomass_{sum}}
+\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eqn}\;5)
+\end{equation}$$ 
+
+Because sampling resolution affects the variance estimate, and the 1-D method assumes equal transect spacing, estimation variance was determined separately in each area with unique transect spacing. Relative estimation error for an entire survey area (among $n$ survey areas with different transect spacings) was computed by summing the estimation variance for each area $j$, taking the square root, and then dividing by the sum of the biomass over all areas, assuming independence among estimation errors for each survey area [@Rivoirard_et_al_2000]: 
+
+$$\begin{equation}
+Relative\;estimation\;error_{1-D\ survey} = 
+\frac{\sqrt{\sum_{j=1}^{n} variance_{sum_j}}}
+{\sum_{j=1}^{n} biomass_{sum_j}}
+\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eq.}\;6)
+\end{equation}$$
+
+Geostatistical methods were used to compute estimation error as a means to account for estimation uncertainty arising from the observed spatial structure in the fish distribution. These errors, however, quantify only across-transect sampling variability of the acoustic data [@Rivoirard_et_al_2000]. Other sources of error (e.g., target strength, trawl sampling) were not evaluated.
+
+*`r ifelse(season_survey=="summer EBS","","Spatial patterns analysis")`*
+
+```{r spatial_patterns_analysis, echo = FALSE, message=FALSE, warning=FALSE}
+
+### Describe how geostats are calculated for each survey in the GOA - currently not completed for EBS
+if(season_survey == "winter GOA"){
+  spatial_patterns_statement <- paste0("To examine pollock horizontal distribution relative to prior surveys, geostatistical measures of the mean location (center of gravity, COG) and dispersion of the distribution around its COG (inertia) were calculated for each survey from 2008–",current_year," [@Woillez_et_al_2007]. To account for interannual changes in survey coverage, COG and inertia were estimated using acoustic samples located within a standardized area of Shelikof Strait based on a minimum convex polygon that encompasses 95% of all samples collected between 2008 and ",current_year,". The minimum convex polygon was estimated using the smoothed cross-validation bandwidth selector and kernel density estimator functions in the 'KS' R package [@Duong_2022]. COG and inertia were calculated using the 'RGeostats' R package [@MINES_ParisTech_2021].")
+}
+
+if(season_survey == "summer GOA"){
+  spatial_patterns_statement <- paste0("To examine pollock horizontal distribution relative to prior surveys, geostatistical measures of the mean location (center of gravity, COG) and dispersion of the distribution around its COG (inertia) were calculated for each survey from 2013–",survey_year," [@Woillez_et_al_2007]. To account for interannual changes in survey coverage, COG and inertia were estimated using acoustic samples located within a standardized area of each NMFS management area based on a polygon that encompasses all samples collected between 2013 and ",survey_year," and was manually corrected to exclude land features. COG and inertia were calculated using the 'RGeostats' R package [@MINES_ParisTech_2021].")
+}
+
+```
+
+`r spatial_patterns_statement`
+
+*Additional Analyses*
+
+A ‘no-selectivity’ analysis was conducted to estimate the effect of the selectivity corrections used in the ‘primary’ analysis on the numbers and biomass of pollock and other target species. The no-selectivity analysis was the same as the primary analysis described above, except that it did not include a selectivity correction (i.e., trawl selectivity $S_l$ for each cm length class $l$ of all species or species group was set to 1 [see Eqn. x, Appendix IV in Jones et al. -@Jones_etal_2022].
+
+Pollock vertical distribution patterns were examined using two metrics: 1) mean weighted depth (MWD) of pollock from the surface-referenced primary analysis, and 2) height above bottom (HAB) calculated from a ‘bottom-referenced’ analysis in which pollock vertical position was measured in terms of distance above the seafloor. The MWD in each along-track interval *i* is computed as:
+
+$$\begin{equation}
+MWD_i =
+\sum\!\ _j
+\Biggl(
+\biggl(
+\frac{B_{i,j}}{\sum_j B_{i,j}}
+\biggr)
+d_{i,j}
+\Biggr)
+\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eq.}\;7)
+\end{equation}$$ 
+
+where $B_{i,j}$ is observed biomass in 0.5 nmi along-track interval $i$ and 10 m depth bin $j$, and $d$ is the depth in meters of bin $i$ from the sea surface. In contrast to the surface-referenced primary analysis, the bottom-referenced analysis data were exported using Echoview in 10 m vertical bins referenced to the scrutinized line 0.5 m above the sounder-detected bottom. The HAB is computed in a similar fashion: 
+
+$$\begin{equation}
+HAB_i =
+\sum\!\ _j
+\Biggl(
+\biggl(
+\frac{B_{i,j}}{\sum_j B_{i,j}}
+\biggr)
+h_{i,j}
+\Biggr)
+\;\;\;\;\;\;\;\;\;\;\;\;(\textrm{Eq.}\;8)
+\end{equation}$$ 
+
+where the terms are as described above and $h$ is the height in meters of bin $i$ above the sounder-detected bottom. MWD and HAB were summarized for a given survey area by first summing biomass over all intervals $i$ in the area and then computing the MWD and HAB using the equations above. The bottom-referenced analysis was generated for previous years to allow for inter-annual comparison of vertical distribution. All other parts of this analysis are the same as the primary analysis.
+

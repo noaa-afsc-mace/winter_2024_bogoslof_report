@@ -29,7 +29,7 @@ get_macebase_data <- function(){
   ###
   # gather the historical parameters for the selecitivity-corrected era
   # start with an empty data frame and populate based on what surveys are present
-  historical_selectivity_corrected_params <- data.frame(ships = numeric(),
+  historical_params <- data.frame(ships = numeric(),
                                               surveys = numeric(),
                                               data_sets = numeric(),
                                               analyses = numeric(),
@@ -37,7 +37,7 @@ get_macebase_data <- function(){
                                               zones = numeric())
   
 
-  historical_selectivity_corrected_params <- rbind(historical_selectivity_corrected_params, sel_corr_survey_params)
+  historical_params <- rbind(historical_params, sel_corr_survey_params)
   
 
   # same, but for surface ref/bottom ref datasets: we do a more limited comparison of vertical distribution over time (and it is 
@@ -107,32 +107,32 @@ get_macebase_data <- function(){
   mace_gear_types <- get_all_gear_types()
   
   #########
-  # get all the 'selectivity corrected era' biomass/nums values per interval (good for most purposes, where we don't need values by layer)
+  # get all the biomass/nums values per interval (good for most purposes, where we don't need values by layer)
   biomass_nums_list <- pmap(
-    list(ship = historical_selectivity_corrected_params$ships,
-         survey = historical_selectivity_corrected_params$surveys, 
-         data_set_id = historical_selectivity_corrected_params$data_sets,
-         analysis_id = historical_selectivity_corrected_params$analyses,
-         zones_list = historical_selectivity_corrected_params$zones),
+    list(ship = historical_params$ships,
+         survey = historical_params$surveys, 
+         data_set_id = historical_params$data_sets,
+         analysis_id = historical_params$analyses,
+         zones_list = historical_params$zones),
     get_biomass_and_nums_data_by_interval_function)
     
   # pull out the biomass/nums data + intervals for each survey in the time series
   biomass_nums_list <- purrr::list_transpose(biomass_nums_list)
-  all_species_sel_corr_biomass_nums <- dplyr::bind_rows(biomass_nums_list[[1]])
+  all_species_biomass_nums <- dplyr::bind_rows(biomass_nums_list[[1]])
   
-  # # for many figures, we only present pollock biomass/nums from the current survey; to be clear, create species-only datafarames from current survey;
-  current_year_pollock_biomass_nums <- all_species_sel_corr_biomass_nums %>%
+# for many figures, we only present pollock biomass/nums from the current survey; to be clear, create species-only datafarames from current survey;
+  current_year_pollock_biomass_nums <- all_species_biomass_nums %>%
     filter(SPECIES_CODE == 21740 & SURVEY == survey)
   
-  # get the survey totals by length and region for the selectivity corrected era
-  sel_corr_surveys_pollock_totals_by_length <- all_species_sel_corr_biomass_nums %>%
+  # get the survey totals by length and region
+  historical_surveys_pollock_totals_by_length <- all_species_biomass_nums %>%
     filter(SPECIES_CODE == 21740) %>%
     group_by(SURVEY, SPECIES_CODE, REPORT_NUMBER, LENGTH, region, year) %>%
     summarize(BIOMASS = sum(BIOMASS),
               NUMBERS = sum(NUMBERS))
   
   # get the pollock biomass by interval for the selectivity corrected era
-  sel_corr_surveys_pollock_totals_by_interval <- all_species_sel_corr_biomass_nums %>%
+  historical_surveys_pollock_totals_by_interval <- all_species_biomass_nums %>%
     filter(SPECIES_CODE == 21740) %>%
     group_by(SHIP, SURVEY, year, DATA_SET_ID, ANALYSIS_ID, REPORT_NUMBER, region, INTERVAL, SPECIES_CODE) %>%
     summarize(BIOMASS = sum(BIOMASS))
@@ -152,16 +152,15 @@ get_macebase_data <- function(){
     ),
     get_biomass_and_nums_data_by_layer_and_length_function
   )
-   vertical_dist_bot_ref_biomass_nums_by_length <- c()
-
   
   # get the analysis comparisons data- numbers/biomass at length for various datasets/analyses
-  analysis_comparisons <- purrr::pmap_dfr(list(analysis_comparisons_params$ships,
-                                           analysis_comparisons_params$surveys,
-                                           analysis_comparisons_params$comp_data_sets,
-                                           analysis_comparisons_params$comp_analyses,
-                                           analysis_comparisons_params$zones_list,
-                                           analysis_comparisons_params$sp_code_list),
+  analysis_comparisons <- purrr::pmap_dfr(list(
+                                           ship = analysis_comparisons_params$ships,
+                                           survey = analysis_comparisons_params$surveys,
+                                           data_sets = analysis_comparisons_params$comp_data_sets,
+                                           analyses = analysis_comparisons_params$comp_analyses,
+                                           zones_list = analysis_comparisons_params$zones_list,
+                                           sp_code = analysis_comparisons_params$sp_code_list),
                                       get_analysis_comparison_data)
   
   # Get the biomass and numbers at AGE data
@@ -185,7 +184,7 @@ get_macebase_data <- function(){
     age_data <- TRUE
     
     # try to get the age data for the selectivity-corrected period; this will return a blank dataframe if there's no current survey age data
-    sel_corr_surveys_biomass_nums_age <- pmap_dfr(
+    historical_surveys_biomass_nums_age <- pmap_dfr(
       list(
         ship = sel_corr_survey_params$ships,
         survey = sel_corr_survey_params$surveys,
@@ -198,22 +197,21 @@ get_macebase_data <- function(){
     )
     
     # also save a limited version of this that only has the current survey
-    current_survey_biomass_nums_age <- sel_corr_surveys_biomass_nums_age[sel_corr_surveys_biomass_nums_age$SURVEY == survey, ]
+    current_survey_biomass_nums_age <- historical_surveys_biomass_nums_age[historical_surveys_biomass_nums_age$SURVEY == survey, ]
+    
+    # get the values by age
+    vertical_dist_surf_ref_biomass_nums_by_age <- pmap_dfr(
+      list(
+        ship = surf_and_bot_historical$ships,
+        survey = surf_and_bot_historical$surveys,
+        data_set_id = surf_and_bot_historical$data_sets_surf_ref,
+        analysis_id = surf_and_bot_historical$analyses_surf_ref,
+        zones_list = surf_and_bot_historical$zones_list
+      ),
+      get_biomass_and_nums_data_by_layer_and_age_function
+    )
+    
   }
-  
-  # get the values by age
-  vertical_dist_surf_ref_biomass_nums_by_age <- pmap_dfr(
-    list(
-      ship = surf_and_bot_historical$ships,
-      survey = surf_and_bot_historical$surveys,
-      data_set_id = surf_and_bot_historical$data_sets_surf_ref,
-      analysis_id = surf_and_bot_historical$analyses_surf_ref,
-      zones_list = surf_and_bot_historical$zones_list
-    ),
-    get_biomass_and_nums_data_by_layer_and_age_function
-  )
-  
-  vertical_dist_bot_ref_biomass_nums_by_age <- c()
   
   # if not, just add some placeholders
   if (age_data_check == 0) {
@@ -266,7 +264,7 @@ get_macebase_data <- function(){
     
     # return the age data
     maturity_by_age <- get_maturity_by_age(
-      ship = shipf,
+      ship = ship,
       survey = survey,
       species_code = 21740,
       trawl_weights = hauls_and_weights
@@ -282,10 +280,10 @@ get_macebase_data <- function(){
   ######
   # pollock length-weight-age data- this gathers for the selectivity-corrected time series
   pollock_length_weight_age_data <- get_biological_data(
-    ships = historical_selectivity_corrected_params$ships,
-    surveys = historical_selectivity_corrected_params$surveys,
-    data_sets = historical_selectivity_corrected_params$data_sets,
-    analyses = historical_selectivity_corrected_params$analyses,
+    ships = historical_params$ships,
+    surveys = historical_params$surveys,
+    data_sets = historical_params$data_sets,
+    analyses = historical_params$analyses,
     species_code = 21740
   )
   
@@ -346,21 +344,23 @@ get_macebase_data <- function(){
   # temperatures at trawls/fishing locations:
   # get the SBE data for each year in the timeseries; this returns indices for report number and region
   # this gathers all the SBE records from trawls in the selectivity-corrected era
-  sbe_data <- get_sbe_by_survey(ships = historical_selectivity_corrected_params$ships, 
-                                surveys = historical_selectivity_corrected_params$surveys, 
-                                data_sets = historical_selectivity_corrected_params$data_sets, 
-                                analyses = historical_selectivity_corrected_params$analyses)
+  sbe_data <- get_sbe_by_survey(ships = historical_params$ships, 
+                                surveys = historical_params$surveys, 
+                                data_sets = historical_params$data_sets, 
+                                analyses = historical_params$analyses)
   
   # update the historical trawl fishing location records records based on what is has been calculated in CLAMS 
   # requires the dataframes 'event_data' and 'haul_table_data'- which should be gathered above!
-  purrr::pwalk(list(ship = current_year_query_params$ships,
-                    survey = current_year_query_params$surveys,
-                    data_set_id = current_year_query_params$data_sets,
-                    analysis_id = current_year_query_params$analyses,
-                    historical_sst_loc = historical_trawl_sst),
-               open_and_update_sst_at_fishing_locs)
+  # commented out for BOGOSLOF! Not presenting this figure yet
   
-  sst_at_fishing_locs <- readRDS(historical_trawl_sst)
+  # purrr::pwalk(list(ship = current_year_query_params$ships,
+  #                   survey = current_year_query_params$surveys,
+  #                   data_set_id = current_year_query_params$data_sets,
+  #                   analysis_id = current_year_query_params$analyses,
+  #                   historical_sst_loc = historical_trawl_sst),
+  #              open_and_update_sst_at_fishing_locs)
+  # 
+  # sst_at_fishing_locs <- readRDS(historical_trawl_sst)
   
   #######
   # Sea surface temps/ SCS data:
@@ -369,8 +369,7 @@ get_macebase_data <- function(){
   scs_sst_list <- purrr::pmap(list(ship = current_year_query_params$ships,
                                    survey = current_year_query_params$surveys,
                                    data_set_id = current_year_query_params$data_sets,
-                                   analysis_id = current_year_query_params$analyses,
-                                   historical_scs_file_loc = historical_scs_sst_path),
+                                   analysis_id = current_year_query_params$analyses),
                          get_sst_data)
   
   # unpack this data
@@ -380,7 +379,8 @@ get_macebase_data <- function(){
   scs_summary <- dplyr::bind_rows(scs_sst_list[[3]])
   
   # open up the historical sst data now that its been updated
-  historical_scs_sst <- readRDS(historical_scs_sst_path)
+  # currently not using historical SST comparisons for Bogoslof!
+  # historical_scs_sst <- readRDS(historical_scs_sst_path)
   
   ################################################
   # save all the data
@@ -391,20 +391,21 @@ get_macebase_data <- function(){
   # save all of the objects in an .RData file
   save(historical_eva,
        current_year_query_params, 
-       historical_selectivity_corrected_params,
+       historical_params,
        historical_bottom_ref_params,
        analysis_comparisons_params,
        current_year_interval_data,
        current_year_event_data,
        clams_event_type,
        mace_gear_types,
-       all_species_sel_corr_biomass_nums,
+       all_species_biomass_nums,
        historical_interval_data,
        current_year_pollock_biomass_nums,
        vertical_dist_surf_ref_biomass_nums_by_length,
-       vertical_dist_bot_ref_biomass_nums_by_length,
-       sel_corr_surveys_pollock_totals_by_length,
-       sel_corr_surveys_pollock_totals_by_interval,
+       # not currently doing a bot-ref for Bogoslof
+       #vertical_dist_bot_ref_biomass_nums_by_length,
+       historical_surveys_pollock_totals_by_length,
+       historical_surveys_pollock_totals_by_interval,
        analysis_comparisons,
        age_data,
        sel_corr_surveys_biomass_nums_age,
@@ -424,11 +425,13 @@ get_macebase_data <- function(){
        specimen_table_data,
        raw_specimen_data,
        sbe_data,
-       sst_at_fishing_locs,
+       # not currently doing this comparison
+       #sst_at_fishing_locs,
        scs_sst,
        scs_stats,
        scs_summary,
-       historical_scs_sst,
+       # not currently doing sst comparisons from scs
+       #historical_scs_sst,
        query_run_time,
        file = paste0(data_set_path, "bogoslof_", current_year,  "_dataset.RData")
        )

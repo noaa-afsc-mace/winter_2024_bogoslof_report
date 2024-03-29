@@ -1,0 +1,17 @@
+<!-- Plot an overview of the survey area and trawl locations -->
+```{r survey_trawls_overview, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 7, fig.cap = cap_text, fig.id = 'surveylocationmap'}
+
+# start with a blank figure caption; add one if there's a survey
+cap_text <- c()
+
+intervals_hauls_map <- plot_intervals_hauls_map_function(gear_type_options = mace_gear_types, add_haul_numbers = FALSE) 
+print(intervals_hauls_map)
+
+# build the figure caption
+cap_text <- paste0("Transect lines and trawl haul locations during the ", current_year, " winter pre-spawning acoustic-trawl surveys. The survey region associated with each transect is indicated by the transect color. The location of trawl events are indicated with purple markers. NMFS reporting areas are noted in white text. Bottom depths are indicated in greyscale. Note that this scale is used in all maps throughout report.")
+
+```
+
+
+<!-- Set as landscape- this extends back to the last 'block_section' call -->
+`r  block_section(landscape_section)`

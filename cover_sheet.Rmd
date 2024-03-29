@@ -1,0 +1,62 @@
+**Cover sheet:**
+
+This report was created using data last queried at **`r query_run_time`.**
+
+The main parameters used in this survey report are:
+
+
+
+**Current survey year:**
+```{r cover_sheet_current_survey, echo = FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+# build table for the current survey
+regions <- current_year_pollock_biomass_nums %>%
+  distinct(SURVEY, region) %>%
+  group_by(SURVEY) %>%
+  summarize(regions = paste(region, collapse = ", "))
+
+current_year_summary_table <- left_join(current_year_query_params, regions, by = c('surveys' = 'SURVEY')) %>%
+  arrange(surveys)
+
+current_year_summary_table <- flextable(current_year_summary_table) %>%
+  flextable::colformat_num(j = c("surveys"), big.mark = "") %>%
+  flextable::width(j = 1:5, width = .7, unit = 'in') %>%
+  flextable::width(j = 6, width = 2.3, unit = 'in') %>%
+  flextable::fontsize(size= 8, part = 'all')
+
+
+#print table
+flextable_to_rmd(x = current_year_summary_table, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+```
+
+**The past:**
+
+```{r cover_sheet_historical, echo = FALSE, message=FALSE, warning=FALSE, results='asis',  fig.width=6.5}
+
+# build table for the historical survey- organize by region
+regions <- all_species_biomass_nums %>%
+  distinct(SURVEY, region) %>%
+  group_by(SURVEY) %>%
+  summarize(regions = paste(region, collapse = ", "))
+
+historical_cover_sheet <- left_join(historical_selectivity_corrected_params, regions, by = c('surveys' = 'SURVEY')) %>%
+  arrange(surveys) %>%
+  select(- report_nums)
+
+#historical_cover_sheet <- historical_selectivity_corrected_params
+
+historical_cover_sheet <- flextable(historical_cover_sheet)  %>%
+  flextable::colformat_num(j = c("surveys"), big.mark = "")  %>%
+  flextable::width(j = 1:5, width = .7, unit = 'in') %>%
+  flextable::width(j = 6, width = 2.3, unit = 'in') %>%
+  flextable::fontsize(size= 8, part = 'all')
+
+# print table
+flextable_to_rmd(x = historical_cover_sheet, ft.align = "left", ft.split = TRUE, ft.keepnext = FALSE, print = TRUE)
+
+```
+
+The table(s) above highlights the parameters used to grab historical data in the selectivity-corrected era. Check out the other parameters in the top of the script 'main_cruise_report_2022.Rmd' to be safe!  **Bold text will likely require updates as you edit the draft!**
+
+\pagebreak

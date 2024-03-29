@@ -1,0 +1,407 @@
+<!-- Shelikof Strait only plots -->
+<!-- Shelikof SST plot -->
+```{r sst_shelikof, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 8.0, fig.width= 6.0, fig.cap = cap_text, fig.id = 'shelikofSST'}
+# plot the seatemps for the shelikof
+
+# start with a blank figure caption; add one if there's a survey
+cap_text <- c()
+
+sst_plot <- plot_sst_map(temperature_plot_data = scs_sst, region_name = "Shelikof Strait")
+
+# print the plot
+print(sst_plot)
+
+# build the caption
+cap_text <- paste0("Surface water temperatures (°C) recorded at 5-second intervals during the winter ", current_year, " acoustic-trawl survey in the Shelikof Strait.")
+```
+
+<!--Shelikof SST at fishing locations & ship's flow-through - historic anomaly comparison-->
+```{r plot_shelikof_sst_comp, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=6, fig.cap = cap_text, fig.id = 'shelikofstraitsstfishingloc'}
+# NOTE that this is only written to handle Shelikof right now! The assumption is that there is only enough data for the Shelikof
+# the function will have to be re-written to handle multiple regions (if folks want that)
+
+# return the historical anomolies figure and stats
+sst_summary <- plot_historical_sst_anomalies(
+  historical_sst_loc = historical_trawl_sst,
+  historical_sst_scs = historical_scs_sst,
+  region = "Shelikof Strait"
+)
+
+# pull out plots, captions, bookmarks 
+sst_anomalies_fig <- sst_summary[[1]]
+sst_anomalies_summary <- sst_summary[[2]]
+# sst_anomolies_bkm <-  paste0(tolower(str_remove_all(unique(sst_anomalies_summary$region), " ")), "sstfishingloc")
+# sst_anomolies_caption <- paste0("Sea surface temperature (SST, °C) anomalies recorded at trawl locations (upper panel) and from the ship's flow-through system for the entire survey (lower panel) in Shelikof Strait. SST anomalies for each temperature source are centered and scaled by their respective mean temperature and standard deviation from the 2006–2022 period. Positive and negative anomalies are indicated by red and blue bars, respectively.")
+
+# for the caption, find the last shelikof survey year
+shelikof_survey_years <- -desc(sort(unique(sel_corr_surveys_pollock_totals_by_length$year
+[sel_corr_surveys_pollock_totals_by_length$region == "Shelikof Strait"])))
+shelikof_last_year <- shelikof_survey_years[length(shelikof_survey_years) - 1]
+
+# print the figure
+print(sst_anomalies_fig)
+
+# and the caption
+cap_text <- paste0("Sea surface temperature (SST, °C) anomalies recorded at trawl locations (upper panel) and from the ship's flow-through system for the entire survey (lower panel) in Shelikof Strait. SST anomalies for each temperature source are centered and scaled by their respective mean temperature and standard deviation from the 2006–2022 period. Positive and negative anomalies are indicated by red and blue bars, respectively.")
+
+```
+
+
+<!--Shelikof SBE plots- temp at depth-->
+```{r get_shelikof_sbe_data, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.id = "shelikofstraitsbe"}
+
+sbe_summary <- plot_SBE_profile_by_class(historical_sbe_data = sbe_data, current_survey = survey_shelikof, region_name = "Shelikof Strait", SBE_Nset = SBE_Nset, SBE_set.ls = SBE_set.ls, pollock_size_cutoff = pollock_size_cutoff)
+
+# pull out plots, captions, bookmarks to print
+sbe_plot <- sbe_summary[[1]]
+
+# get the summary stats
+sbe_summary_stats <- sbe_summary[[2]]
+
+# get the region name
+sbe_region <- unique(sbe_summary_stats$region)
+
+# print the caption
+if (SBE_Nset == 1) {
+  if (length(unique(sbe_summary_stats$EVENT_ID)) > 1) {
+    sbe_caption <- paste0(
+      "Mean water temperature (", intToUtf8(176), "C ; solid line)",
+      " by 1-m depth intervals measured at trawl locations during the ",current_year, " ",
+      "acoustic-trawl survey of walleye pollock in the ", unique(sbe_summary_stats$region), " area.",
+      " The shaded area represents one standard deviation. Number of trawls per area shown with region name."
+    )
+  }
+  
+  # if there's only one haul, take that language out
+  if (length(unique(sbe_summary_stats$EVENT_ID)) == 1) {
+    sbe_caption <- paste0(
+      "Mean water temperature (", intToUtf8(176), "C ; solid line)",
+      " by 1-m depth intervals measured at ", length(unique(sbe_summary_stats$EVENT_ID)), " ",
+      "trawl haul locations during the ", current_year, " acoustic-trawl survey of pollock",
+      " in the ", unique(sbe_summary_stats$region), " area."
+    )
+  }
+}
+
+if (SBE_Nset > 1) {
+  sbe_caption <- paste0(
+    "Mean water temperature profiles (", intToUtf8(176), "C; solid line) by 1-m depth intervals ",
+    "measured at trawl locations associated with catches dominated by pollock that were either > or ≤ ",
+    pollock_size_cutoff, " cm fork length (FL) ", "during the ", current_year, " acoustic-trawl survey of pollock ",
+    "in the ", unique(sbe_summary_stats$region), " area. Shaded areas represent one standard deviation."
+  )
+}
+
+# also build the figure bookmark for cross-referencing
+#sbe_bkm <- paste0(tolower(str_remove_all(unique(sbe_summary_stats$region), " ")), "sbe")
+
+# print the plot and the caption
+print(sbe_plot)
+
+cap_text <- sbe_caption
+
+```
+
+<!-- 3-panel maturity figs: gather for the entire report-->
+```{r plot_3_panel_maturity_shelikof, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.id = "shelikofstraitmaturity"}
+
+# plot the maturities for the Shelikof region only
+maturity_list <- plot_abundance_weighted_maturity(ship = ship_shelikof, 
+                                                  survey = survey_shelikof,  
+                                                  region_id = "Shelikof Strait")
+
+# print the plot
+print(maturity_list[[4]])
+
+# get a nice caption name
+plot_region <- unique(maturity_list[[3]]$region)
+
+# build the caption
+cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity composition for male and female pollock greater than 40 cm fork length (FL) within each stage; B) proportion mature (i.e. pre-spawning, spawning, or spent) by 1-cm size group for female pollock; C) gonadosomatic index for females greater than 40 cm FL (with historic survey mean ± 1 std. dev.). All maturity quantities are weighted by local pollock abundance.")
+
+
+```
+
+<!--shelikof stickplot-->
+```{r shelikof_stickplot, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 8.0, fig.width= 6.00,  fig.cap= cap_text, fig.id = 'shelikofsticks'}
+cap_text <- c()
+
+# check if there is age data; if so make the plot by age, if not, plot by length class
+if(age_data == TRUE){
+
+  shelikof_stick_data <- shelikof_current_survey_biomass_nums_age
+
+} 
+
+if(age_data != TRUE){
+
+  shelikof_stick_data <- current_year_pollock_biomass_nums
+
+} 
+
+
+current_biomass_sticks <-  plot_biomass_sticks_by_class_function(biomass_data = shelikof_stick_data, region_name = "Shelikof Strait",  rotation = rotation_shelikof, max_bar_height = max_bar_height_shelikof, length_class_cutoff = pollock_size_cutoff, age_class_cutoff = pollock_age_cutoff)
+
+# print the plot
+current_biomass_sticks[[1]]
+
+# build the caption-
+age_or_length_statement <- ifelse(age_data == TRUE, 
+                        paste0("Biomass densities are categorized based on haul catches comprised of >= age ", pollock_age_cutoff, " (blue) or < age " ,pollock_age_cutoff, " red) pollock."),
+                        paste0("Biomass densities are categorized based on haul catches comprised of mostly adult (>", pollock_size_cutoff , " FL, blue) or juvenile (≤ ",  pollock_size_cutoff, " FL, red) pollock."))
+
+
+# build the figure caption- this uses an ifelse statement to make the 'cutoff some bars' text or the 'all bars included' text
+cap_text <- paste0("Density (t/nmi^2^) attributed to pollock (vertical lines) along tracklines surveyed during the winter ", current_year, " acoustic-trawl survey of ", current_biomass_sticks[[2]], ". ", age_or_length_statement)
+```
+
+<!--historical comparison interpolated plot-->
+```{r historical_comparison_interp_plot, echo = FALSE, message=FALSE, warning=FALSE, include=FALSE, supress = TRUE}
+
+# get the shelikof selectivity-corrected totals
+shelikof_historical_interval_biomass_data <- all_species_biomass_nums %>%
+  filter(region == "Shelikof Strait" & SPECIES_CODE == 21740) %>%
+  group_by(SHIP, SURVEY, REPORT_NUMBER, region, year, INTERVAL) %>%
+  summarize(BIOMASS = sum(BIOMASS))
+
+# return the plot
+interp_comparison <- plot_interpolated_survey_comparisons_winter_function(biomass_data = shelikof_historical_interval_biomass_data, interval_data = historical_interval_data, current_survey = survey_shelikof, basemap = shelikof_basemap)
+
+# print the plot
+#interp_comparison
+
+# build the caption
+# cap_text <- paste0("Geostatistical characterizations of pollock biomass distributions from ", min(shelikof_historical_interval_biomass_data$year), " to ", max(shelikof_historical_interval_biomass_data$year), ". Center of gravity (COG, line intersection) and inertia (line length) estimates (left map) indicate the mean location and dispersion of the distribution around its COG during the ", max(shelikof_historical_interval_biomass_data$year), " survey (orange) and each of the other survey years (magenta). Time series of COG estimates (right plots) centered by the 15-year mean are shown along latitudinal (‘Northings’) and longitudinal (‘Eastings’) axes.")
+
+
+```
+
+<!--print COG plot here: in a second call to supress the base r plot output and just return the final plot-->
+```{r print_cog_plot, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width= 6, fig.height= 4.5,  fig.cap= cap_text,  fig.id = 'pollockdistribution'}
+# print the plot
+interp_comparison
+
+# build the caption
+cap_text <- paste0("Geostatistical characterizations of pollock biomass distributions from ", min(shelikof_historical_interval_biomass_data$year), " to ", max(shelikof_historical_interval_biomass_data$year), ". Center of gravity (COG, line intersection) and inertia (line length) estimates (left map) indicate the mean location and dispersion of the distribution around its COG during the ", max(shelikof_historical_interval_biomass_data$year), " survey (orange) and each of the other survey years (magenta). Time series of COG estimates (right plots) centered by the 15-year mean are shown along latitudinal (‘Northings’) and longitudinal (‘Eastings’) axes.")
+```
+
+
+<!-- bottom-and surface- referenced vertical distribution figs -->
+  
+<!-- Shelikof surface/bottom referenced violin plot: gather for the entire survey  -->
+```{r build_shelikof_violin_plot, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=6, fig.cap= cap_text, fig.id = "shelikofstraitviolins"}
+
+
+# check if there is age data; if so make the plot by age, if not, plot by length class
+# commented out for now because the historical bottom-ref timeseries doesn't have 'by age' analyses in many cases
+# if(age_data == TRUE){
+# 
+#   surf_ref_dataset <- vertical_dist_surf_ref_biomass_nums_by_age
+#   bot_ref_dataset <- vertical_dist_bot_ref_biomass_nums_by_age
+# 
+# } 
+# 
+# if(age_data != TRUE){
+# 
+#   surf_ref_dataset <- vertical_dist_surf_ref_biomass_nums_by_length
+#   bot_ref_dataset <- vertical_dist_bot_ref_biomass_nums_by_length
+# 
+# } 
+
+# for now, forcing 'by length'
+surf_ref_dataset <- vertical_dist_surf_ref_biomass_nums_by_length
+bot_ref_dataset <- vertical_dist_bot_ref_biomass_nums_by_length
+
+# build for the Shelikof Strait only
+violin_list <- plot_depth_violins(
+                   bottom_referenced_data = bot_ref_dataset, 
+                   surface_referenced_data = surf_ref_dataset,
+                   interval_data = current_year_interval_data,
+                   length_class_cutoff = pollock_size_cutoff, 
+                   age_class_cutoff = pollock_age_cutoff,
+                   species_code = 21740, 
+                   region_name = 'Shelikof Strait')
+
+# print the figure
+violin_list[[1]]
+
+ # and the caption
+# age_or_length_statement <- ifelse(age_data == TRUE, 
+#                                   paste0("Estimated biomass distributions of adult (age ", pollock_age_cutoff, " +) and juvenile (< age ", pollock_age_cutoff, ") pollock A,B) depth and C,D) height above the seafloor in the "),
+#                                   paste0("Estimated biomass distributions of adult (> ", pollock_size_cutoff, " cm FL) and juvenile (≤ ", pollock_size_cutoff, " cm FL) pollock A,B) depth and C,D) height above the seafloor in the "))
+
+# again forcing length only for now
+age_or_length_statement <- paste0("Estimated biomass distributions of adult (> ", pollock_size_cutoff, " cm FL) and juvenile (≤ ", pollock_size_cutoff, " cm FL) pollock A,B) depth and C,D) height above the seafloor in the ")
+
+cap_text <- paste0(age_or_length_statement, violin_list[[2]], " ", current_year, " acoustic-trawl survey. Results for the winter ", min(surf_ref_dataset$year), "-", sort(unique(surf_ref_dataset$year), decreasing = TRUE)[2], " acoustic-trawl surveys are included for comparison. Depth is referenced to the surface and height is referenced to the bottom. Data were averaged in 10 m depth bins. Mean bottom depth for ", current_year, " is shown in panels A) and B) (dashed line). Plots show the probability density of pollock distribution, with median pollock depth noted by black horizontal lines, and the mean weighted pollock depth indicated by black points.")
+
+```
+
+<!-- Set as portrait- this extends back to the last 'block_section' call-->
+`r  block_section(portrait_section)`
+
+<!-- Historical comparison of winter time series-->
+<!-- Gather all surveyed regions here and make plots for them-->
+```{r plot_historical_barplots, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=9, fig.height=5, fig.cap= cap_text, fig.id = "shelikofstraitbiocomps"}
+
+# plot for the shelikof strait only; get the plot
+summary_barplot <- plot_historical_biomass_comparison_by_region(pre_sel_corr_data_path = pre_selectivity_biomass_nums_ages_path, 
+                                             post_sel_corr_data = sel_corr_surveys_pollock_totals_by_interval, 
+                                             historical_eva_vals = historical_eva,
+                                             region_name = "Shelikof Strait")
+
+# print the plot
+summary_barplot[[1]]
+
+# build the caption
+cap_text <- paste0("Summary of age-1+ pollock biomass estimates (thousands of metric tons) for ", summary_barplot[[2]], " based on acoustic-trawl surveys from 1981–", current_year, " (except 1982, 1987, 1999, and 2011). Estimates for ", min(sel_corr_surveys_pollock_totals_by_interval$year), "–", current_year, " include selectivity corrections for juvenile escapement (see text for explanation). Current survey estimate in red, and shaded area indicates 1-D geostatistical 95% confidence intervals based on Honkalehto et al. 2011 from 1992–", current_year, ".")
+
+```
+
+<!-- Set as landscape- this extends back to the last 'block_section' call -->
+`r  block_section(landscape_section)`
+
+<!-- bar/line plots for biomass and numbers at length and age, for Shelikof-->
+```{r biomass_nums_shelikof_plot, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=4, fig.cap = cap_text, fig.id = 'shelikofbionumslength'}
+# start with a blank figure caption; add one if there's a survey
+cap_text <- c()
+
+# plot the 2-axis biomass and numbers by length plots
+# optionally, add a title with total biomass nums (add_totals = 'top') OR
+# add total biomass/nums values to upper left (add_totals = 'left)
+shelikof_num_at_length <- current_year_pollock_biomass_nums%>%
+  #for this report- make sure we're only reporting the requested region
+  filter(region == "Shelikof Strait")%>%
+  group_by(LENGTH)%>%
+  summarize(num_individuals = sum(NUMBERS),
+            biomass_kg = sum(BIOMASS))
+
+shelikof_biomass_nums_plot <- MACEReports::plot_biomass_nums_by_length(length_vector = shelikof_num_at_length$LENGTH,
+                                                                       biomass_vector = shelikof_num_at_length$biomass_kg,
+                                                                       numbers_vector = shelikof_num_at_length$num_individuals,
+                                                                       add_totals = FALSE)
+
+# print plot
+shelikof_biomass_nums_plot
+  
+
+# buld the caption
+cap_text <- paste0("Numbers- (blue bars) and biomass- (red line) at-length estimates of pollock for the ", current_year, " acoustic-trawl survey of Shelikof Strait.")
+```
+
+```{r biomass_nums_shelikof_ages_plot, echo = FALSE, message=FALSE, warning=FALSE, results='asis', dpi= 300, fig.width=6, fig.height=6, fig.cap = cap_text, fig.id = 'shelikofbionumsages'}
+# start with a blank figure caption; add one if there's a survey
+cap_text <- c()
+
+if (isTRUE(age_data)) {
+
+  # plot the 2-axis biomass and numbers by age plots
+  shelikof_num_at_age <- shelikof_current_survey_biomass_nums_age%>%
+  #for this report- make sure we're only reporting the requested region
+  filter(region == "Shelikof Strait")%>%
+  group_by(AGE)%>%
+  summarize(num_individuals = sum(NUMBERS),
+            biomass_kg = sum(BIOMASS))
+  
+  
+  shelikof_biomass_nums_ages_plot <- MACEReports::plot_biomass_nums_by_age(age_vector = shelikof_num_at_age$AGE,
+                                                                           biomass_vector = shelikof_num_at_age$biomass_kg,
+                                                                           numbers_vector = shelikof_num_at_age$num_individuals,
+                                                                           add_totals = FALSE)
+  
+  # plot it 
+  print(shelikof_biomass_nums_ages_plot)
+  
+  
+  # buld the caption
+  cap_text <- paste0("Numbers- (millions of fish, blue bars) and biomass- (1000s t, red line) at-age estimates of pollock for the ", current_year, " acoustic-trawl survey of Shelikof Strait.")
+  
+}
+```
+
+
+<!-- historical comparisons of total biomass/nums by length and age: 'ridgeline plots'- -->
+```{r historical_comparison_shelikof, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height= 8, fig.cap = cap_text, fig.id = 'shelikofridgelineslength'}
+# start with a blank figure caption; add one if there's a survey
+cap_text <- c()
+
+# shelikof ridgeline plot- historical data is now only pre-selectivity corrected data and biomass and numbers data is post-selectivity *including
+# current year*
+year_vals <- plot_historical_biomass_nums_function(historical_data_path = pre_selectivity_biomass_nums_path, 
+                                                   biomass_and_numbers_data = sel_corr_surveys_pollock_totals_by_length,
+                                                   region_name = "Shelikof Strait",
+                                                   sqrt_numbers_scale = TRUE)
+
+# build the caption
+cap_text <- paste0("Time series of pollock population length composition by weight (left panel, thousand tons) and numbers (right panel, million fish) from acoustic-trawl surveys of the Shelikof Strait for ", year_vals$min_year, "-", year_vals$max_year, ". Estimates for ", min(sel_corr_surveys_pollock_totals_by_length$year[sel_corr_surveys_pollock_totals_by_length$region == year_vals$region_name]), "–", year_vals$max_year, " include selectivity corrections for juvenile escapement (see text for explanation).")
+```
+
+
+```{r historical_comparison_shelikof_ages, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=8, fig.cap = cap_text, fig.id = 'shelikofridgelinesages'}
+# start with a blank figure caption; add one if there's a survey
+cap_text <- c()
+
+## Age bubbleplots - bubble size scaled by sqrt transform by default
+if (isTRUE(age_data)) {
+  plot_historical_age_comps_bubble_function(historical_data_path = pre_selectivity_biomass_nums_ages_path,
+                                            biomass_and_numbers_data = shelikof_sel_corr_surveys_biomass_nums_age, 
+                                            region_name = "Shelikof Strait",
+                                            max_age = max_age)
+
+  # build the caption
+  cap_text <- paste0("Time series of pollock population age composition by A) numbers (millions of fish) and B) biomass (1000s t) from acoustic-trawl surveys of Shelikof Strait area for 1981–", current_year, ".  Estimates for 2008–", current_year, " include selectivity corrections for juvenile escapement (see text for explanation). Bubble size is scaled based on square root transform of numbers/biomass estimate by age.")
+}
+```
+
+<!-- length/weight-at-age plots: gather for the whole survey-->
+```{r plot_length_at_age_shelikof, echo = FALSE, message=FALSE, warning=FALSE,  dpi= 300, fig.width=6, fig.height=7, fig.cap = cap_text, fig.id= "shelikofstraitlwage"}
+# start with blank caption, add if we build plot
+cap_text <- c()
+
+if (isTRUE(age_data)) {
+  
+  # return the plot and summary dataframes
+  lw_age_plot_list <- plot_length_at_age(length_weight_data = pollock_length_weight_age_data,
+                     current_survey = survey_shelikof, 
+                     region_name = "Shelikof Strait")
+  
+  # print the plot
+  print(lw_age_plot_list[[1]])
+  
+  # get the summary 
+  lw_age_summary <- lw_age_plot_list[[2]]
+  
+  # build the caption
+  cap_text <- paste0("Pollock A) length- and B) weight-at-age for ", unique(lw_age_summary$region), ". The ", current_year, " survey is highlighted in red (mean +/- 1 s.d). Gray squares indicate the range of observations in previous surveys (", min(pollock_length_weight_age_data$year[pollock_length_weight_age_data$region == unique(lw_age_summary$region)]), "-", max(pollock_length_weight_age_data$year[pollock_length_weight_age_data$year != current_year]), "), and the black line and gray ribbon indicate mean length- or weight- at age in previous surveys +/- 1 s.d.")
+  
+}
+
+```
+
+<!-- Analysis comparisons- numbers- and biomass- at length for different analyses -->
+  
+```{r plot_shelikof_comparison, echo = FALSE, message=FALSE, warning=FALSE, suppress = T, fig.width=6, fig.height=7.5, fig.cap = cap_text, fig.id = 'shelikofanalysiscomps'}
+# start with a plot height of 0- make the plot bigger if there's a survey
+
+#NOTE that this is only written to handle the case where you compare the selectivity-corrected dataset (primary) with a 
+# secondary non-selectivity corrected dataset
+summary_shelikof_analyses <- plot_analyses_comparisons(analysis_comparison_data = analysis_comparisons,
+                                                       region_name = "Shelikof Strait",
+                                                       primary_dataset = data_set_shelikof, 
+                                                       primary_analysis = analysis_shelikof)
+
+# print the plot
+summary_shelikof_analyses[[1]]
+
+# get the summary stats
+shelikof_comparisons <- summary_shelikof_analyses[[2]]
+
+# and build the caption
+cap_text <- paste0("A) Numbers- and B) biomass-at-length estimates for the primary analysis corrected for net selectivity compared with non selectivity corrected estimates ", ifelse(max(shelikof_comparisons$ANALYSIS_ID) <= 2, ".", paste0(" and alternate analyses (", paste(paste("Analysis Number", shelikof_comparisons$ANALYSIS_ID[!(shelikof_comparisons$ANALYSIS_ID %in% c(1, 2))]), collapse = ", "), "see text for explanation) for the ", survey_year, " winter Shelikof Strait survey.")), " The total numbers of fish (millions) and biomass (1000s t) are also presented for each analysis.")
+
+```
+
+
+<!-- Set as portrait- this extends back to the last 'block_section' call-->
+`r  block_section(portrait_section)`
+

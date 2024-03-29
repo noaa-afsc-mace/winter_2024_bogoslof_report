@@ -1,0 +1,95 @@
+# APPENDIX I. ITINERARY
+
+```{r build_itinerary, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+
+#find all the csv's in the itinerary folder
+itinerary_list = list.files('./itinerary_appendix', pattern = '*.csv')
+
+#if there's a shumagins itinerary, make sure it plots first
+if (any(stringr::str_detect(itinerary_list, "shumagin"))){
+  
+  itinerary_list <- rev(itinerary_list)
+  
+}
+
+
+#function to make a simple table for each
+make_itinerary_table = function(file_name){
+  
+  #get the survey name from the file name 
+  survey_name = stringr::str_split(file_name, '_')[[1]][1]
+  
+  #and standardize the name to the survey region name
+  survey_name = get_nice_region_names(survey_name)
+  
+  #open the file 
+  tmp_table = read_csv(paste0('./itinerary_appendix/', file_name))
+  
+  #remove any rows that have no data
+  tmp_table = tmp_table[rowSums(is.na(tmp_table)) != ncol(tmp_table),]
+  
+  #and make sure there's actually data (i.e. there was actually a survey!); if so make a table
+  if (nrow(tmp_table) > 1){
+  
+    #format dates as needed for presentation
+    tmp_table$start_date = as.Date(tmp_table$start_date, "%m/%d/%Y")
+    tmp_table$end_date = as.Date(tmp_table$end_date, "%m/%d/%Y")
+    
+    #present as 'day-month'
+    tmp_table$start_date =paste(lubridate::day(tmp_table$start_date), 
+                                lubridate::month(tmp_table$start_date, label = TRUE, abbr = FALSE))
+    
+    tmp_table$end_date = ifelse(!is.na(tmp_table$end_date),
+                                paste(lubridate::day(tmp_table$end_date), 
+                                      lubridate::month(tmp_table$end_date, label = TRUE, abbr = FALSE)),
+                                NA)
+    
+    #combine into a single date string
+    tmp_table$dates = ifelse(!is.na(tmp_table$end_date),
+                              paste0(tmp_table$start_date, '-',  tmp_table$end_date),
+                              tmp_table$start_date)
+    
+    #and get rid of the dates column
+    tmp_table = tmp_table%>%
+      select(dates, event)
+    
+    #create a flextable out of the itinerary
+    tmp_table = flextable(tmp_table)
+    
+    #remove the header
+    tmp_table = delete_part(tmp_table, part = "header")
+    
+    #adjust the widths
+    tmp_table = autofit(tmp_table, part = 'body')
+    
+    #get rid of the borders
+    tmp_table = border_remove(tmp_table)
+    
+    #get rid of padding around cells
+    tmp_table = padding(tmp_table, padding = 0, part = "all")
+    
+    #set the title
+    tmp_table = add_header_lines(tmp_table, values = survey_name , top = TRUE)
+    tmp_table = align(tmp_table, align = 'center', part = 'header')
+    
+    #set the font and font size
+    tmp_table = flextable::font(tmp_table, fontname = 'times', part = 'all')
+    tmp_table = fontsize(tmp_table, size = 12, part = 'all')
+    
+    #print the tables
+    flextable_to_rmd(x = tmp_table, ft.align = 'left', ft.split = TRUE, print = TRUE)
+    
+    #add a blank line of space between legs
+    cat('<br>')
+    cat('<br>')
+
+  }
+}
+
+#print each table
+walk(itinerary_list, make_itinerary_table)
+
+```
+
+
+

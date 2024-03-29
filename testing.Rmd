@@ -40,6 +40,11 @@ nocite: |
 ---
   
   
+  
+  <!-- This document is currently written to produce a 'first draft' of the winter Shelikof/Shumagins cruise report-->
+  <!-- All of the parameters you'll need to set are in the first code chunk below. Set those, and then click the 'Knit' button above-->
+  
+  
 <!-- This document is currently written to produce a 'first draft' of the winter Shelikof/Shumagins cruise report-->
 <!-- All of the parameters you'll need to set are in the first code chunk below. Set those, and then click the 'Knit' button above-->
   
@@ -67,26 +72,43 @@ if (update_datasets == TRUE) {
 }
 
 # set a location to save your database queries to (SHOULD BE in G:/Cruisefolder!)
-data_set_path <- "G:/DY2402/cruise report/"
+data_set_path <- "G:/DY2403/cruise report/testing/"
 
-# set your current survey parameters for the BOGOSLOF survey. 
-current_survey <- TRUE # set to FALSE if no survey!
+
+# set your current survey parameters for the SHELIKOF survey. 
+current_shelikof_survey <- TRUE # set to FALSE if no survey!
 # IF no survey- put 0 for parameters!
-ship <- 157 
-survey <- 202402
-data_set <- 1
-analysis <- 1
-zones <- c(0)
+ship_shelikof <- 157 
+survey_shelikof <- 202304
+data_set_shelikof <- 1
+analysis_shelikof <- 1
+zones_shelikof <- c(0)
 # IF you don't have a bottom referenced survey or dataset, enter 0 for those.
-bot_ref_data_set <- 0
-bot_ref_analysis <- 0
-# set the comparison datasets for the bogoslof (if none, put 0)
-comp_data_sets <- 0
-comp_analyses <- 0
-# Identify the umnak report number
+bot_ref_data_set_shelikof <- 2
+bot_ref_analysis_shelikof <- 1
+# set the comparison datasets for the shelikof (if none, put 0)
+comp_data_sets_shelikof <- c(1)
+comp_analyses_shelikof <- c(2)
+# Identify the Shelikof Strait report number
 # (see macebase2.report_definitions to check for the right number)
-report_number_umnak <- 1
-report_number_samalga <- 2
+report_number_shelikof <- 1
+
+# set your current survey parameters for the SHUMAGINS survey. 
+current_shumagins_survey <- TRUE # set to FALSE if no survey!
+# IF no survey- put 0 for parameters!
+ship_shumagins <- 157
+survey_shumagins <- 202303
+data_set_shumagins <- 1
+analysis_shumagins <- 1
+zones_shumagins <- c(0)
+# IF you don't bottom referenced survey or dataset, enter 0 for those.
+bot_ref_data_set_shumagins <- 2
+bot_ref_analysis_shumagins <- 1
+# set the comparison datasets for the shumagins (if none, put )
+comp_data_sets_shumagins <- c(1)
+comp_analyses_shumagins <- c(2)
+
+# IF any other surveys happened, identify as above!
 
 # specify if pocketnets were attached to the LFS trawl during the survey
 pocketnets_used <- FALSE # TRUE or FALSE
@@ -114,8 +136,16 @@ haul_weighting_cutoff <- 30
 # values are percent
 # right now, there are no other survey/regions allowed than what is listed below! If we do another region, we'll deal with it then.
 
-# bogoslof
-eva_perc <- 4.6
+# shelikof
+eva_shelikof_perc <- 4.6
+eva_chirikof_perc <- 13.1
+eva_marmot_perc <- 8.0
+
+# shumagins
+eva_shumagins_perc <- 8.7
+eva_sanak_perc <- NA
+eva_morzhovoi_perc <- 5.4
+eva_pavlof_perc <- 13.6
 
 # set a few options for the methods text
 
@@ -124,7 +154,7 @@ max_depth <- 1000
 
 # enter EK80/EV versions as strings
 EK80_version <- "2.0.1"
-echoview_version <- "14.0.206"
+echoview_version <- "13.0.396"
 ########
 # the next options you probably won't need to adjust, but they are included should you want to tweak figures, etc...
 
@@ -134,10 +164,13 @@ echoview_version <- "14.0.206"
 
 # max_bar_height = the maximum height of the bars, in degees (i.e. 2.0 = 2 degrees =~ 60 nmi tall)
 
-# bogoslof
-rotation <- 5
-max_bar_height <- 2
+# shumagins
+rotation_shumagins <- 5
+max_bar_height_shumagins <- 2
 
+# shelikof
+rotation_shelikof <- 1
+max_bar_height_shelikof <- 0.5
 
 # do you want only 'random' fish in maturity calculations (i.e. no non-random grabs)
 # this is mostly relevant to the Bogoslof survey- otherwise, all fish (or nearly all) are random;
@@ -148,12 +181,16 @@ maturities_random_fish_only <- TRUE
 # all_labels <- MACEReports::available_labels()
 
 goa_labels_to_get <- c(
-  "Islands of the Four Mountains", "Bogoslof Island", "Samalga Island",
-  "Umnak Island")
+  "Shumagin Islands", "Alaska Peninsula", "Shelikof Strait",
+  "Kodiak Island", "Cape Kekurnoi", "Cape Nukshak",
+  "Kalsin Bay", "Cape Igvak", "Morzhovoi Bay", "Pavlof Bay", "Sanak Island",
+  "Marmot Bay", "Chirikof Shelfbreak")
 
 # of this list, should any of these be indicated with an arrow? I.e. are they in a really crowded area?
-goa_arrow_list <- c("Islands of the Four Mountains", "Bogoslof Island", "Samalga Island",
-  "Umnak Island")
+goa_arrow_list <- c("Shumagin Islands", "Shelikof Strait",
+  "Cape Kekurnoi", "Cape Nukshak",
+  "Kalsin Bay", "Cape Igvak", "Morzhovoi Bay", "Pavlof Bay", 
+  "Marmot Bay")
 
 # Specifying one or multiple SBE profiles to be plotted
 SBE_Nset <- 1
@@ -186,11 +223,13 @@ stock_assessment_path <- "stock_assessment_output/"
 # parameters:
 # selectivity-corrected estimates- we'll query macebase2 based on the parameters here
 # TODO: replace this with analysis_tags table when it is ready!
-survey_params_selectivity_corrected_surveys <- "historical_data/parameters_length_age_time_series_selectivity_corrected.csv"
+survey_params_shelikof_selectivity_corrected_surveys <- "historical_data/parameters_shelikof_length_age_time_series_selectivity_corrected.csv"
+survey_params_shumagins_selectivity_corrected_surveys <- "historical_data/parameters_shumagins_length_age_time_series_selectivity_corrected.csv"
 
 # historical bottom-and surface-referenced dataset info
 # TODO:: use analysis_tags table when it is ready!
-surf_and_bot_historical_path <- "historical_data/bot_and_surf_ref_historical.csv"
+shelikof_surf_and_bot_historical_path <- "historical_data/shelikof_bot_and_surf_ref_historical.csv"
+shumagins_surf_and_bot_historical_path <- "historical_data/shumagins_bot_and_surf_ref_historical.csv"
 
 # data:
 # historical biomass and numbers at length figure- these are used for Shelikof Stait + Shumagin Island 
@@ -198,19 +237,19 @@ surf_and_bot_historical_path <- "historical_data/bot_and_surf_ref_historical.csv
 # lengths updated by ALM 9/14/23 to be just the pre-selectivity values
 pre_selectivity_biomass_nums_path <- 'historical_data/historical_biomass_nums.rds'
 
-# Historical ages- unlike the lengths, these include every year in the time series
+# Shelikof Strait only historical ages- unlike the lengths, these include every year in the time series
 pre_selectivity_biomass_nums_ages_path <- 'historical_data/historical_biomass_nums_ages.rds'
 
 # historical trawl weights and GSI for abundance-weighted maturity
-historical_trawl_weights_path <- "historical_data/bogoslof_historical_trawl_weights.rds"
-historical_GSI_path <- "historical_data/bogoslof_historical_GSI.rds"
+historical_trawl_weights_path <- "historical_data/historical_trawl_weights.rds"
+historical_GSI_path <- "historical_data/historical_gsi.rds"
 
 # and we're creating historic plot comparisons using pre-selectivity corrected values in the Shumagins (pre-2009) and Shelikof (pre-2008)
 # datasets
-# non_sel_corr_total_biomass <- "historical_data/pre_selectivity_total_biomass.rds"
+non_sel_corr_total_biomass <- "historical_data/pre_selectivity_total_biomass.rds"
 
 # EVA historical estimates path
-eva_path <- "historical_data/bogoslof_historical_eva.rds"
+eva_path <- "historical_data/historical_eva.rds"
 
 # Historical sea surface temperature at trawl locations (SBE data, 1980-present)
 historical_trawl_sst <- "historical_data/winter_historical_surface_temps.rds"
@@ -276,7 +315,9 @@ ak_land <- MACEReports::get_shapefile("alaska_land")
 russia_land <- MACEReports::get_shapefile("russia_land")
 ak_labels <- MACEReports::get_shapefile("alaska_area_labels.gpkg")
 management_regions <- MACEReports::get_shapefile("alaska_NMFS_management_regions")
-
+# adding in the shelikof boundaries for the COG plot
+shelikof_basemap <- st_read("shapefiles/winterShelikof_95pcent_domain_1995-21/spPoly.05_edited_v5.shp")
+shelikof_basemap <- st_transform(shelikof_basemap, crs = 3338)
 
 # get the high-res bathymetry xyz file- for west of 180 only!
 # This is already projected in as NAD1983/Alaska Albers conic
@@ -474,7 +515,7 @@ opts_knit$set(eval.after = "fig.cap")
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 # get the current survey year based on MACE naming conventions
-current_year <- as.numeric(substr(survey, 1, 4))
+current_year <- as.numeric(substr(survey_shelikof, 1, 4))
 
 ```
 
@@ -504,7 +545,7 @@ if (update_datasets == TRUE) {
   dbDisconnect(db)
 
   # and load the datasets
-  load(file = paste0(data_set_path, "bogoslof_", current_year,  "_dataset.RData"))
+  load(file = paste0(data_set_path, "winter_", current_year,  "_dataset.RData"))
   
 }
 
@@ -516,139 +557,10 @@ if (update_datasets == FALSE) {
   }
   
   # and load the datasets
-  load(file = paste0(data_set_path, "bogoslof_", current_year,  "_dataset.RData"))
+  load(file = paste0(data_set_path, "winter_", current_year,  "_dataset.RData"))
 }
 ```
 
-
-<!--provide a cover sheet showing the basic parameters -->
-```{r cover_sheet, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-
-cover_sheet <- knitr::knit_child("cover_sheet.Rmd", quiet = TRUE)
-cat(cover_sheet)
-
-```
-
-
-<!--Add the title page  -->
-```{r print_abstract, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-
-title_page <- knitr::knit_child("title_page.Rmd", quiet = TRUE)
-cat(title_page)
-
-```
-
-
-\pagebreak
-
-<!--build the abstract section  -->
-```{r print_title_page, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-abstract_doc <- knitr::knit_child("abstract.Rmd", quiet = TRUE)
-cat(abstract_doc)
-```
-
-\pagebreak
-
-<!--build the Table of Contents  -->
-##### CONTENTS
-
-```{r, echo = FALSE}
-# define and print a table of contents
-# the parameter 'level' below determines what makes it into the table of contents. For example- if it is set a 2
-# you get headings from level 1 (# Heading name in Rmarkdown text) or 2 (## Heading name)
-table_of_contents <- block_toc(level = 2)
-table_of_contents
-```
-\pagebreak
-
-<!--TODO:: intro, methods, results text! -->
-
-<!--build the introduction section  -->
-```{r print_intro, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-intro_doc <- knitr::knit_child("intro.Rmd", quiet = TRUE)
-cat(intro_doc)
-```
-
-<!--TODO:: check on common methods with Dave before calling this done! -->
-```{r print_methods, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-methods_doc <- knitr::knit_child("methods.Rmd", quiet = TRUE)
-cat(methods_doc)
-```
-
-\pagebreak
-
-<!--Compile the common results- cal results, etc  -->
-```{r common_results, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-common_results <- knitr::knit_child("results_common.Rmd", quiet = TRUE)
-cat(common_results)
-```
-
-<!--Compile the Shelikof-only results  -->
-```{r shelikof_results, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-common_results <- knitr::knit_child("results.Rmd", quiet = TRUE)
-cat(common_results)
-```
-
-\pagebreak
-# REFERENCES
-
-<div id="refs"></div>
-
-<!-- Set as portrait- this extends back to the last 'block_section' call-->
-`r  block_section(portrait_section)`
-
-
-<!--Compile tables  -->
-\newpage
-
-# TABLES {#tables}
-```{r print_common_tables, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-# this compiles the common tables shared between Shumagins + Shelikof
-common_tables_doc <- knitr::knit_child("tables_common.Rmd", quiet = TRUE)
-cat(common_tables_doc)
-```
-
-\newpage
-
-<!--Shelikof Strait specific tables  -->
-<!--TODO:: EVA/historical biomass table -->
-```{r shelikof_tables, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-if (current_shelikof_survey == TRUE) {
-  shelikof_tables_doc <- knitr::knit_child("tables_shelikof.Rmd", quiet = TRUE)
-  cat(shelikof_tables_doc)
-}
-```
-
-\newpage
-
-<!--Compile figures  -->
-
-# FIGURES {#figures}
-<!-- Total survey overview common plots -->
-```{r common_figures, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-common_figures_doc <- knitr::knit_child("figures_common.Rmd", quiet = TRUE)
-cat(common_figures_doc)
-```
-
-
-<!-- Shelikof Strait only plots -->
-```{r shelikof_figures, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-if (current_shelikof_survey == TRUE) {
-  shelikof_figures_doc <- knitr::knit_child("figures_shelikof.Rmd", quiet = TRUE)
-  cat(shelikof_figures_doc)
-}
-```
-\pagebreak
-
-<!--Compile the appendices   -->
-
-<!--build the itinerary appendix-->
-```{r print_itinerary, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-itinerary_doc <- knitr::knit_child("appendix_itinerary.Rmd", quiet = TRUE)
-cat(itinerary_doc)
-```
-
-\pagebreak
 
 <!--build the personnel appendix-->
 ```{r print_personnel, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
@@ -658,12 +570,6 @@ cat(personnel_doc)
 ```
 
 \pagebreak
-<!--build the calculations appendix-->
-```{r print_abundance_calcs, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-abundance_calcs <- knitr::knit_child("appendix_abundance_calcs.Rmd", quiet = TRUE)
-cat(abundance_calcs)
-
-```
 
 <!-- Set as portrait- this extends back to the last 'block_section' call-->
 `r  block_section(portrait_section)`
@@ -680,7 +586,7 @@ cat(abundance_calcs)
 report_regions_list <- current_year_interval_data %>%
   st_drop_geometry() %>%
   filter(region != "Shelikof Strait") %>%
-  group_by(region) %>%
+  group_by(SHIP, SURVEY, region) %>%
   summarize(start_time = min(START_TIME)) %>%
   arrange(start_time)
 
@@ -692,9 +598,4 @@ for (i in report_regions_list$region){
 ```
 
 
-<!--compile the stock assessment output whenever you update the database query-->
-```{r compile_stock_assessment_shelikof, echo = FALSE, message=FALSE, warning=FALSE}
-if (update_datasets == TRUE){
-  compile_stock_assessment_output()
-}
-```
+

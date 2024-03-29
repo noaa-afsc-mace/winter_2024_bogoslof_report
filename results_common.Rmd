@@ -1,0 +1,5 @@
+# RESULTS AND DISCUSSION {#results}
+
+## Acoustic System Calibration
+
+Pre-survey calibration measurements of the 38 kHz echosounder showed no notable differences in on-axis gain parameters or beam pattern characteristics confirming that the acoustic system was stable throughout the survey (Table \@ref(tab:caltable)). At 38 kHz the integration gain differed by \< 0.03 dB across the two measurements. On-axis acoustic system gain, $s_{A}$ correction values, and EK80 calibration utility 3 dB beamwidths and offset angles measured during the winter 2023 calibrations were averaged in the linear domain. These averaged values ere used with the nominal sound speed and absorption values appropriate for the survey areas in the final parameter set for survey data analysis. The measured equivalent beam angle recorded on the 38 kHz transducer’s specification sheet was adjusted [@Bodholt_2002] using the sound speed assumed during survey conditions for data analysis (Table \@ref(tab:caltable)).

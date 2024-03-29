@@ -1,0 +1,290 @@
+#### MACE `r combine_words(unique(current_year_pollock_biomass_nums$region))` `r current_year` Gulf of Alaska acoustic trawl survey: pollock results
+
+**Survey:** `r format(survey_shelikof)`
+
+```{r totals_by_region, echo = FALSE, message=FALSE, warning=FALSE}
+# sum up totals in each region
+totals_by_region <- stock_assess_bio_nums_length_region %>%
+  group_by(region) %>%
+  summarize(
+    biomass_ton = sum(biomass_ton),
+    number_million_fish = sum(number_million_fish)
+  ) %>%
+  mutate(
+    biomass_statement = paste0(region, "; ", print_n_decimal(biomass_ton, n_decimals = 3), " t"),
+    numbers_statement = paste0(region, "; ", print_n_decimal(number_million_fish, n_decimals = 3), " million fish")
+  )
+```
+
+Total pollock biomass: `r combine_words(totals_by_region$biomass_statement)`. 
+
+Total pollock numbers:  `r combine_words(totals_by_region$numbers_statement)`.
+
+```{r prop_by_age, echo = FALSE, message=FALSE, warning=FALSE}
+if (age_data == TRUE) {
+  prop_by_age_table <- pk_by_age %>%
+    ungroup() %>%
+    select(-SURVEY) %>%
+    # round to 8 decimals for display
+    mutate(prop_num = round(prop_num, digits = 8)) %>%
+    select(age, prop_num) %>%
+    data.table::transpose(make.names = TRUE)
+
+  # display a table
+  flextable::flextable(prop_by_age_table) %>%
+    flextable::fontsize(size = 8, part = "all") %>%
+    flextable::set_caption(caption = "Numbers at age (proportions)") %>%
+    flextable::fit_to_width(max_width = 7)
+}
+```
+
+**Is this an update to a currently provided dataset?** `r ifelse(lengths_data_check == TRUE, 'yes', 'no')`
+
+**If this is an update, what are the notable changes?**
+
+
+```{r compare_biomass, echo = FALSE, message=FALSE, warning=FALSE}
+# does the total biomass differ?
+if (lengths_data_check == TRUE) {
+  # compute the updated total biomass
+  new_biomass_length_t <- sum(stock_assess_bio_nums_length_region$biomass_ton)
+
+  # is this equal to the old? (round to 4th decimal to be safe)
+  same_biomass_length <- round(old_biomass_length_t, digits = 4) == round(new_biomass_length_t, digits = 4)
+
+  # if not- what is the difference?
+  if (!same_biomass_length == TRUE) {
+    biomass_length_diff_t <- new_biomass_length_t - old_biomass_length_t
+
+    biomass_comp_length_sentence <- paste0("The updated total biomass is ", print_n_decimal(new_biomass_length_t, n_decimals = 4), " t, a difference of ", print_n_decimal(biomass_length_diff_t, n_decimals = 4), " t from the initially provided biomass of ", print_n_decimal(old_biomass_length_t, n_decimals = 4), " t. ")
+  }
+
+  # if the biomass is the same- report this
+  if (same_biomass_length == TRUE) {
+    biomass_comp_length_sentence <- ""
+  }
+}
+
+if (lengths_data_check != TRUE) {
+  biomass_comp_length_sentence <- ""
+}
+```
+
+`r biomass_comp_length_sentence`
+
+```{r ages_checks, echo = FALSE, message=FALSE, warning=FALSE}
+# are we sending ages for the first time? In this case, the old result won't have ages, but we will have age data now
+if (ages_data_check == FALSE & age_data == TRUE) {
+  age_update_sentence <- "Age composition data have been added."
+}
+
+# are there any differences in the age data? Check in case we have already got age data
+if (ages_data_check == TRUE & age_data == TRUE) {
+  # total biomass equal?
+  new_biomass_age_t <- sum(shelikof_stock_assess_bio_nums_age_region$biomass_ton)
+
+  # is this equal to the old? (round to 4th decimal to be safe)
+  same_biomass_age <- round(old_biomass_age_t, digits = 4) == round(new_biomass_age_t, digits = 4)
+
+  # if not- what is the difference?
+  if (!same_biomass_length == TRUE) {
+    biomass_age_diff_t <- new_biomass_age_t - old_biomass_age_t
+
+    biomass_comp_age_sentence <- paste0("The updated total biomass is ", print_n_decimal(new_biomass_age_t, n_decimals = 4), " t, a decline of ", print_n_decimal(biomass_age_diff_t, n_decimals = 4), " t from the initially provided biomass of ", print_n_decimal(old_biomass_age_t, n_decimals = 4), " t.")
+  }
+
+  # if they are the same, no need for a note
+  if (same_biomass_length == TRUE) {
+    biomass_comp_age_sentence <- ""
+  }
+}
+```
+
+`r if (ages_data_check == FALSE & age_data == TRUE){age_update_sentence}`
+
+`r if (ages_data_check == TRUE & age_data == TRUE){biomass_comp_age_sentence}`
+
+
+**Included output files:**
+
+```{r id_files, echo = FALSE, message=FALSE, warning=FALSE}
+# BY LENGTH
+
+# Biomass and abundance by 1 cm length bins for each surveyed area
+all_files_list <- list.files("stock_assessment_output/", pattern = "*.csv")
+bio_abund_length <- all_files_list[which(stringr::str_detect(string = all_files_list, pattern = "biomass_num_length_by_region"))]
+
+# Total biomass by management area
+biomass_mgmt_area <- all_files_list[which(stringr::str_detect(string = all_files_list, pattern = "biomass_num_length_by_INPFC"))]
+
+# Relative Estimation Error
+rel_est_err <- all_files_list[which(stringr::str_detect(string = all_files_list, pattern = "relative_estimation_error"))]
+
+# Number of bottom trawls and number of midwater trawls
+n_trawls <- all_files_list[which(stringr::str_detect(string = all_files_list, pattern = "n_trawls"))]
+
+# Number of measured pollock (length) by sex
+n_lengths <- all_files_list[which(stringr::str_detect(string = all_files_list, pattern = "lengths_by_sex"))]
+
+# Abundance-weighted maturity at length data: not for summer goa
+
+# specimen data including ages and maturity determinations.
+specimens <- all_files_list[which(stringr::str_detect(string = all_files_list, pattern = "specimen_data"))]
+
+# BY AGE
+
+# Biomass and abundance by age
+bio_abund_age <- all_files_list[which(stringr::str_detect(string = all_files_list, pattern = "biomass_num_age"))]
+
+# Number of aged pollock by sex
+n_ages <- all_files_list[which(stringr::str_detect(string = all_files_list, pattern = "ages_by_sex"))]
+
+# Abundance-weighted maturity at length data:
+weighted_maturity_length <- all_files_list[which(stringr::str_detect(string = all_files_list, pattern = "weighted_L50_mature"))]
+
+
+# Abundance-weighted maturity at length data:
+weighted_maturity_age <- all_files_list[which(stringr::str_detect(string = all_files_list, pattern = "weighted_A50_mature"))]
+```
+
+Biomass and abundance by 1 cm length bins for each surveyed area: *`r bio_abund_length`*
+
+Biomass and abundance by age: *`r ifelse(age_data == TRUE, bio_abund_length, 'Age data is not yet available.')`*
+
+Total biomass by management area: *`r biomass_mgmt_area`*
+
+Number of measured pollock (length) by sex: *`r n_lengths`*
+
+Number of aged pollock by sex: *`r ifelse(age_data == TRUE, n_ages, 'Age data is not yet available.')`*
+
+Relative Estimation Error:  *`r rel_est_err`*
+
+Number of midwater and bottom trawls: *`r n_trawls`*
+
+Specimen data: *`r specimens`*
+
+Maturity at length (weighted by local abundance): *`r weighted_maturity_length``*
+
+Maturity at age (weighted by local abundance): *`r ifelse(age_data == TRUE, weighted_maturity_age, 'Age data is not yet available.')`*
+
+\pagebreak
+
+**Survey extent**
+
+```{r survey_extent_map, echo = FALSE, message=FALSE, warning=FALSE, fig.width= 6, fig.height= 6, dpi=300}
+comp_map <- make_survey_location_comparison_map(all_survey_intervals = historical_interval_data, current_survey_intervals = current_year_interval_data)
+
+comp_map
+
+```
+
+\pagebreak
+
+**Survey timing**
+```{r survey_timing_update, echo = FALSE, message=FALSE, warning=FALSE, fig.width= 6, fig.height= 6, dpi=300}
+
+# open up the historical survey timing dataset
+load('historical_data/shelikof_survey_timing.rda')
+
+# get the current survey summarized to match historical format
+current_timing_data <- current_year_interval_data %>%
+  st_drop_geometry() %>%
+  # we only report shelikof strait here, so limit to this
+  filter(region == "Shelikof Strait") %>%
+  group_by(year) %>%
+  summarize(
+    start = min(lubridate::date(START_TIME)),
+    end = max(lubridate::date(START_TIME))
+  )
+
+# format the current timing data for joining with the historic
+#for plotting- set all year components to 1900
+lubridate::year(current_timing_data$start) <- 1900
+lubridate::year(current_timing_data$end) <- 1900
+
+
+# pull in the female prespawning, spent values and present as percents
+maturity_data <- plot_abundance_weighted_maturity(ship = ship_shelikof, 
+                                                  survey = survey_shelikof,  
+                                                  region_id = "Shelikof Strait")
+
+#get the summary we need
+current_maturity_data <- maturity_data[[2]]
+
+maturity_to_join <- current_maturity_data %>%
+  filter(SEX == 'Female') %>%
+  # we only care about prespawn/spawning/spent in this case
+  filter(MATURITY %in% c("Prespawning", "Spawning", "Spent"))%>%
+  mutate(
+    mat_stage = ifelse(MATURITY %in% c("Spawning", "Spent"),
+         'spawning_spent', 
+         "prespawn")
+   ) %>%
+  group_by(mat_stage) %>%
+  summarize(wt_percent = sum(wt_percent)) %>%
+  pivot_wider(names_from = mat_stage, values_from = wt_percent)
+
+# add a row to the summary dataframe
+new_row <- data.frame(current_timing_data$year, current_timing_data$start, current_timing_data$end, maturity_to_join$prespawn, maturity_to_join$spawning_spent)
+
+colnames(new_row) <- colnames(shelikof_timing)
+
+# check- if there is a datapoint for the current survey, replace with the current values 
+if (current_year %in% shelikof_timing$year){
+  
+  # get rid of this year- we'll update to be safe; this will be needed in cases where
+  # a more recent analysis has changed values
+  shelikof_timing <- shelikof_timing %>%
+    filter(year != current_year)
+  
+}
+
+# append the most up-top-date info to to the historical data
+shelikof_timing <- bind_rows(shelikof_timing, new_row)
+
+#and save the dataset
+save(shelikof_timing, file = 'historical_data/shelikof_survey_timing.rda')
+
+```
+
+```{r survey_timing_gantt, echo = FALSE, message=FALSE, warning=FALSE, fig.width= 6, fig.height= 7, dpi=300}
+
+shelikof_gantt <- shelikof_timing %>%
+  select(!c('prespawn', 'spawning_spent')) %>%
+  pivot_longer(cols = -c('year'), names_to = 'state', values_to = 'time') %>%
+  # define a plotting color- red for current survey, otherwise black
+  mutate(current_year = ifelse(year == unique(current_year_interval_data$year),
+                TRUE,
+                FALSE) 
+         )
+
+# plot everything
+ggplot(shelikof_gantt, aes(x = time, y = year, group=year, color = current_year)) +
+  geom_line(size = 1.25) +
+  scale_y_reverse() +
+  scale_color_manual(values = c('black', 'red')) +
+  labs(x="Date", y="Survey Year", title="Shelikof Winter AT Survey Dates") +
+  theme_bw() +
+  cruise_report_plots_theme +
+  theme(legend.position = 'none')
+
+
+```
+
+
+```{r survey_timing_maturity, echo = FALSE, message=FALSE, warning=FALSE, fig.width= 6, fig.height= 4, dpi=300}
+
+#plot the maturity too
+shelikof_maturity <- shelikof_timing %>%
+  select('year', 'prespawn', 'spawning_spent') %>%
+  pivot_longer(cols = -c("year"), names_to = 'stage', values_to = 'perc')
+
+ggplot(shelikof_maturity, aes(x = year, y = perc, color = stage))+
+  geom_line(size = 1.5, alpha = 0.6)+
+  scale_color_manual(values = c('black', 'red')) +
+  labs(x="Survey Year", y="Percent", title="Shelikof winter female spawning states") +
+  theme_bw() +
+   cruise_report_plots_theme 
+
+
+```

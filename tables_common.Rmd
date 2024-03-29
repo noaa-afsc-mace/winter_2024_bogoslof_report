@@ -1,0 +1,77 @@
+<!-- TABLES-->
+<!-- NOTE- tables 1,2 (calibration parameters, selectivity curves) are not produced here!-->
+
+<!-- TABLES-->
+
+<!-- Insert calibration parameters table already made in a Word document-->
+```{r add_cal_table, echo = FALSE, message=FALSE, warning=FALSE, fig.width=6.5}
+## NOTE! This will need to be updated for 2023 still!
+
+officer::block_caption(
+  label = paste0("Simrad EK80 38 kHz acoustic system description and settings used during the ", current_year, " winter acoustic-trawl surveys. These include environmental parameters and results from standard sphere acoustic system calibrations conducted in association with the survey and final values used to calculate biomass & abundance data. The collection settings column contains 12 February EK80 calibration utility results. Other columns are a combination of on-axis and EK80 calibration utility results (see Methods and Results and Discussion sections of text for details)."),
+  style = "Table Caption",
+  autonum = run_autonum(
+    seq_id = "tab",
+    bkm = "caltable",
+    pre_label = "Table ",
+    post_label = ". -- "
+  )
+)
+
+officer::block_pour_docx("2023_cal_table.docx")
+
+```
+
+<!-- Set as portrait- this extends back to the last 'block_section' call-->
+`r  block_section(portrait_section)`
+
+<!-- haul tables -->
+```{r shelikof_haul_table, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=9}
+# return table and caption to the document
+tmp_table <- MACEReports::build_haul_table(haul_data = haul_table_data)
+
+# print table and caption
+print_table <- set_caption(tmp_table[[1]],
+  caption = tmp_table[[2]],
+  style = "Table caption",
+  align_with_table = FALSE,
+  autonum = run_autonum(
+    seq_id = "tab",
+    bkm = "surveyhaultable",
+    pre_label = "Table ",
+    post_label = ". -- "
+  )
+)
+
+flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+```
+
+<!-- Set as landscape- this extends back to the last 'block_section' call -->
+`r  block_section(landscape_section)`
+
+
+<!-- specimen tables -->
+```{r specimen_table_shelikof, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=6.5}
+# return the table and caption
+tmp_table <- build_specimen_table_function(specimen_table_data = specimen_table_data)
+
+# print table and caption
+print_table <- set_caption(tmp_table[[1]],
+  caption = tmp_table[[2]],
+  style = "Table Caption",
+  align_with_table = FALSE,
+  autonum = run_autonum(
+    seq_id = "tab",
+    bkm = "surveyspecimen",
+    pre_label = "Table ",
+    post_label = ". -- "
+  )
+)
+
+flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+```
+
+<!-- Set as portrait- this extends back to the last 'block_section' call-->
+`r  block_section(portrait_section)`

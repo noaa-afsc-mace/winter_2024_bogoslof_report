@@ -1,0 +1,33 @@
+$~$$~$$~$$~$
+
+##### Results of the Acoustic-Trawl Survey
+##### of Walleye Pollock (*Gadus chalcogrammus*) in the
+##### Shumagin Islands and Shelikof Strait
+##### February and March 2023
+##### (DY2023-03 and DY2023-04) 
+
+
+$~$$~$$~$$~$
+
+#### by
+#### Denise McKelvey, Abigail McCarthy, and Darin Jones
+
+$~$$~$$~$$~$
+
+
+
+
+
+
+
+
+#### Resource Assessment and Conservation Engineering Division
+#### Alaska Fisheries Science Center
+#### National Marine Fisheries Service
+#### National Oceanic and Atmospheric Administration
+#### 7600 Sand Point Way, NE
+#### Seattle, WA 98115
+
+$~$$~$$~$$~$
+
+#### `r lubridate::month(Sys.Date(), label = TRUE, abbr = FALSE)` `r lubridate::year(Sys.Date())`

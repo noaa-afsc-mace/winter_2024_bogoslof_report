@@ -5,21 +5,8 @@
 #find all the csv's in the itinerary folder
 personnel_list = list.files('./personnel_appendix', pattern = '*.csv')
 
-#if there's a shumagins itinerary, make sure it plots first
-if (any(stringr::str_detect(personnel_list, "Shumagin"))){
-  
-  personnel_list <- rev(personnel_list)
-  
-}
-
 #function to make a simple table for each
 make_personnel_table = function(file_name){
-  
-  #get the survey name from the file name 
-  survey_name = stringr::str_split(file_name, '_')[[1]][1]
-  
-  #and standardize the name to the survey region name
-  survey_name = get_nice_region_names(survey_name)
   
   #open the file 
   tmp_table = read_csv(paste0('./personnel_appendix/', file_name))
@@ -44,7 +31,7 @@ make_personnel_table = function(file_name){
     tmp_table = padding(tmp_table, padding = 0, part = "all")
     
     #set the title
-    tmp_table = add_header_lines(tmp_table, values = survey_name , top = TRUE)
+    tmp_table = add_header_lines(tmp_table, values = "Bogoslof" , top = TRUE)
     tmp_table = align(tmp_table, align = 'center', part = 'header', i = 1 )
     
     #add a footnote for the organizations present

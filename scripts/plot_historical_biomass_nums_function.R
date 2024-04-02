@@ -7,8 +7,7 @@
 # current year- that's written in the get_macebase_data code, so the current year doesn't need to be appended, but
 #two datasets are being combined
 
-plot_historical_biomass_nums_function <- function(historical_data_path,
-                                                  biomass_and_numbers_data,
+plot_historical_biomass_nums_function <- function(biomass_and_numbers_data,
                                                   region_name,
                                                   log10_numbers_scale = NULL,
                                                   sqrt_numbers_scale = NULL) {
@@ -25,27 +24,27 @@ plot_historical_biomass_nums_function <- function(historical_data_path,
     # make the names match
     rename(length = LENGTH)
   
-  # save a file path to update the data in the historical csv
-  # open up the pre-selectivity data; limit to the requested region
-  historical_data <- readRDS(historical_data_path) %>%
-    filter(region == region_name) %>%
-    select(- region) %>%
-    # historical record has NAs for some years with no data- clear these out here so they don't show in plot
-    filter(!is.na(number_million_fish))
-  
-  # check- make sure there are actually old data available, alert user if not!
-  if (nrow(historical_data) == 0){
-    
-    warning("No pre-selectivity data is available! Are you ok with that?")
-    
-    historical_data <- data.frame(NA, NA, NA, NA) 
-    colnames(historical_data) <- colnames(biomass_and_nums)
-    
-  }
-  
-  # compile these two into a single dataframe 
-  biomass_and_nums <- bind_rows(biomass_and_nums, historical_data) %>%
-    arrange(year, length)
+  # # save a file path to update the data in the historical csv
+  # # open up the pre-selectivity data; limit to the requested region
+  # historical_data <- readRDS(historical_data_path) %>%
+  #   filter(region == region_name) %>%
+  #   select(- region) %>%
+  #   # historical record has NAs for some years with no data- clear these out here so they don't show in plot
+  #   filter(!is.na(number_million_fish))
+  # 
+  # # check- make sure there are actually old data available, alert user if not!
+  # if (nrow(historical_data) == 0){
+  #   
+  #   warning("No pre-selectivity data is available! Are you ok with that?")
+  #   
+  #   historical_data <- data.frame(NA, NA, NA, NA) 
+  #   colnames(historical_data) <- colnames(biomass_and_nums)
+  #   
+  # }
+  # 
+  # # compile these two into a single dataframe 
+  # biomass_and_nums <- bind_rows(biomass_and_nums, historical_data) %>%
+  #   arrange(year, length)
   
   # identify the surveyed years
   survey_years <- unique(biomass_and_nums$year)

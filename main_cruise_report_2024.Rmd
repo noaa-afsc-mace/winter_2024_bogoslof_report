@@ -92,9 +92,10 @@ report_number_samalga <- 2
 pocketnets_used <- FALSE # TRUE or FALSE
 
 # Sea surface temperatures: set the primary and backup temperature sensors you want to use
-# (see clamsbase2.underway_data table for what's available)
-primary_sensor <- "TSG-SBE38-Temp_1_min_avg"
-backup_sensor <- "Mid-SeaTemp-C-Cal-VALUE_1_min_avg"
+# (see clamsbase2.underway_data table for what's available). Note due to issues with data 
+# from the SBE 38, we're used the usual backup as the primary sensor
+primary_sensor <- "Mid-SeaTemp-C-Cal-VALUE_1_min_avg"
+backup_sensor <- "TSG-SBE38-Temp_1_min_avg"
 
 # set pollock_size_cutoff
 # we have been plotting big and little pollock as separate bars in stickplots; we have also been plotting the surface- and bottom- referenced figures in relation to this cutoff. This number is the fork length (cm) that will be used (i.e. 30 cm creates a bar <= 30 and a bar > 30)
@@ -135,8 +136,8 @@ echoview_version <- "14.0.206"
 # max_bar_height = the maximum height of the bars, in degees (i.e. 2.0 = 2 degrees =~ 60 nmi tall)
 
 # bogoslof
-rotation <- 5
-max_bar_height <- 2
+rotation <- -35
+max_bar_height <- 0.75
 
 
 # do you want only 'random' fish in maturity calculations (i.e. no non-random grabs)
@@ -152,22 +153,7 @@ goa_labels_to_get <- c(
   "Umnak Island")
 
 # of this list, should any of these be indicated with an arrow? I.e. are they in a really crowded area?
-goa_arrow_list <- c("Islands of the Four Mountains", "Bogoslof Island", "Samalga Island",
-  "Umnak Island")
-
-# Specifying one or multiple SBE profiles to be plotted
-SBE_Nset <- 1
-# only configured for plotting 1 or 2 profiles at this time based on class (i.e. SS1 or SS2 hauls)
-
-# Specify hauls by event number for each profile that you wish to plot
-if (SBE_Nset > 1) {
-  SBE_set.ls <- list(
-    "haul_set1" = c(1:12, 14, 16, 18, 19), # specify event numbers for subset 1 of hauls you wish to plot
-    "haul_set2" = c(13, 15, 17, 21)
-  ) # specify event numbers for subset 2 of hauls you wish to plot
-} else {
-  SBE_set.ls <- NULL
-}
+goa_arrow_list <- c("Islands of the Four Mountains", "Samalga Island", "Umnak Island")
 
 # have you saved output for SSMA? When you want to, here's the idea:
 # 1. Feel like it's time to share results? Go into the 'stock_assessment_output' folder
@@ -394,13 +380,13 @@ source("scripts/plot_depth_violins.R")
 source("scripts/plot_length_at_age.R")
 source("scripts/plot_historical_age_comps_bubble_function.R")
 source("scripts/plot_analyses_comparisons.R")
-source("scripts/plot_SBE_profile_by_class.R")
+source("scripts/plot_SBE_profile.R")
 source("scripts/plot_SBE_profile_grid_winter.R")
 source("scripts/plot_abundance_weighted_maturity.R")
-source("scripts/plot_biomass_sticks_by_class_function.R")
+source("scripts/plot_biomass_sticks_function.R")
 source("scripts/get_fig_height.R")
 source("scripts/plot_historical_sst_anomalies.R")
-source("scripts/plot_historical_biomass_comparison_by_region.R")
+source("scripts/plot_historical_biomass_comparison.R")
 source("scripts/plot_survey_overview_map.R")
 
 # formatting/misc
@@ -543,8 +529,9 @@ cat(title_page)
 
 <!--build the abstract section  -->
 ```{r print_title_page, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-abstract_doc <- knitr::knit_child("abstract.Rmd", quiet = TRUE)
-cat(abstract_doc)
+##NATE: commented out for now.
+#abstract_doc <- knitr::knit_child("abstract.Rmd", quiet = TRUE)
+#cat(abstract_doc)
 ```
 
 \pagebreak
@@ -565,8 +552,9 @@ table_of_contents
 
 <!--build the introduction section  -->
 ```{r print_intro, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-intro_doc <- knitr::knit_child("intro.Rmd", quiet = TRUE)
-cat(intro_doc)
+##NATE commented out for now
+# intro_doc <- knitr::knit_child("intro.Rmd", quiet = TRUE)
+# cat(intro_doc)
 ```
 
 <!--TODO:: check on common methods with Dave before calling this done! -->
@@ -579,17 +567,19 @@ cat(methods_doc)
 
 <!--Compile the common results- cal results, etc  -->
 ```{r common_results, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-common_results <- knitr::knit_child("results_common.Rmd", quiet = TRUE)
-cat(common_results)
+##NATE: this just covers calibration stuff, you could probably comine
+# common_results <- knitr::knit_child("results_common.Rmd", quiet = TRUE)
+# cat(common_results)
 ```
 
 <!--Compile the Shelikof-only results  -->
 ```{r shelikof_results, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-common_results <- knitr::knit_child("results.Rmd", quiet = TRUE)
-cat(common_results)
+##NATE: leaving this for now 
+# results <- knitr::knit_child("results.Rmd", quiet = TRUE)
+# cat(results)
 ```
 
-\pagebreak
+
 # REFERENCES
 
 <div id="refs"></div>
@@ -603,7 +593,7 @@ cat(common_results)
 
 # TABLES {#tables}
 ```{r print_common_tables, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-# this compiles the common tables shared between Shumagins + Shelikof
+# this compiles the common tables 
 common_tables_doc <- knitr::knit_child("tables_common.Rmd", quiet = TRUE)
 cat(common_tables_doc)
 ```
@@ -613,13 +603,12 @@ cat(common_tables_doc)
 <!--Shelikof Strait specific tables  -->
 <!--TODO:: EVA/historical biomass table -->
 ```{r shelikof_tables, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-if (current_shelikof_survey == TRUE) {
-  shelikof_tables_doc <- knitr::knit_child("tables_shelikof.Rmd", quiet = TRUE)
-  cat(shelikof_tables_doc)
-}
-```
+## NATE- I'm leaving these out for now, these are numbers/biomass at length/age and 
+# I'm not sure how to do this for the complications of the Bogoslof- happy to help though.
 
-\newpage
+# shelikof_tables_doc <- knitr::knit_child("tables_shelikof.Rmd", quiet = TRUE)
+
+```
 
 <!--Compile figures  -->
 
@@ -629,16 +618,6 @@ if (current_shelikof_survey == TRUE) {
 common_figures_doc <- knitr::knit_child("figures_common.Rmd", quiet = TRUE)
 cat(common_figures_doc)
 ```
-
-
-<!-- Shelikof Strait only plots -->
-```{r shelikof_figures, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-if (current_shelikof_survey == TRUE) {
-  shelikof_figures_doc <- knitr::knit_child("figures_shelikof.Rmd", quiet = TRUE)
-  cat(shelikof_figures_doc)
-}
-```
-\pagebreak
 
 <!--Compile the appendices   -->
 
@@ -668,33 +647,12 @@ cat(abundance_calcs)
 <!-- Set as portrait- this extends back to the last 'block_section' call-->
 `r  block_section(portrait_section)`
 
-# APPENDIX III. REGIONAL SUMMARIES
-
-<!-- Area summaries: for every region other than Shelikof, create a summary with tables, figures, text -->
-```{r region_appendix, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-
-# we'll print these in date order from when the survey was started in a given region
-# we'll also ignore shelikof here, since it's already been reported
-
-# collect the regions to report and order by the start time
-report_regions_list <- current_year_interval_data %>%
-  st_drop_geometry() %>%
-  filter(region != "Shelikof Strait") %>%
-  group_by(region) %>%
-  summarize(start_time = min(START_TIME)) %>%
-  arrange(start_time)
-
-for (i in report_regions_list$region){
-  tmp_doc <- knitr::knit_child("appendix_region_summary.Rmd", quiet = TRUE)
-  cat(tmp_doc)
-}
-
-```
-
-
 <!--compile the stock assessment output whenever you update the database query-->
 ```{r compile_stock_assessment_shelikof, echo = FALSE, message=FALSE, warning=FALSE}
-if (update_datasets == TRUE){
-  compile_stock_assessment_output()
-}
+
+#NATE- not doing this yet, and I haven't adapted for the Bogoslof
+
+# if (update_datasets == TRUE){
+#   compile_stock_assessment_output()
+# }
 ```

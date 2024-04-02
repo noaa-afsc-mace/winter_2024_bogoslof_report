@@ -1,6 +1,9 @@
 # Plot the transects and hauls for each survey
 
-plot_intervals_hauls_map_function <- function(region = NULL, gear_type_options, add_haul_numbers) {
+plot_intervals_hauls_map_function <- function(region = NULL, 
+                                              gear_type_options, 
+                                              add_haul_numbers, 
+                                              scaling_hauls_only = FALSE) {
   # if a user requested a region, get the data for this region only
   if (!is.null(region)){
   
@@ -66,9 +69,16 @@ plot_intervals_hauls_map_function <- function(region = NULL, gear_type_options, 
   region_colors <- scale_color_manual(values = cb_safe_palette[1:length(unique(intervals_plot$region))])
 
   # make the plot- with or without haul numbers based on user's choice
+  
+  # if user requests scaling hauls only, get rid of the non-scaling hauls
+  if (scaling_hauls_only == TRUE){
+    
+    event_data <- event_data[event_data$EVENT_ID %in% scaling_hauls$EVENT_ID,]
+    
+  }
 
   # return a basemap that extends to cover all intervals
-  basemap <- MACEReports::get_basemap_layers(plot_limits_data = plot_area, plot_expansion = .1)
+  basemap <- MACEReports::get_basemap_layers(plot_limits_data = plot_area, plot_expansion = .1, bathy = FALSE, contours = c(100,200,1000))
 
   # build map
   intervals_and_hauls_map <-
@@ -108,32 +118,33 @@ plot_intervals_hauls_map_function <- function(region = NULL, gear_type_options, 
       size = 3, color = "black", fontface = "bold", family = "Times",
       fill = alpha(c("white"), 0.35)
     ) +
+
     # add labels, and make sure they don't overlap each other with ggrepel
-    # ggrepel::geom_label_repel(
-    #   data = goa_plot_labels,
-    #   aes(label = area_name, geometry = geom),
-    #   stat = "sf_coordinates",
-    #   size = 3,
-    #   family = "Times",
-    #   fontface = "bold",
-    #   color = "black",
-    #   # set the min size for arrows to be made
-    #   min.segment.length = unit(0.04, "npc"),
-    #   # Add extra padding around each data point.
-    #   # point.padding = unit(3, 'lines'),
-    #   nudge_y = ifelse(goa_plot_labels$area_name %in% goa_arrow_list, 1852 * 50, - 1852 * 5),
-    #   nudge_x = ifelse(goa_plot_labels$area_name %in% goa_arrow_list, - 1852 * 10, 0),
-    #   # Color of the line segments.
-    #   segment.color = "black",
-    #   # Width of the line segments.
-    #   segment.size = 0.4,
-    #   # Draw an arrow from the label to the data point.
-    #   arrow = arrow(length = unit(0.01, "npc")),
-    #   # Strength of the repulsion force.
-    #   force = 2,
-    #   label.size = NA,
-    #   fill = alpha(c("white"), 0.35)
-    # ) +
+    ggrepel::geom_label_repel(
+      data = goa_plot_labels,
+      aes(label = area_name, geometry = geom),
+      stat = "sf_coordinates",
+      size = 3,
+      family = "Times",
+      fontface = "bold",
+      color = "black",
+      # set the min size for arrows to be made
+      min.segment.length = unit(0.04, "npc"),
+      # Add extra padding around each data point.
+      # point.padding = unit(3, 'lines'),
+      nudge_y = ifelse(goa_plot_labels$area_name %in% goa_arrow_list, - 1852 * 15, 0),
+      nudge_x = ifelse(goa_plot_labels$area_name %in% goa_arrow_list, 1852 * 5, 0),
+      # Color of the line segments.
+      segment.color = "black",
+      # Width of the line segments.
+      segment.size = 0.4,
+      # Draw an arrow from the label to the data point.
+      arrow = arrow(length = unit(0.01, "npc")),
+      # Strength of the repulsion force.
+      force = 2,
+      label.size = NA,
+      fill = alpha(c("white"), 0.35)
+    ) +
     # add some labels
     labs(shape = "Gear \nType", color = "Region", fill = "Bottom depth (m)") +
     guides(

@@ -1,10 +1,11 @@
-plot_sst_map <- function(temperature_plot_data, region_name) {
+# for the BOGOSLOF, this is written to plot SST survey-wide (not by umnak/samalga regions)
+
+plot_sst_map <- function(temperature_plot_data) {
   # limit the data to the requested region
-  temperature_plot_data <- temperature_plot_data %>%
-    filter(region == region_name)
+  temperature_plot_data <- temperature_plot_data 
     
   # build a basemap
-  basemap <- MACEReports::get_basemap_layers(plot_limits_data = temperature_plot_data)
+  basemap <- MACEReports::get_basemap_layers(plot_limits_data = temperature_plot_data, bathy = FALSE, contours = c(100,200,1000), plot_expansion = 0.1)
 
   # make the plot
   sst_plot <-
@@ -14,7 +15,7 @@ plot_sst_map <- function(temperature_plot_data, region_name) {
     # add some place labels
     # geom_sf_text(data = area_labels, aes(label = name), family = 'Times', size = 3, fontface = 'bold')+
     scale_color_distiller(palette = "RdYlBu") +
-    guides(color = guide_colorbar(keywidth = 0.25, keyheight = 0.25, default.unit = "inch"), fill = "none") +
+    guides(color = guide_colorbar(keywidth = 2, keyheight = 0.25, default.unit = "inch", barwidth = 2), fill = "none") +
     # add some labels
     # labs(x ="Longitude", y = "Latitude", color = expression(' Temperature ('*~degree*C*')'))+
     # the above label inserts a space after ( and before the degree C, below solves it.

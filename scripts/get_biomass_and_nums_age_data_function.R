@@ -32,6 +32,10 @@ get_biomass_and_nums_age_data_function <- function(ship, survey, data_set_id, an
 
   # get the biomass for each interval/layer
   biomass_nums_data <- left_join(biomass_nums_data, intervals_data_to_join, by = c("SHIP", "SURVEY", "INTERVAL", "TRANSECT", "REPORT_NUMBER"))
+  
+  # in some old Bogoslof surveys, there are problem intervals that exist only in the biomass and not the intervals table- but we 
+  # want to include this biomss; be sure it has a year
+  biomass_nums_data$year[is.na(biomass_nums_data$year)] <- unique(biomass_nums_data$year[!is.na(biomass_nums_data$year)])
 
   # return the big dataframe
   return(biomass_nums_data)

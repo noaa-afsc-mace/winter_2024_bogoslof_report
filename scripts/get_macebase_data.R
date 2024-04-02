@@ -215,7 +215,7 @@ get_macebase_data <- function(){
   
   # if not, just add some placeholders
   if (age_data_check == 0) {
-    sel_corr_surveys_biomass_nums_age <- c()
+    historical_surveys_biomass_nums_age <- c()
     current_survey_biomass_nums_age <- c()
     vertical_dist_surf_ref_biomass_nums_by_age <- c()
     vertical_dist_bot_ref_biomass_nums_by_age <- c()
@@ -278,7 +278,7 @@ get_macebase_data <- function(){
   }
   
   ######
-  # pollock length-weight-age data- this gathers for the selectivity-corrected time series
+  # pollock length-weight-age data- this gathers for the macebase2 time series
   pollock_length_weight_age_data <- get_biological_data(
     ships = historical_params$ships,
     surveys = historical_params$surveys,
@@ -309,7 +309,7 @@ get_macebase_data <- function(){
                                           analysis_id = current_year_query_params$analyses),
                                      get_haul_table_data)
   
-  # get catch table, this will include all regions in the current survey year
+  # get catch table, for Bogoslof this has been modified to sum across regions
   catch_table_data <- purrr::pmap_dfr(list(ship = current_year_query_params$ships,
                                            survey = current_year_query_params$surveys,
                                            data_set_id = current_year_query_params$data_sets,
@@ -408,7 +408,7 @@ get_macebase_data <- function(){
        historical_surveys_pollock_totals_by_interval,
        analysis_comparisons,
        age_data,
-       sel_corr_surveys_biomass_nums_age,
+       historical_surveys_biomass_nums_age,
        current_survey_biomass_nums_age,
        vertical_dist_surf_ref_biomass_nums_by_age,
        vertical_dist_bot_ref_biomass_nums_by_age,

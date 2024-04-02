@@ -40,11 +40,11 @@ regions <- all_species_biomass_nums %>%
   group_by(SURVEY) %>%
   summarize(regions = paste(region, collapse = ", "))
 
-historical_cover_sheet <- left_join(historical_selectivity_corrected_params, regions, by = c('surveys' = 'SURVEY')) %>%
+historical_cover_sheet <- left_join(historical_params, regions, by = c('surveys' = 'SURVEY')) %>%
   arrange(surveys) %>%
   select(- report_nums)
 
-#historical_cover_sheet <- historical_selectivity_corrected_params
+#historical_cover_sheet <- historical_params
 
 historical_cover_sheet <- flextable(historical_cover_sheet)  %>%
   flextable::colformat_num(j = c("surveys"), big.mark = "")  %>%
@@ -57,6 +57,6 @@ flextable_to_rmd(x = historical_cover_sheet, ft.align = "left", ft.split = TRUE,
 
 ```
 
-The table(s) above highlights the parameters used to grab historical data in the selectivity-corrected era. Check out the other parameters in the top of the script 'main_cruise_report_2022.Rmd' to be safe!  **Bold text will likely require updates as you edit the draft!**
+The table(s) above highlights the parameters used to grab historical data. Check out the other parameters in the top of the script 'main_cruise_report_YYYY.Rmd' to be safe!  **Bold text will likely require updates as you edit the draft!**
 
 \pagebreak

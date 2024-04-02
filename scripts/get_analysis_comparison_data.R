@@ -19,7 +19,10 @@ get_analysis_comparison_data <- function(ship, survey, data_sets, analyses, zone
   )
 
   biomass_nums_data <- dbGetQuery(db, biomass_nums_query)
-  
+
+  # get nicer names for the survey regions
+  #biomass_nums_data$region <- map_chr(biomass_nums_data$DESCRIPTION, get_nice_region_names)
+
   # return this dataframe
   return(biomass_nums_data)
 }

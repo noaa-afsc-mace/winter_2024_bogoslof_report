@@ -6,8 +6,7 @@
 # wants the most updated biomass and number values (which should be the case!)
 
 
-plot_historical_age_comps_bubble_function <- function(historical_data_path, 
-                                                      biomass_and_numbers_data,
+plot_historical_age_comps_bubble_function <- function(biomass_and_numbers_data,
                                                       region_name, 
                                                       max_age) {
   # get the numbers and biomass summarized by length interval
@@ -20,17 +19,17 @@ plot_historical_age_comps_bubble_function <- function(historical_data_path,
     # make the names match
     rename(Age = AGE)
 
-  # open the historical data
-  historical_data <- readRDS(historical_data_path) %>%
-    # filter to the requested regions
-    filter(region == region_name) %>%
-    select(- region) %>%
-    arrange(year, Age)
-  
-  # combine the old pre-selectivity values with the post-selectivity corrected era
-  biomass_and_nums <- bind_rows(biomass_and_nums, historical_data) %>%
-    arrange(year, Age)
-  
+  # # open the historical data
+  # historical_data <- readRDS(historical_data_path) %>%
+  #   # filter to the requested regions
+  #   filter(region == region_name) %>%
+  #   select(- region) %>%
+  #   arrange(year, Age)
+  # 
+  # # combine the old pre-selectivity values with the post-selectivity corrected era
+  # biomass_and_nums <- bind_rows(biomass_and_nums, historical_data) %>%
+  #   arrange(year, Age)
+  # 
   # identify the surveyed years
   survey_years <- unique(biomass_and_nums$year)
   

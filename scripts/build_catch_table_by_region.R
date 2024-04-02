@@ -151,7 +151,7 @@ build_catch_table_by_region <- function(region_name) {
 
 
     # gather the total number of hauls for the caption text
-    n_hauls <- length(current_year_event_data$EVENT_ID[current_year_event_data$region == region_name & current_year_event_data$`Gear type` == gear_type])
+    n_hauls <- length(current_year_event_data$EVENT_ID[current_year_event_data$`Gear type` == gear_type & current_year_event_data$EVENT_ID %in% scaling_hauls$EVENT_ID])
 
     # build the caption
     cap_text <- paste0(

@@ -2,8 +2,6 @@
 
 All activities were conducted aboard the NOAA Ship *Oscar Dyson*, a 64-m stern trawler equipped for fisheries and oceanographic research. The survey followed established AT methods as specified in NOAA protocols for fisheries acoustics surveys and related sampling[^1]. The acoustic units used here are defined in @Maclennan_etal_2002. Survey itineraries are listed in **Appendix I** and scientific personnel in **Appendix II**.
 
-**In `r current_year` (and since 2020), Shelikof Strait has been surveyed a few days earlier in than in most other years because of the relatively high percentages of spawning and spent female pollock observed in the 2017, 2018, and 2019 winter Shelikof Strait surveys. An earlier start date in Shelikof Strait was intended to increase the chances of surveying when most pollock were in the mature (or pre-spawning) stage, a timing consistent with most prior surveys.**
-
 [^1]: National Marine Fisheries Service (NMFS) 2014. NOAA protocols for fisheries acoustics surveys and related sampling (Alaska Fisheries Science Center), 26 p. Prepared by Midwater Assessment and Conservation Engineering Program, Alaska Fish. Sci. Center, Natl. Mar. Fish. Serv., NOAA.
 
 ## Acoustic Equipment, Calibration, and Data Collection
@@ -19,7 +17,7 @@ Raw acoustic data were recorded using EK80 software (version `r EK80_version`) a
 ```{r fishing_gear_summary, echo = FALSE, message=FALSE, warning=FALSE}
 
 # since this is for the winter GOA report, set this param here- for some conditionals below
-season_survey <- "winter GOA"
+season_survey <- "Bogoslof"
 
 # report fishing stats from all winter GOA surveys conducted together
 
@@ -154,7 +152,7 @@ if(season_survey == c("winter GOA")){
 
 }
 ### CTD statement by season and survey area
-if(season_survey == c("winter GOA")){
+if(season_survey %in% c("winter GOA", "Bogoslof")){
   CTD_statement <- "the calibration site"
 }
 if(season_survey == "summer GOA"){
@@ -170,10 +168,10 @@ if(season_survey == "summer EBS"){
 }
 
 # also find the previous Shelikof survey
-if (season_survey == "winter GOA"){
+if (season_survey%in% c("winter GOA", "Bogoslof")){
   
   # this assumes the last time we surveyed had a Shelikof survey!
-  previous_survey_years <- historical_selectivity_corrected_params %>%
+  previous_survey_years <- historical_params %>%
     mutate(year = substr(surveys, 1, 4)) %>%
     arrange(year)
   
@@ -194,7 +192,7 @@ The LFS1421 trawl was fished with four 45.7 m (150 ft) bridles (1.9 cm (0.75 in.
 
 A stereo camera system [Camtrawl\; Williams et al. -@Williams_etal_2010] was attached to the starboard panel forward of the codend on the LFS1421 trawl. The Camtrawl is used to capture stereo images for species identification and length measurement of individual fish and other taxa as they pass through the net toward the codend. The Camtrawl data are useful for determining the depth and size distribution of fish and other taxa when distinct and separate backscatter layers are sampled by a trawl haul but cannot be differentiated in the codend catch. Images are viewed and annotated using procedures described in @Williams_etal_2010. 
 
-Physical oceanographic data is collected during the cruise at trawl locations, at calibration locations, and continuously along transects. Water temperature profiles are obtained at trawl locations with a temperature-depth probe (SBE 39, Sea-Bird Scientific) attached to the trawl headrope. Additional temperature-depth measurements were taken from conductivity-temperature-depth (CTD) casts with a Sea-Bird CTD (SBE 911plus) system **at `r CTD_statement`.** Sea surface temperature data are measured using the ship’s sea surface temperature system (SBE 38, Sea-Bird Scientific, accuracy $\pm$ 0.002°C) located near the ship’s bow, approximately 1.4 m below the surface. At times when the SBE 38 was not operating, sea surface temperatures are taken from the Furuno T-2000 temperature probe (accuracy $\pm$ 0.2°C) located amidships 1.4 m below the surface. The SBE 38 was used `r round(ifelse(season_survey=="winter GOA", scs_stats$percent_primary_sensor[scs_stats$SURVEY == survey_shelikof], sst_sensor_stats$percent_primary_sensor), 1)`% of the time and the Furuno was used `r 100 - round(ifelse(season_survey=="winter GOA", scs_stats$percent_primary_sensor[scs_stats$SURVEY == survey_shelikof], sst_sensor_stats$percent_primary_sensor), 1)`% of the time in `r ifelse(season_survey=="winter GOA","the Shelikof Strait","this")` survey. `r ifelse(season_survey=="winter GOA", shumagins_percent_primary_sentence,'')` These and other environmental data were recorded using the ship’s Scientific Computing Systems (SCS). 
+Physical oceanographic data is collected during the cruise at trawl locations, at calibration locations, and continuously along transects. Water temperature profiles are obtained at trawl locations with a temperature-depth probe (SBE 39, Sea-Bird Scientific) attached to the trawl headrope. Additional temperature-depth measurements were taken from conductivity-temperature-depth (CTD) casts with a Sea-Bird CTD (SBE 911plus) system **at `r CTD_statement`.** Sea surface temperature data are measured using the ship’s sea surface temperature system (SBE 38, Sea-Bird Scientific, accuracy $\pm$ 0.002°C) located near the ship’s bow, approximately 1.4 m below the surface. At times when the SBE 38 was not operating, sea surface temperatures are taken from the Furuno T-2000 temperature probe (accuracy $\pm$ 0.2°C) located amidships 1.4 m below the surface. The SBE 38 was used `r round(ifelse(season_survey=="winter GOA", scs_stats$percent_primary_sensor[scs_stats$SURVEY == survey_shelikof], scs_stats$percent_primary_sensor), 1)`% of the time and the Furuno was used `r 100 - round(ifelse(season_survey=="winter GOA", scs_stats$percent_primary_sensor[scs_stats$SURVEY == survey_shelikof], scs_stats$percent_primary_sensor), 1)`% of the time in `r ifelse(season_survey=="winter GOA","the Shelikof Strait","this")` survey. `r ifelse(season_survey=="winter GOA", shumagins_percent_primary_sentence,'')` These and other environmental data were recorded using the ship’s Scientific Computing Systems (SCS). 
 
 [^2]: LFS1421 trawl (LFS Marine, NOAA, 1421 Research Trawl, designed and built in 2018/2019 to MACE specifications; hereafter LFS1421)
 
@@ -208,7 +206,7 @@ Trawl hauls were conducted to identify the species and size composition of acous
 
 [^3]: Groundfish Survey and Species Codes. 2019. RACE Division, AFSC, NMFS, NOAA; 7600 Sand Point Way NE, Seattle, WA 98115. <https://doi.org/10.25923/kp5e-1g02>.
 
-Additional biological samples were collected for special projects. Pollock ovaries were collected from pre-spawning walleye pollock to investigate interannual variation in fecundity of mature females (Sandi Neidetcher, Sandi.Neidetcher@noaa.gov), and from female walleye pollock of all maturity stages for a histological study. Fin clips were taken from pollock to investigate the genetic population structure within spawning stocks (Ingrid Spies, Ingrid.Spies@noaa.gov), and gill tissues from pollock and Pacific cod (*Gadus microcephalus*) were collected for an evolutionary marker analysis (Einar Arnason, einararn@hi.is). Blood and tissue samples were also taken from pollock and cod to investigate the prevalence of antifreeze proteins (Chi-Hing Christina Cheng, c-cheng@illinois.edu).
+**Additional biological samples were collected for special projects. Pollock ovaries were collected from pre-spawning walleye pollock to investigate interannual variation in fecundity of mature females (Sandi Neidetcher, Sandi.Neidetcher@noaa.gov), and from female walleye pollock of all maturity stages for a histological study. Fin clips were taken from pollock to investigate the genetic population structure within spawning stocks (Ingrid Spies, Ingrid.Spies@noaa.gov), and gill tissues from pollock and Pacific cod (*Gadus microcephalus*) were collected for an evolutionary marker analysis (Einar Arnason, einararn@hi.is). Blood and tissue samples were also taken from pollock and cod to investigate the prevalence of antifreeze proteins (Chi-Hing Christina Cheng, c-cheng@illinois.edu).**
 
 ## Data analysis
 
@@ -301,6 +299,45 @@ if(season_survey=="winter GOA"){
 
 }
 
+if(season_survey=="Bogoslof"){
+#in the Bogoslof survey, check which species are over 5% by weight or numbers
+#This should be updated in future- right now, the 5% rule is based on CATCH only, but it should be based on the 
+#actual calculated abundance if we keep using it...
+
+  species_over_5 = catch_table_data%>%
+    #sum catch across all gear types
+    group_by(SPECIES_CODE, COMMON_NAME, SCIENTIFIC_NAME)%>%
+    summarize(sp_wt = sum(TOT_WEIGHT),
+              sp_num = sum(TOT_NUMBER))%>%
+    group_by()%>%
+    mutate(percent_weight = sp_wt/sum(sp_wt) * 100,
+           percent_num = sp_num/sum(sp_num) * 100)%>%
+    #keep the over 5% species
+    filter(percent_weight > 5 | percent_num > 5)%>%
+    #order by weight
+    arrange(desc(percent_weight))%>%
+    #get 'nice' names to print
+    mutate(sp_name = map_chr(COMMON_NAME, print_species_name))
+  
+    #keep only the relationships that are in the current survey- this should find matches semi-flexibly and not miss small changes in TS naming conventions
+  check_ts = function(ts_relationship){
+    
+    #find the matching relationship
+    ts_match = ts_relationships_data$TS_RELATIONSHIP[which(str_detect(ts_relationships_data$TS_RELATIONSHIP, ts_relationship))]
+    
+    #if there's a match, return the species name, if not, return NA
+    return(ifelse(length(ts_match) == 1, ts_relationship, NA))
+  }
+  
+  #check all the availble relationships for a match
+  ts_applied = map_chr(species_over_5$sp_name, check_ts)
+  
+  #and print all the non-NA cases
+  ts_applied = ts_applied[!is.na(ts_applied)]
+
+}
+
+
 ```
 
 A series of target strength (TS, dB re 1 m^2^; the expected backscatter from each organism) to length relationships from the literature (Table A\@ref(tab:tsrelationships)) were used along with size and species distributions from selectivity-corrected trawl catches to estimate the proportion of the observed acoustic scattering attributable to each of the species captured in the trawls **(Appendix III)**. For species for which the TS-length relationship was derived using a different length measurement type than the one used for measuring the trawl catch specimens, an appropriate length conversion was applied (e.g., total length to fork length). Species-specific TS-length relationships from the literature were used for pollock, Pacific capelin, eulachon, Pacific herring, and for any species whose contribution to the total backscatter used in survey estimates was \> 5%. Otherwise, species were assigned to one of five group TS-length relationships: fishes with swim bladders, fishes without swim bladders, jellyfish, squid, and pelagic crustaceans (Table A\@ref(tab:tsrelationships)).
@@ -385,6 +422,9 @@ if(season_survey == "summer GOA"){
   spatial_patterns_statement <- paste0("To examine pollock horizontal distribution relative to prior surveys, geostatistical measures of the mean location (center of gravity, COG) and dispersion of the distribution around its COG (inertia) were calculated for each survey from 2013–",survey_year," [@Woillez_et_al_2007]. To account for interannual changes in survey coverage, COG and inertia were estimated using acoustic samples located within a standardized area of each NMFS management area based on a polygon that encompasses all samples collected between 2013 and ",survey_year," and was manually corrected to exclude land features. COG and inertia were calculated using the 'RGeostats' R package [@MINES_ParisTech_2021].")
 }
 
+if(season_survey == "Bogoslof"){
+  spatial_patterns_statement <- ""
+}
 ```
 
 `r spatial_patterns_statement`

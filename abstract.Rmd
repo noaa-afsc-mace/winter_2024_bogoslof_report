@@ -132,42 +132,6 @@ shelikof_summary_sentence <- shelikof_summary_sentences[which(shelikof_region_su
 # and which (if any) belong to Marmot/Chirikof
 marmot_chirikof_sentences <- shelikof_summary_sentences[which(shelikof_region_summaries != "Shelikof Strait")]
 
-
-# get the non-selectivity estimates; present as millions of fish, and biomass metric tons
-# limit these to just the MAIN part of the Sheliof and Shumagins survey
-
-# Drop the non-selectivity estimate from the abstract? Its been long enough.
-# 
-# if (isTRUE(current_shumagins_survey)) {
-#   shum_non_sel_num_million <- sum(shumagins_analysis_comparisons$NUMBERS[shumagins_analysis_comparisons$DATA_SET_ID == shumagins_non_sel_data_set & shumagins_analysis_comparisons$ANALYSIS_ID == shumagins_non_sel_analysis & shumagins_analysis_comparisons$region == "Shumagin Islands"]) / 1e6
-# 
-#   shum_non_sel_biomass_mt <- sum(shumagins_analysis_comparisons$BIOMASS[shumagins_analysis_comparisons$DATA_SET_ID == shumagins_non_sel_data_set & shumagins_analysis_comparisons$ANALYSIS_ID == shumagins_non_sel_analysis & shumagins_analysis_comparisons$region == "Shumagin Islands"]) / 1e3
-# 
-#   shum_num_million <- shumagins_summary_vals$num_million[shumagins_summary_vals$region == "Shumagin Islands"]
-#   shum_biomass_mt <- shumagins_summary_vals$biomass_mt[shumagins_summary_vals$region == "Shumagin Islands"]
-# 
-#   # and calculate difference between estimates- primary vs non-selectivity
-#   shum_nums_primary_vs_non_sel <- ((shum_non_sel_num_million - shum_num_million) / shum_num_million) * 100
-#   shum_biomass_primary_vs_non_sel <- ((shum_non_sel_biomass_mt - shum_biomass_mt) / shum_biomass_mt) * 100
-# 
-#   shumagins_only_select_comp_sentence <- paste0("The no-selectivity analysis estimated slightly more biomass ", round(shum_biomass_primary_vs_non_sel, digits = 1), "% higher in the Shumagin Islands. ")
-# }
-# 
-# shel_non_sel_num_million <- sum(shelikof_analysis_comparisons$NUMBERS[shelikof_analysis_comparisons$DATA_SET_ID == shelikof_non_sel_data_set & shelikof_analysis_comparisons$ANALYSIS_ID == shelikof_non_sel_analysis & shelikof_analysis_comparisons$region == "Shelikof Strait"]) / 1e6
-
-# shel_num_million <- shelikof_summary_vals$num_million[shelikof_summary_vals$region == "Shelikof Strait"]
-# shel_biomass_mt <- shelikof_summary_vals$biomass_mt[shelikof_summary_vals$region == "Shelikof Strait"]
-# 
-# shel_non_sel_biomass_mt <- sum(shelikof_analysis_comparisons$BIOMASS[shelikof_analysis_comparisons$DATA_SET_ID == shelikof_non_sel_data_set & shelikof_analysis_comparisons$ANALYSIS_ID == shelikof_non_sel_analysis & shelikof_analysis_comparisons$region == "Shelikof Strait"]) / 1e3
-
-# and calculate difference between estimates- primary vs non-selectivity
-# shel_nums_primary_vs_non_sel <- ((shel_non_sel_num_million - shel_num_million) / shel_num_million) * 100
-# shel_biomass_primary_vs_non_sel <- ((shel_non_sel_biomass_mt - shel_biomass_mt) / shel_biomass_mt) * 100
-
-# related text (left out):
-
-# These estimates were based on an analysis where length-frequency distributions of all species were assigned to observed backscatter using biological data and species compositions of the hauls nearest that backscatter. It also included a correction for escapement of fishes and other catch from the survey trawl (i.e. net selectivity). `r ifelse(shel_biomass_primary_vs_non_sel > 1, paste0('This result was compared with an analysis not incorporating net selectivity.',shumagins_only_select_comp_sentence,'The Shelikof Strait no-selectivity analysis estimated slightly ',ifelse(shel_biomass_primary_vs_non_sel >0, 'more', 'less'),' biomass (',round(shel_biomass_primary_vs_non_sel, digits = 1),'%) as compared to the primary analysis.'),' ')`
-
 # build a few blank statements for cases where we don't have data (no Shumgins survey/no ages yet)
 if (!isTRUE(current_shumagins_survey)) {
   shumagins3 <- ""

@@ -28,6 +28,12 @@ officer::block_pour_docx("2023_cal_table.docx")
 <!-- haul tables -->
 ```{r shelikof_haul_table, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=9}
 # return table and caption to the document
+
+# remove 'non-scaling' hauls? NATE not sure if you want the incompete haul, if you do, get rid of this
+
+# remove the hauls that weren't used in the analysis
+haul_table_data <- haul_table_data[haul_table_data$EVENT_ID %in% scaling_hauls$EVENT_ID,]
+
 tmp_table <- MACEReports::build_haul_table(haul_data = haul_table_data)
 
 # print table and caption
@@ -50,7 +56,6 @@ flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepne
 <!-- Set as landscape- this extends back to the last 'block_section' call -->
 `r  block_section(landscape_section)`
 
-
 <!-- specimen tables -->
 ```{r specimen_table_shelikof, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=6.5}
 # return the table and caption
@@ -64,6 +69,35 @@ print_table <- set_caption(tmp_table[[1]],
   autonum = run_autonum(
     seq_id = "tab",
     bkm = "surveyspecimen",
+    pre_label = "Table ",
+    post_label = ". -- "
+  )
+)
+
+flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+```
+
+\newpage
+
+<!-- make catch tables for each gear type in the Shelikof Strait-->
+```{r catch_table_bogolof, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=6.5}
+
+# the function build_catch_table_by_region just takes the dataframe 'catch_table_data' and pretties it up- this data
+# is already combined into one 'bogoslof' region so it works survey-wide (no umnak/samalga split) 
+# (this happends in get_catch_table_data.R).
+
+tmp_table <- build_catch_table_by_region(region_name = "Bogoslof")
+
+
+# print table and caption
+print_table <- set_caption(tmp_table[[1]][[1]],
+  caption = tmp_table[[1]][[2]],
+  style = "Table Caption",
+  align_with_table = FALSE,
+  autonum = run_autonum(
+    seq_id = "tab",
+    bkm = "bogosloflfs1421catch",
     pre_label = "Table ",
     post_label = ". -- "
   )

@@ -1,17 +1,322 @@
 <!-- Plot an overview of the survey area and trawl locations -->
-```{r survey_trawls_overview, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 7, fig.cap = cap_text, fig.id = 'surveylocationmap'}
+```{r survey_trawls_overview, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap = cap_text, fig.id = 'surveylocationmap'}
 
 # start with a blank figure caption; add one if there's a survey
 cap_text <- c()
 
-intervals_hauls_map <- plot_intervals_hauls_map_function(gear_type_options = mace_gear_types, add_haul_numbers = FALSE) 
+# NATE if you want the failed haul, just set scaling_hauls_only = FALSE
+intervals_hauls_map <- plot_intervals_hauls_map_function(gear_type_options = mace_gear_types, add_haul_numbers = FALSE, scaling_hauls_only = TRUE) 
 print(intervals_hauls_map)
 
 # build the figure caption
-cap_text <- paste0("Transect lines and trawl haul locations during the ", current_year, " winter pre-spawning acoustic-trawl surveys. The survey region associated with each transect is indicated by the transect color. The location of trawl events are indicated with purple markers. NMFS reporting areas are noted in white text. Bottom depths are indicated in greyscale. Note that this scale is used in all maps throughout report.")
+cap_text <- paste0("Transect lines and trawl haul locations during the ", current_year, " winter pre-spawning acoustic-trawl surveys. The survey region associated with each transect is indicated by the transect color. The location of trawl events are indicated with purple markers. The 1000 (— —), 500 (- -), and 200 (--) contour lines are noted.")
+
+```
+
+<!-- Shelikof SST plot -->
+```{r sst_shelikof, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap = cap_text, fig.id = 'shelikofSST'}
+
+# plot the seatemps (from scs data)
+
+# # start with a blank figure caption; add one if there's a survey
+cap_text <- c()
+
+sst_plot <- plot_sst_map(temperature_plot_data = scs_sst)
+
+# print the plot
+print(sst_plot)
+
+# build the caption
+cap_text <- paste0("Surface water temperatures (°C) recorded at 5-second intervals during the winter ", current_year, " acoustic-trawl survey in the Bogoslof. The The 1000 (— —), 500 (- -), and 200 (--) contour lines are noted.")
+```
+
+<!-- Set as landscape- this extends back to the last 'block_section' call -->
+`r  block_section(landscape_section)`
+
+<!--SBE plots- temp at depth-->
+```{r get_sbe_data, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.id = "bogoslofsbe"}
+
+sbe_summary <- plot_SBE_profile(historical_sbe_data = sbe_data, current_survey = survey)
+
+# pull out plots, captions, bookmarks to print
+sbe_plot <- sbe_summary[[1]]
+
+# get the summary stats
+sbe_summary_stats <- sbe_summary[[2]]
+
+# print the plot and the caption
+print(sbe_plot)
+
+# print the caption
+cap_text <- paste0("Mean water temperature (", intToUtf8(176), "C ; solid line)",
+      " by 1-m depth intervals measured at trawl locations during the ",current_year, " ",
+      "Bogslof acoustic-trawl survey of walleye pollock. The shaded area represents one standard deviation."
+    )
+    
+```
+
+
+
+<!-- 3-panel maturity figs: gather for each region-->
+```{r plot_3_panel_maturity_umnak, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.id = "umnakstraitmaturity"}
+
+# plot the maturities for the Shelikof region only
+maturity_list <- plot_abundance_weighted_maturity(ship = ship, 
+                                                  survey = survey,  
+                                                  region_id = "Umnak")
+
+# print the plot
+print(maturity_list[[4]])
+
+# get a nice caption name
+plot_region <- unique(maturity_list[[3]]$region)
+
+# build the caption
+cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity composition for male and female pollock greater than 40 cm fork length (FL) within each stage; B) proportion mature (i.e. pre-spawning, spawning, or spent) by 1-cm size group for female pollock; C) gonadosomatic index for females greater than 40 cm FL (with historic survey mean ± 1 std. dev.). All maturity quantities are weighted by local pollock abundance.")
+
+
+```
+
+```{r plot_3_panel_maturity_samalga, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.id = "samalgamaturity"}
+
+# plot the maturities for the Shelikof region only
+maturity_list <- plot_abundance_weighted_maturity(ship = ship, 
+                                                  survey = survey,  
+                                                  region_id = "Samalga")
+
+# print the plot
+print(maturity_list[[4]])
+
+# get a nice caption name
+plot_region <- unique(maturity_list[[3]]$region)
+
+# build the caption
+cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity composition for male and female pollock greater than 40 cm fork length (FL) within each stage; B) proportion mature (i.e. pre-spawning, spawning, or spent) by 1-cm size group for female pollock; C) gonadosomatic index for females greater than 40 cm FL (with historic survey mean ± 1 std. dev.). All maturity quantities are weighted by local pollock abundance.")
+
+
+```
+<!-- Set as landscape- this extends back to the last 'block_section' call -->
+`r  block_section(portrait_section)`
+
+<!--bogoslof stickplot-->
+```{r bogoslof_stickplot, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8,  fig.cap= cap_text, fig.id = 'bogoslofsticks'}
+cap_text <- c()
+
+# check if there is age data; if so make the plot by age, if not, plot by length class
+if(age_data == TRUE){
+
+  stick_data <- current_survey_biomass_nums_age
+  
+  # 
+
+} 
+
+if(age_data != TRUE){
+
+  stick_data <- current_year_pollock_biomass_nums
+
+} 
+
+
+current_biomass_sticks <-  plot_biomass_sticks_function(biomass_data = stick_data, 
+                                                        rotation = rotation,
+                                                        max_bar_height = max_bar_height,
+                                                        length_class_cutoff = pollock_size_cutoff, 
+                                                        age_class_cutoff = pollock_age_cutoff)
+
+# print the plot
+current_biomass_sticks
+
+
+
+# build the figure caption- this uses an ifelse statement to make the 'cutoff some bars' text or the 'all bars included' text
+cap_text <- paste0("Density (t/nmi^2^) attributed to pollock (vertical lines) along tracklines surveyed during the winter ", current_year, " acoustic-trawl survey of the Bogoslof. The The 1000 (— —), 500 (- -), and 200 (--) contour lines are noted.")
+```
+<!-- Historical comparison of winter time series-->
+<!-- Gather all surveyed regions here and make plots for them-->
+```{r plot_historical_barplots, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap= cap_text, fig.id = "shelikofstraitbiocomps"}
+
+# for this purpose, only going back to 2003- it seems to get too 'custom' before then to make values agree with existing published survey values
+historic_summary_by_year <- historical_surveys_pollock_totals_by_length %>%
+  filter(region %in% c("Umnak", "Samalga")) %>%
+  filter(year > 2002)
+
+summary_barplot <- plot_historical_biomass_comparison(timeseries_data = historic_summary_by_year,
+                                             historical_eva_vals = historical_eva)
+
+# print the plot
+summary_barplot
+
+# build the caption
+cap_text <- paste0("Summary of age-1+ pollock biomass estimates (thousands of metric tons) for Bogoslof based on acoustic-trawl surveys from ", min(historic_summary_by_year$year), "-", max(historic_summary_by_year$year), ". Current survey estimate in red, and shaded area indicates 1-D geostatistical 95% confidence intervals based on Honkalehto et al. 2011.")
+
+```
+<!-- Set as landscape- this extends back to the last 'block_section' call -->
+`r  block_section(landscape_section)`
+
+<!-- bar/line plots for biomass and numbers at length and age, for Bogoslof-->
+```{r biomass_nums_shelikof_plot, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=4, fig.cap = cap_text, fig.id = 'bogoslofbionumslength'}
+# start with a blank figure caption; add one if there's a survey
+cap_text <- c()
+
+# plot the 2-axis biomass and numbers by length plots
+# optionally, add a title with total biomass nums (add_totals = 'top') OR
+# add total biomass/nums values to upper left (add_totals = 'left)
+
+#NATE- this is summing across samalga/umnak; you could also group_by region if you wanted and make two
+num_at_length <- current_year_pollock_biomass_nums%>%
+  group_by(LENGTH)%>%
+  summarize(num_individuals = sum(NUMBERS),
+            biomass_kg = sum(BIOMASS))
+
+biomass_nums_plot <- MACEReports::plot_biomass_nums_by_length(length_vector = num_at_length$LENGTH,
+                                                                       biomass_vector = num_at_length$biomass_kg,
+                                                                       numbers_vector = num_at_length$num_individuals,
+                                                                       add_totals = FALSE)
+
+# print plot
+biomass_nums_plot
+  
+
+# buld the caption
+cap_text <- paste0("Numbers- (blue bars) and biomass- (red line) at-length estimates of pollock for the ", current_year, " acoustic-trawl survey of Bogoslof.")
+```
+
+
+```{r biomass_nums_bogoslof_ages_plot, echo = FALSE, message=FALSE, warning=FALSE, results='asis', dpi= 300, fig.width=6, fig.height=6, fig.cap = cap_text, fig.id = 'bogoslofbionumsages'}
+# start with a blank figure caption; add one if there's a survey
+cap_text <- c()
+
+if (isTRUE(age_data)) {
+
+  # plot the 2-axis biomass and numbers by age plots
+  
+  # sum across regions; you could also group_by region if you wanted and make two
+  num_at_age <- current_survey_biomass_nums_age%>%
+  group_by(AGE)%>%
+  summarize(num_individuals = sum(NUMBERS),
+            biomass_kg = sum(BIOMASS))
+  
+  
+  biomass_nums_ages_plot <- MACEReports::plot_biomass_nums_by_age(age_vector = num_at_age$AGE,
+                                                                           biomass_vector = num_at_age$biomass_kg,
+                                                                           numbers_vector = num_at_age$num_individuals,
+                                                                           add_totals = FALSE)
+  
+  # plot it 
+  print(biomass_nums_ages_plot)
+  
+  
+  # buld the caption
+  cap_text <- paste0("Numbers- (millions of fish, blue bars) and biomass- (1000s t, red line) at-age estimates of pollock for the ", current_year, " acoustic-trawl survey of Bogoslof.")
+  
+}
+```
+
+
+<!-- historical comparisons of total biomass/nums by length and age: 'ridgeline plots'- -->
+```{r historical_comparison, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height= 8, fig.cap = cap_text, fig.id = 'ridgelineslength'}
+# start with a blank figure caption; add one if there's a survey
+cap_text <- c()
+
+# sum across regions; you could also group_by region
+ridgeline_data <- historical_surveys_pollock_totals_by_length %>%
+  filter(!is.na(year)) %>%
+  group_by(year, LENGTH) %>%
+  summarize(biomass = sum(BIOMASS),
+            numbers = sum(NUMBERS))
+
+#fix this so the biomass transform is right!
+ridgeline_plot <- MACEReports::plot_historical_biomass_nums_length_ridges(survey_year_vector = ridgeline_data$year, length_vector = ridgeline_data$LENGTH, biomass_vector = ridgeline_data$biomass, numbers_vector = ridgeline_data$numbers, numbers_scale_transform = 'sqrt', biomass_scale_transform = 'sqrt')
+ridgeline_plot
+
+
+# build the caption
+cap_text <- paste0("Time series of pollock population length composition by weight (left panel) and numbers (right panel) from acoustic-trawl surveys of the Bogoslof for ", min(ridgeline_data$year), "-", max(ridgeline_data$year), ".")
 
 ```
 
 
+```{r historical_comparison_ages, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=8, fig.cap = cap_text, fig.id = 'agebubbles'}
+# start with a blank figure caption; add one if there's a survey
+
+##NATE bother Mike when you get ages, we could improve this a bit.
+cap_text <- c()
+
+## Age bubbleplots - bubble size scaled by sqrt transform by default
+if (isTRUE(age_data)) {
+  
+  # do this for the entire bogoslof
+  historical_surveys_biomass_nums_age$region <- "Bogoslof"
+  
+  plot_historical_age_comps_bubble_function(biomass_and_numbers_data = historical_surveys_biomass_nums_age, 
+                                            region_name = "Bogoslof",
+                                            max_age = max_age)
+
+  # build the caption
+  cap_text <- paste0("Time series of pollock population age composition by A) numbers (millions of fish) and B) biomass (1000s t) from acoustic-trawl surveys of Shelikof Strait area for 1994–", current_year, ". Bubble size is scaled based on square root transform of numbers/biomass estimate by age.")
+}
+```
+
+
+<!-- length/weight-at-age plots: gather for the whole survey-->
+```{r plot_length_at_age, echo = FALSE, message=FALSE, warning=FALSE,  dpi= 300, fig.width=6, fig.height=7, fig.cap = cap_text, fig.id= "shelikofstraitlwage"}
+# start with blank caption, add if we build plot
+cap_text <- c()
+
+if (isTRUE(age_data)) {
+  
+  # do this for the entire bogoslof
+  pollock_length_weight_age_data$region <- "Bogoslof"
+  
+  # return the plot and summary dataframes
+  lw_age_plot_list <- plot_length_at_age(length_weight_data = pollock_length_weight_age_data,
+                     current_survey = survey, 
+                     region_name = "Bogoslof")
+  
+  # print the plot
+  print(lw_age_plot_list[[1]])
+  
+  # get the summary 
+  lw_age_summary <- lw_age_plot_list[[2]]
+  
+  # build the caption
+  cap_text <- paste0("Pollock A) length- and B) weight-at-age for ", unique(lw_age_summary$region), ". The ", current_year, " survey is highlighted in red (mean +/- 1 s.d). Gray squares indicate the range of observations in previous surveys (", min(pollock_length_weight_age_data$year[pollock_length_weight_age_data$region == unique(lw_age_summary$region)]), "-", max(pollock_length_weight_age_data$year[pollock_length_weight_age_data$year != current_year]), "), and the black line and gray ribbon indicate mean length- or weight- at age in previous surveys +/- 1 s.d.")
+  
+}
+
+```
+
+
+
+<!-- Analysis comparisons- numbers- and biomass- at length for different analyses -->
+  
+```{r plot_analysis_comparison, echo = FALSE, message=FALSE, warning=FALSE, suppress = T, fig.width=6, fig.height=7.5, fig.cap = cap_text, fig.id = 'analysiscomps'}
+# start with a plot height of 0- make the plot bigger if there's a survey
+
+#NOTE that this is only written to handle the case where you compare the selectivity-corrected dataset (primary) with a non-selectivity corrected dataset
+
+# sum the analysis comparison data across umnak/samalga
+analysis_comparisons_overall <- analysis_comparisons %>%
+  group_by(SHIP, SURVEY, DATA_SET_ID, ANALYSIS_ID, LENGTH) %>%
+  summarize(NUMBERS = sum(NUMBERS),
+            BIOMASS = sum(BIOMASS))
+
+# secondary non-selectivity corrected dataset
+summary_analyses <- plot_analyses_comparisons(analysis_comparison_data = analysis_comparisons_overall,
+                                              primary_dataset = data_set, 
+                                              primary_analysis = analysis)
+
+# print the plot
+summary_analyses[[1]]
+
+# get the summary stats
+analysis_comparisons_info <- summary_analyses[[2]]
+
+# and build the caption
+cap_text <- paste0("A) Numbers- and B) biomass-at-length estimates for the primary analysis corrected for net selectivity compared with non selectivity corrected estimates ", ifelse(max(analysis_comparisons_info$ANALYSIS_ID) <= 2, ".", paste0(" and alternate analyses (", paste(paste("Analysis Number", analysis_comparisons_info$ANALYSIS_ID[!(analysis_comparisons_info$ANALYSIS_ID %in% c(1, 2))]), collapse = ", "), "see text for explanation) for the ", survey_year, " winter Shelikof Strait survey.")), " The total numbers of fish (millions) and biomass (1000s t) are also presented for each analysis.")
+
+```
+
 <!-- Set as landscape- this extends back to the last 'block_section' call -->
-`r  block_section(landscape_section)`
+`r  block_section(portrait_section)`

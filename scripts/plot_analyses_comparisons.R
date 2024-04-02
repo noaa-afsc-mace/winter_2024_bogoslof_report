@@ -4,17 +4,16 @@
 # NOTE: It also currently only is written to handle the case where you compare the selectivity-corrected dataset (primary) with a 
 # secondary non-selectivity corrected dataset
 
+# FOR BOGOSLOF - this is modified to sum across regions (no umnak/samalge)
+
 plot_analyses_comparisons <- function(analysis_comparison_data,
-                                      region_name,
                                       primary_dataset, 
                                       primary_analysis) {
   # report as numbers (millions) and biomass (thousands of tons), for each survey region and dataset/analysis combo
   comparison_summary <- analysis_comparison_data %>%
-    # filter to the requested region
-    filter(region == region_name) %>%
-    group_by(DATA_SET_ID, ANALYSIS_ID, REPORT_NUMBER, region, LENGTH) %>%
+    group_by(DATA_SET_ID, ANALYSIS_ID, LENGTH) %>%
     mutate(num_millions = NUMBERS / 1e6, biomass_thousand_tons = BIOMASS / 1e6) %>%
-    arrange(ANALYSIS_ID, REPORT_NUMBER, LENGTH)
+    arrange(ANALYSIS_ID, LENGTH)
   
     # make the primary survey bigger and orange, the secondary comparisons smaller and in shades of grey
 
@@ -25,11 +24,11 @@ plot_analyses_comparisons <- function(analysis_comparison_data,
 
   # and reorder by comparison type- this will work because 'p' comes before 's' and we're sorting alphabetically
   comparison_summary <- comparison_summary %>%
-    arrange(comp_type, ANALYSIS_ID, REPORT_NUMBER, LENGTH)
+    arrange(comp_type, ANALYSIS_ID, LENGTH)
 
   # also get summary dataframe in case folks want to make a summary table
   totals_comparison <- comparison_summary %>%
-    group_by(ANALYSIS_ID, REPORT_NUMBER, region) %>%
+    group_by(ANALYSIS_ID) %>%
     summarize(
       num_millions = sum(num_millions, na.rm = TRUE),
       biomass_thousand_tons = sum(biomass_thousand_tons, na.rm = TRUE)
@@ -92,7 +91,7 @@ plot_analyses_comparisons <- function(analysis_comparison_data,
      geom_line(data = comparison_summary, aes(x = LENGTH, y = num_millions, 
                                               color = factor(ANALYSIS_ID), 
                                               linetype = factor(ANALYSIS_ID)),
-                                              size = 1.5)+
+                                              linewidth = 1.5)+
      #plot for each report number, and get the nice names for the plot
      #facet_wrap(~REPORT_NUMBER, scales = 'free', ncol = 1, labeller = as_labeller(get_names))+
      labs(x= 'Fork length (cm)', y = 'Numbers of fish (millions)')+
@@ -129,7 +128,7 @@ plot_analyses_comparisons <- function(analysis_comparison_data,
     geom_line(data = comparison_summary, aes(x = LENGTH, y = biomass_thousand_tons, 
                                               color = factor(ANALYSIS_ID), 
                                               linetype = factor(ANALYSIS_ID)),
-               size = 1.5)+
+              linewidth = 1.5)+
     #plot for each report number, and get the nice names for the plot
     #facet_wrap(~REPORT_NUMBER, scales = 'free', ncol = 1, labeller = as_labeller(get_names))+
     labs(x= 'Length (cm)', y = 'Biomass (1000s t)')+

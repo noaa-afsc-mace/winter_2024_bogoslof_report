@@ -452,10 +452,6 @@ portrait_section <- prop_section(
   )
 )
 
-
-# this will let us grab info that's been run in a chunk for the figure captions
-opts_knit$set(eval.after = "fig.cap")
-
 # set the general knitr options for the report- don't print code, messages, or warnings in the document
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
@@ -591,7 +587,6 @@ cat(methods_doc)
 <!--Compile tables  -->
 \newpage
 
-# TABLES {#tables}
 ```{r print_common_tables, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
 # this compiles the common tables 
 common_tables_doc <- knitr::knit_child("tables_common.Rmd", quiet = TRUE)
@@ -612,7 +607,6 @@ cat(common_tables_doc)
 
 <!--Compile figures  -->
 
-# FIGURES {#figures}
 <!-- Total survey overview common plots -->
 ```{r common_figures, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
 common_figures_doc <- knitr::knit_child("figures_common.Rmd", quiet = TRUE)

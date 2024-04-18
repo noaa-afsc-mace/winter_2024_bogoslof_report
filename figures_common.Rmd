@@ -1,5 +1,5 @@
 <!-- Plot an overview of the survey area and trawl locations -->
-```{r survey_trawls_overview, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap = cap_text, fig.id = 'surveylocationmap'}
+```{r survey_trawls_overview, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap = cap_text, fig.alt = cap_text, fig.id = 'surveylocationmap'}
 
 # start with a blank figure caption; add one if there's a survey
 cap_text <- c()
@@ -14,7 +14,7 @@ cap_text <- paste0("Transect lines and trawl haul locations during the ", curren
 ```
 
 <!-- Shelikof SST plot -->
-```{r sst_shelikof, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap = cap_text, fig.id = 'shelikofSST'}
+```{r sst_shelikof, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap = cap_text, fig.alt = cap_text, fig.id = 'shelikofSST'}
 
 # plot the seatemps (from scs data)
 
@@ -34,7 +34,7 @@ cap_text <- paste0("Surface water temperatures (°C) recorded at 5-second interv
 `r  block_section(landscape_section)`
 
 <!--SBE plots- temp at depth-->
-```{r get_sbe_data, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.id = "bogoslofsbe"}
+```{r get_sbe_data, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.alt = cap_text, fig.id = "bogoslofsbe"}
 
 sbe_summary <- plot_SBE_profile(historical_sbe_data = sbe_data, current_survey = survey)
 
@@ -58,7 +58,7 @@ cap_text <- paste0("Mean water temperature (", intToUtf8(176), "C ; solid line)"
 
 
 <!-- 3-panel maturity figs: gather for each region-->
-```{r plot_3_panel_maturity_umnak, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.id = "umnakstraitmaturity"}
+```{r plot_3_panel_maturity_umnak, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.alt = cap_text, fig.id = "umnakstraitmaturity"}
 
 # plot the maturities for the Shelikof region only
 maturity_list <- plot_abundance_weighted_maturity(ship = ship, 
@@ -77,7 +77,7 @@ cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity compositi
 
 ```
 
-```{r plot_3_panel_maturity_samalga, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.id = "samalgamaturity"}
+```{r plot_3_panel_maturity_samalga, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.alt = cap_text, fig.id = "samalgamaturity"}
 
 # plot the maturities for the Shelikof region only
 maturity_list <- plot_abundance_weighted_maturity(ship = ship, 
@@ -99,7 +99,7 @@ cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity compositi
 `r  block_section(portrait_section)`
 
 <!--bogoslof stickplot-->
-```{r bogoslof_stickplot, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8,  fig.cap= cap_text, fig.id = 'bogoslofsticks'}
+```{r bogoslof_stickplot, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8,  fig.cap= cap_text, fig.alt = cap_text, fig.id = 'bogoslofsticks'}
 cap_text <- c()
 
 # check if there is age data; if so make the plot by age, if not, plot by length class
@@ -134,7 +134,7 @@ cap_text <- paste0("Density (t/nmi^2^) attributed to pollock (vertical lines) al
 ```
 <!-- Historical comparison of winter time series-->
 <!-- Gather all surveyed regions here and make plots for them-->
-```{r plot_historical_barplots, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap= cap_text, fig.id = "shelikofstraitbiocomps"}
+```{r plot_historical_barplots, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap= cap_text, fig.alt = cap_text, fig.id = "shelikofstraitbiocomps"}
 
 # for this purpose, only going back to 2003- it seems to get too 'custom' before then to make values agree with existing published survey values
 historic_summary_by_year <- historical_surveys_pollock_totals_by_length %>%
@@ -155,7 +155,7 @@ cap_text <- paste0("Summary of age-1+ pollock biomass estimates (thousands of me
 `r  block_section(landscape_section)`
 
 <!-- bar/line plots for biomass and numbers at length and age, for Bogoslof-->
-```{r biomass_nums_shelikof_plot, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=4, fig.cap = cap_text, fig.id = 'bogoslofbionumslength'}
+```{r biomass_nums_shelikof_plot, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=4, fig.cap = cap_text, fig.alt = cap_text, fig.id = 'bogoslofbionumslength'}
 # start with a blank figure caption; add one if there's a survey
 cap_text <- c()
 
@@ -183,7 +183,7 @@ cap_text <- paste0("Numbers- (blue bars) and biomass- (red line) at-length estim
 ```
 
 
-```{r biomass_nums_bogoslof_ages_plot, echo = FALSE, message=FALSE, warning=FALSE, results='asis', dpi= 300, fig.width=6, fig.height=6, fig.cap = cap_text, fig.id = 'bogoslofbionumsages'}
+```{r biomass_nums_bogoslof_ages_plot, echo = FALSE, message=FALSE, warning=FALSE, results='asis', dpi= 300, fig.width=6, fig.height=6, fig.cap = cap_text, fig.alt = cap_text, fig.id = 'bogoslofbionumsages'}
 # start with a blank figure caption; add one if there's a survey
 cap_text <- c()
 
@@ -215,7 +215,7 @@ if (isTRUE(age_data)) {
 
 
 <!-- historical comparisons of total biomass/nums by length and age: 'ridgeline plots'- -->
-```{r historical_comparison, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height= 8, fig.cap = cap_text, fig.id = 'ridgelineslength'}
+```{r historical_comparison, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height= 8, fig.cap = cap_text, fig.alt = cap_text, fig.id = 'ridgelineslength'}
 # start with a blank figure caption; add one if there's a survey
 cap_text <- c()
 
@@ -237,10 +237,10 @@ cap_text <- paste0("Time series of pollock population length composition by weig
 ```
 
 
-```{r historical_comparison_ages, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=8, fig.cap = cap_text, fig.id = 'agebubbles'}
+```{r historical_comparison_ages, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=8, fig.cap = cap_text, fig.alt = cap_text, fig.id = 'agebubbles'}
 # start with a blank figure caption; add one if there's a survey
 
-##NATE bother Mike when you get ages, we could improve this a bit.
+##NATE bother Mike when you get ages, we could improve this a bit. 
 cap_text <- c()
 
 ## Age bubbleplots - bubble size scaled by sqrt transform by default
@@ -260,7 +260,7 @@ if (isTRUE(age_data)) {
 
 
 <!-- length/weight-at-age plots: gather for the whole survey-->
-```{r plot_length_at_age, echo = FALSE, message=FALSE, warning=FALSE,  dpi= 300, fig.width=6, fig.height=7, fig.cap = cap_text, fig.id= "shelikofstraitlwage"}
+```{r plot_length_at_age, echo = FALSE, message=FALSE, warning=FALSE,  dpi= 300, fig.width=6, fig.height=7, fig.cap = cap_text, fig.alt = cap_text, fig.id= "shelikofstraitlwage"}
 # start with blank caption, add if we build plot
 cap_text <- c()
 
@@ -291,7 +291,7 @@ if (isTRUE(age_data)) {
 
 <!-- Analysis comparisons- numbers- and biomass- at length for different analyses -->
   
-```{r plot_analysis_comparison, echo = FALSE, message=FALSE, warning=FALSE, suppress = T, fig.width=6, fig.height=7.5, fig.cap = cap_text, fig.id = 'analysiscomps'}
+```{r plot_analysis_comparison, echo = FALSE, message=FALSE, warning=FALSE, suppress = T, fig.width=6, fig.height=7.5, fig.cap = cap_text, fig.alt = cap_text, fig.id = 'analysiscomps'}
 # start with a plot height of 0- make the plot bigger if there's a survey
 
 #NOTE that this is only written to handle the case where you compare the selectivity-corrected dataset (primary) with a non-selectivity corrected dataset

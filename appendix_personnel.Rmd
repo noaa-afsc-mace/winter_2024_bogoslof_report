@@ -48,6 +48,9 @@ make_personnel_table = function(file_name){
     tmp_table = flextable::font(tmp_table, fontname = 'times', part = 'all')
     tmp_table = fontsize(tmp_table, size = 12, part = 'all')
     
+    # set the line spacing
+    tmp_table <- flextable::line_spacing(tmp_table, space = 1.5, part = 'all')
+    
     #print the tables
     flextable_to_rmd(x = tmp_table, ft.align = 'left', ft.split = TRUE, print = TRUE)
   

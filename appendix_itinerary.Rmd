@@ -42,11 +42,12 @@ make_itinerary_table = function(file_name){
     #create a flextable out of the itinerary
     tmp_table = flextable(tmp_table)
     
+    # adjust the widths manually so that it is consistent between surveys
+    tmp_table <- flextable::width(tmp_table, j = 1, width = 2, unit = "in")
+    tmp_table <- flextable::width(tmp_table, j = 2, width = 4, unit = "in")
+    
     #remove the header
     tmp_table = delete_part(tmp_table, part = "header")
-    
-    #adjust the widths
-    tmp_table = autofit(tmp_table, part = 'body')
     
     #get rid of the borders
     tmp_table = border_remove(tmp_table)
@@ -61,6 +62,9 @@ make_itinerary_table = function(file_name){
     #set the font and font size
     tmp_table = flextable::font(tmp_table, fontname = 'times', part = 'all')
     tmp_table = fontsize(tmp_table, size = 12, part = 'all')
+    
+    # set the line spacing
+    tmp_table <- flextable::line_spacing(tmp_table, space = 1.5, part = 'all')
     
     #print the tables
     flextable_to_rmd(x = tmp_table, ft.align = 'left', ft.split = TRUE, print = TRUE)

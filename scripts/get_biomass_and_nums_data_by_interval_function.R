@@ -3,25 +3,42 @@
 # faster and appropriate for the surface referenced data sets; for bottom reference, we need per-layer 
 # see get_bottom_ref_biomass_and_nums_data_function
 
-get_biomass_and_nums_data_by_interval_function <- function(ship, survey, data_set_id, analysis_id, zones_list) {
+get_biomass_and_nums_data_by_interval_function <- function(ship, survey, data_set_id, analysis_id, zones_list, report_id) {
   # check if the dataset and analysis ids are 0! Sometimes these get put in as placeholders, no data is available
   if (data_set_id != 0 & analysis_id != 0) {
     # print(paste('grabbing biomass and nums for ship:', ship, ' survey:', survey, ' dataset:', data_set_id, ' analysis:', analysis_id))
-
-    # get the biomass/nums - summed vertically within each interval
-    biomass_nums_query <- paste0(
-      "SELECT ship, survey, data_set_id, analysis_id, report_number, transect, interval,  ",
-      "species_code, length, ",
-      "sum(numbers) as numbers, sum(biomass) as biomass, sum(numbers_nm2) as numbers_nm2, sum(biomass_nm2) as biomass_nm2 ",
-      "FROM macebase2.analysis_results_by_length ",
-      "WHERE ship = ", ship, " ",
-      "AND survey = ", survey, " ",
-      "AND data_set_id = ", data_set_id, " ",
-      "AND analysis_id = ", analysis_id, " ",
-      paste("AND zone IN (", paste(zones_list, collapse = ","), ") "),
-      "GROUP BY ship, survey, data_set_id, analysis_id, report_number, transect, interval, species_code, length ",
-      "ORDER BY report_number, transect"
-    )
+    if (is.na(report_id) == TRUE) {
+      # get the biomass/nums - summed vertically within each interval
+      biomass_nums_query <- paste0(
+        "SELECT ship, survey, data_set_id, analysis_id, report_number, transect, interval,  ",
+        "species_code, length, ",
+        "sum(numbers) as numbers, sum(biomass) as biomass, sum(numbers_nm2) as numbers_nm2, sum(biomass_nm2) as biomass_nm2 ",
+        "FROM macebase2.analysis_results_by_length ",
+        "WHERE ship = ", ship, " ",
+        "AND survey = ", survey, " ",
+        "AND data_set_id = ", data_set_id, " ",
+        "AND analysis_id = ", analysis_id, " ",
+        paste("AND zone IN (", paste(zones_list, collapse = ","), ") "),
+        "GROUP BY ship, survey, data_set_id, analysis_id, report_number, transect, interval, species_code, length ",
+        "ORDER BY report_number, transect"
+      )
+    } else {
+      # get the biomass/nums - summed vertically within each interval
+      biomass_nums_query <- paste0(
+        "SELECT ship, survey, data_set_id, analysis_id, report_number, transect, interval,  ",
+        "species_code, length, ",
+        "sum(numbers) as numbers, sum(biomass) as biomass, sum(numbers_nm2) as numbers_nm2, sum(biomass_nm2) as biomass_nm2 ",
+        "FROM macebase2.analysis_results_by_length ",
+        "WHERE ship = ", ship, " ",
+        "AND survey = ", survey, " ",
+        "AND data_set_id = ", data_set_id, " ",
+        "AND analysis_id = ", analysis_id, " ",
+        "AND report_number = ", report_id, " ",
+        paste("AND zone IN (", paste(zones_list, collapse = ","), ") "),
+        "GROUP BY ship, survey, data_set_id, analysis_id, report_number, transect, interval, species_code, length ",
+        "ORDER BY report_number, transect"
+      )
+    }
 
     biomass_nums_data <- dbGetQuery(db, biomass_nums_query)
 

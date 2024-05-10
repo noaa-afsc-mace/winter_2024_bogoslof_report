@@ -8,6 +8,7 @@ get_macebase_data <- function(){
   # handled by the analysis_tags table!)
   sel_corr_survey_params <- read_csv(survey_params_selectivity_corrected_surveys, col_types = cols(.default = col_double()))
   surf_and_bot_historical<- read_csv(surf_and_bot_historical_path, col_types = cols(.default = col_double()))
+  historical_bio_nums_by_length <- read_csv(historical_survey_data_length, show_col_types = FALSE)
   
   # open up the updated EVA values
   historical_eva <- readRDS(eva_path)
@@ -113,7 +114,8 @@ get_macebase_data <- function(){
          survey = historical_params$surveys, 
          data_set_id = historical_params$data_sets,
          analysis_id = historical_params$analyses,
-         zones_list = historical_params$zones),
+         zones_list = historical_params$zones,
+         report_id = historical_params$report_nums),
     get_biomass_and_nums_data_by_interval_function)
     
   # pull out the biomass/nums data + intervals for each survey in the time series
@@ -136,6 +138,9 @@ get_macebase_data <- function(){
     filter(SPECIES_CODE == 21740) %>%
     group_by(SHIP, SURVEY, year, DATA_SET_ID, ANALYSIS_ID, REPORT_NUMBER, region, INTERVAL, SPECIES_CODE) %>%
     summarize(BIOMASS = sum(BIOMASS))
+  
+  # For Bogoslof 2024, we needed to append data from years not in macebase2:
+  historical_surveys_pollock_totals_by_length <- rbind(historical_bio_nums_by_length,historical_surveys_pollock_totals_by_length)
   
   # also get a version of the intervals data for all surveys 
   # this is used in the survey interpolations plots and in the stock assessment output

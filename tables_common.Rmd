@@ -5,7 +5,7 @@
 
 <!-- Insert calibration parameters table already made in a Word document-->
 ```{r add_cal_table, echo = FALSE, message=FALSE, warning=FALSE, fig.width=6.5}
-## NOTE! This will need to be updated for 2023 still!
+## NOTE! This will need to be updated for 2024 still!
 
 officer::block_caption(
   label = paste0("Simrad EK80 38 kHz acoustic system description and settings used during the ", current_year, " winter acoustic-trawl surveys. These include environmental parameters and results from standard sphere acoustic system calibrations conducted in association with the survey and final values used to calculate biomass & abundance data. The collection settings column contains 12 February EK80 calibration utility results. Other columns are a combination of on-axis and EK80 calibration utility results (see Methods and Results and Discussion sections of text for details)."),
@@ -104,6 +104,106 @@ print_table <- set_caption(tmp_table[[1]][[1]],
 )
 
 flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+```
+
+<!-- Set as portrait- this extends back to the last 'block_section' call-->
+`r  block_section(portrait_section)`
+
+\newpage
+
+<!-- Insert biomass time series by area table already made in a Word document-->
+```{r add_biomass_series_table, echo = FALSE, message=FALSE, warning=FALSE, fig.width=9}
+
+officer::block_caption(
+  label = paste0("Walleye pollock biomass (tons (t)) estimated by survey area and management area from February-March acoustic-trawl surveys in the Bogoslof Island area between 1988 and 2024."),
+  style = "Table Caption",
+  autonum = run_autonum(
+    seq_id = "tab",
+    bkm = "biotable",
+    pre_label = "Table ",
+    post_label = ". -- "
+  )
+)
+
+officer::block_pour_docx("Biomass_by_area_time_series_table.docx")
+
+```
+
+<!-- Set as portrait- this extends back to the last 'block_section' call-->
+`r  block_section(portrait_section)`
+
+\newpage
+
+<!-- biomass and numbers at length and age tables-->
+
+
+<!-- biomass and numbers at length-->
+```{r nums_at_length_table, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=9}
+# return the table and caption
+temp_dat = historical_surveys_pollock_totals_by_length
+temp_dat$region = "Bogoslof"
+tmp_table <- MACEReports::build_numbers_at_length_table_winter_goa(biomass_nums_length_data = temp_dat, region = "Bogoslof")
+
+# print table and caption
+print_table <- set_caption(tmp_table[[1]],
+  caption = tmp_table[[2]],
+  style = "Table Caption",
+  align_with_table = FALSE,
+  autonum = run_autonum(
+    seq_id = "tab",
+    bkm = "numlength",
+    pre_label = "Table ",
+    post_label = ". -- "
+  )
+)
+
+flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+cat("\\pagebreak")
+```
+
+`r  block_section(landscape_section)`
+
+```{r biomass_at_length_table, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=9}
+# return the table and caption
+tmp_table <- MACEReports::build_biomass_at_length_table_winter_goa(biomass_nums_length_data = temp_dat, region = "Bogoslof")
+
+# print table and caption
+print_table <- set_caption(tmp_table[[1]],
+  caption = tmp_table[[2]],
+  style = "Table Caption",
+  align_with_table = FALSE,
+  autonum = run_autonum(
+    seq_id = "tab",
+    bkm = "biolength",
+    pre_label = "Table ",
+    post_label = ". -- "
+  )
+)
+
+flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepnext = FALSE, print = TRUE)
+
+cat("\\pagebreak")
+```
+
+`r  block_section(landscape_section)`
+
+<!-- Insert maturity percent by year and region already made in a Word document-->
+```{r add_maturity_table, echo = FALSE, message=FALSE, warning=FALSE, fig.width=6.5}
+
+officer::block_caption(
+  label = paste0("Unweighted percent female walleye pollock in spawning and post-spawning maturity condition by regions during Bogoslof survey years 1988-2020. Percentages greater than 50% are outlined, and n = total number of female pollock examined."),
+  style = "Table Caption",
+  autonum = run_autonum(
+    seq_id = "tab",
+    bkm = "mattable",
+    pre_label = "Table ",
+    post_label = ". -- "
+  )
+)
+
+officer::block_pour_docx("Maturity_table.docx")
 
 ```
 

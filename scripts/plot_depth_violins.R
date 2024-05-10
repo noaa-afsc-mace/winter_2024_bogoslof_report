@@ -1,7 +1,7 @@
-# maks violin plots as an alternative to the 4-panel surface- and bottom- referenced plot for a given survey region
+# makes violin plots as an alternative to the 2-panel surface- referenced plot for a given survey region
+# This is specific to Bogoslof, since we don't do bottom-referenced plots currently since it is not as helpful/meaningful
 
-plot_depth_violins <- function(bottom_referenced_data, 
-                               surface_referenced_data, 
+plot_depth_violins <- function(surface_referenced_data, 
                                interval_data,
                                length_class_cutoff, 
                                age_class_cutoff,
@@ -10,22 +10,6 @@ plot_depth_violins <- function(bottom_referenced_data,
 
   # check if ages exist, and set the grouping variable as ages if so. This should only find pollock ages!
   if ("AGE" %in% colnames(surface_referenced_data)){
-    
-    # for the bottom-referenced data, report depths as heights and then calculate the total biomass/nums within each layer
-    bottom_referenced_data <- bottom_referenced_data %>%
-      filter(region == region_name & SPECIES_CODE == species_code) %>%
-      # report height (i.e. inverse of depth) of upper ref line, this will set bottom bin @ o (seafloor);
-      # label observations by size class and year
-      mutate(
-        height = -depth,
-        size_class = ifelse(AGE < pollock_age_cutoff, "juvenile_layer_biomass", "adult_layer_biomass")
-      ) %>%
-      # sum biomass/numbers in each layer/size class
-      group_by(year, height, size_class) %>%
-      summarize(
-        layer_biomass = sum(BIOMASS),
-        layer_nums = sum(NUMBERS)
-      )
     
     # for the surface-referenced data, calculate the total biomass/nums within each layer
     surface_referenced_data <- surface_referenced_data %>%
@@ -47,23 +31,6 @@ plot_depth_violins <- function(bottom_referenced_data,
   }
   
   if ("LENGTH" %in% colnames(surface_referenced_data)){
-    
-    # for the bottom-referenced data, report depths as heights and then calculate the total biomass/nums within each layer
-    bottom_referenced_data <- bottom_referenced_data %>%
-      filter(region == region_name & SPECIES_CODE == species_code) %>%
-      # report height (i.e. inverse of depth) of upper ref line, this will set bottom bin @ o (seafloor);
-      # label observations by size class and year
-      mutate(
-        height = -depth,
-        year = substr(as.character(SURVEY), 1, 4),
-        size_class = ifelse(LENGTH <= length_class_cutoff, "juvenile_layer_biomass", "adult_layer_biomass")
-      ) %>%
-      # sum biomass/numbers in each layer/size class
-      group_by(year, height, size_class) %>%
-      summarize(
-        layer_biomass = sum(BIOMASS),
-        layer_nums = sum(NUMBERS)
-      )
     
     # for the surface-referenced data, calculate the total biomass/nums within each layer
     surface_referenced_data <- surface_referenced_data %>%
@@ -117,10 +84,6 @@ plot_depth_violins <- function(bottom_referenced_data,
     group_by(year, size_class) %>%
     summarize(mwd = sum(depth * layer_biomass) / sum(layer_biomass))
 
-  BR_mwd <- bottom_referenced_data %>%
-    group_by(year, size_class) %>%
-    summarize(mwd = sum(height * layer_biomass) / sum(layer_biomass))
-
   # finally- get the mean bottom depth in the most recent survey to add to surface-referenced plots; do this within
   # a given region or survey-wide depending on what user requested
   if (!is.null(region_name)) {
@@ -164,28 +127,6 @@ plot_depth_violins <- function(bottom_referenced_data,
       legend.position = "none"
     )
 
-  bottom_violins_adult <-
-    ggplot() +
-    # violin plot - add quantiles as lines, and narrow the default widths for more contrast w/ 'adjust'
-    geom_violin(
-      data = bottom_referenced_data[bottom_referenced_data$size_class == "adult_layer_biomass" &
-        !(is.nan(bottom_referenced_data$layer_biomass)), ],
-      aes(x = factor(year), y = height, weight = layer_biomass, fill = factor(year)),
-      draw_quantiles = c(0.5), adjust = 0.25
-    ) +
-    # add the mean weighted depth as a single point
-    geom_point(data = BR_mwd[BR_mwd$size_class == "adult_layer_biomass", ], aes(x = factor(year), y = mwd), size = 2) +
-    # get better colors for the surveys- using the custom color scale we already created
-    col_fill_historic_comparisons +
-    # label axis
-    labs(x = "Year", y = "Height above seafloor (m)", fill = "Year") +
-    theme_bw() +
-    theme(
-      axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-      panel.grid.minor = element_blank(),
-      legend.position = "none"
-    )
-
   surface_violins_juvenile <-
     ggplot() +
     # violin plot - add quantiles as lines, and narrow the default widths for more contrast w/ 'adjust'
@@ -219,32 +160,10 @@ plot_depth_violins <- function(bottom_referenced_data,
       legend.position = "none"
     )
 
-  bottom_violins_juvenile <-
-    ggplot() +
-    # violin plot - add quantiles as lines, and narrow the default widths for more contrast w/ 'adjust'
-    geom_violin(
-      data = bottom_referenced_data[bottom_referenced_data$size_class == "juvenile_layer_biomass" &
-        !(is.nan(bottom_referenced_data$layer_biomass)), ],
-      aes(x = factor(year), y = height, weight = layer_biomass, fill = factor(year)),
-      draw_quantiles = c(0.5), adjust = 0.25
-    ) +
-    # add the mean weighted depth as a single point
-    geom_point(data = BR_mwd[BR_mwd$size_class == "juvenile_layer_biomass", ], aes(x = factor(year), y = mwd), size = 2) +
-    # get better colors for the surveys- using the custom color scale we already created
-    col_fill_historic_comparisons +
-    # label axis
-    labs(x = "Year", y = "", fill = "Year") +
-    theme_bw() +
-    theme(
-      axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-      panel.grid.minor = element_blank(),
-      legend.position = "none"
-    )
-
 
   # build the combined figure
-  combined_fig <- ggarrange(surface_violins_adult, surface_violins_juvenile, bottom_violins_adult, bottom_violins_juvenile,
-    ncol = 2, nrow = 2, labels = c("A)", "B)", "C)", "D)"), font.label = list(size = 12, face = "bold", family = "Times")
+  combined_fig <- ggarrange(surface_violins_adult, surface_violins_juvenile,
+    ncol = 2, nrow = 1, labels = c("A)", "B)"), font.label = list(size = 12, face = "bold", family = "Times")
   )
 
   # and return the combined fig

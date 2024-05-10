@@ -61,7 +61,7 @@ update_datasets <- FALSE
 
 # set database parameters and the basic info if we're updating datasets
 if (update_datasets == TRUE) {
-  db_name <- "afsc-64"
+  db_name <- "afsc"
   user_name <-  rstudioapi::askForPassword("Enter your Macebase2 username")
   pword <- rstudioapi::askForPassword("Enter your Macebase2 password")
 }
@@ -179,13 +179,11 @@ survey_params_selectivity_corrected_surveys <- "historical_data/parameters_lengt
 surf_and_bot_historical_path <- "historical_data/bot_and_surf_ref_historical.csv"
 
 # data:
-# historical biomass and numbers at length figure- these are used for Shelikof Stait + Shumagin Island 
-# nums/biomass at length figures, so only contain those two regions
-# lengths updated by ALM 9/14/23 to be just the pre-selectivity values
-pre_selectivity_biomass_nums_path <- 'historical_data/historical_biomass_nums.rds'
+# historical biomass and numbers at length for those which are not in macebase2
+historical_survey_data_length <- 'historical_data/historical_bio_nums_by_length.csv'
 
-# Historical ages- unlike the lengths, these include every year in the time series
-pre_selectivity_biomass_nums_ages_path <- 'historical_data/historical_biomass_nums_ages.rds'
+# historical biomass and numbers at age for those which are not in macebase2
+historical_survey_data_age <- 'historical_data/historical_bio_nums_by_age.csv'
 
 # historical trawl weights and GSI for abundance-weighted maturity
 historical_trawl_weights_path <- "historical_data/bogoslof_historical_trawl_weights.rds"

@@ -13,8 +13,8 @@ cap_text <- paste0("Transect lines and trawl haul locations during the ", curren
 
 ```
 
-<!-- Shelikof SST plot -->
-```{r sst_shelikof, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap = cap_text, fig.alt = cap_text, fig.id = 'shelikofSST'}
+<!-- SST plot -->
+```{r sst, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap = cap_text, fig.alt = cap_text, fig.id = 'shelikofSST'}
 
 # plot the seatemps (from scs data)
 
@@ -58,9 +58,9 @@ cap_text <- paste0("Mean water temperature (", intToUtf8(176), "C ; solid line)"
 
 
 <!-- 3-panel maturity figs: gather for each region-->
-```{r plot_3_panel_maturity_umnak, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.alt = cap_text, fig.id = "umnakstraitmaturity"}
+```{r plot_3_panel_maturity_umnak, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.alt = cap_text, fig.id = "umnakmaturity"}
 
-# plot the maturities for the Shelikof region only
+# plot the maturities for the Umnak region only
 maturity_list <- plot_abundance_weighted_maturity(ship = ship, 
                                                   survey = survey,  
                                                   region_id = "Umnak")
@@ -79,7 +79,7 @@ cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity compositi
 
 ```{r plot_3_panel_maturity_samalga, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.alt = cap_text, fig.id = "samalgamaturity"}
 
-# plot the maturities for the Shelikof region only
+# plot the maturities
 maturity_list <- plot_abundance_weighted_maturity(ship = ship, 
                                                   survey = survey,  
                                                   region_id = "Samalga")
@@ -132,6 +132,58 @@ current_biomass_sticks
 # build the figure caption- this uses an ifelse statement to make the 'cutoff some bars' text or the 'all bars included' text
 cap_text <- paste0("Density (t/nmi^2^) attributed to pollock (vertical lines) along tracklines surveyed during the winter ", current_year, " acoustic-trawl survey of the Bogoslof. The The 1000 (— —), 500 (- -), and 200 (--) contour lines are noted.")
 ```
+
+<!-- bottom-and surface- referenced vertical distribution figs -->
+  
+<!-- Shelikof surface/bottom referenced violin plot: gather for the entire survey  -->
+```{r build_violin_plot, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=6, fig.cap= cap_text, fig.id = "violins"}
+
+
+# check if there is age data; if so make the plot by age, if not, plot by length class
+# commented out for now because the historical bottom-ref timeseries doesn't have 'by age' analyses in many cases
+# if(age_data == TRUE){
+# 
+#   surf_ref_dataset <- vertical_dist_surf_ref_biomass_nums_by_age
+#   bot_ref_dataset <- vertical_dist_bot_ref_biomass_nums_by_age
+# 
+# } 
+# 
+# if(age_data != TRUE){
+# 
+#   surf_ref_dataset <- vertical_dist_surf_ref_biomass_nums_by_length
+#   bot_ref_dataset <- vertical_dist_bot_ref_biomass_nums_by_length
+# 
+# } 
+
+# for now, forcing 'by length'
+surf_ref_dataset <- vertical_dist_surf_ref_biomass_nums_by_length
+
+# build for the Shelikof Strait only
+violin_list <- plot_depth_violins(
+                   surface_referenced_data = surf_ref_dataset,
+                   interval_data = current_year_interval_data,
+                   length_class_cutoff = pollock_size_cutoff, 
+                   age_class_cutoff = pollock_age_cutoff,
+                   species_code = 21740, 
+                   region_name = 'Shelikof Strait')
+
+# print the figure
+violin_list[[1]]
+
+ # and the caption
+# age_or_length_statement <- ifelse(age_data == TRUE, 
+#                                   paste0("Estimated biomass distributions of adult (age ", pollock_age_cutoff, " +) and juvenile (< age ", pollock_age_cutoff, ") pollock A,B) depth and C,D) height above the seafloor in the "),
+#                                   paste0("Estimated biomass distributions of adult (> ", pollock_size_cutoff, " cm FL) and juvenile (≤ ", pollock_size_cutoff, " cm FL) pollock A,B) depth and C,D) height above the seafloor in the "))
+
+# again forcing length only for now
+age_or_length_statement <- paste0("Estimated biomass distributions of adult (> ", pollock_size_cutoff, " cm FL) and juvenile (≤ ", pollock_size_cutoff, " cm FL) pollock A,B) depth and C,D) height above the seafloor in the ")
+
+cap_text <- paste0(age_or_length_statement, violin_list[[2]], " ", current_year, " acoustic-trawl survey. Results for the winter ", min(surf_ref_dataset$year), "-", sort(unique(surf_ref_dataset$year), decreasing = TRUE)[2], " acoustic-trawl surveys are included for comparison. Depth is referenced to the surface and height is referenced to the bottom. Data were averaged in 10 m depth bins. Mean bottom depth for ", current_year, " is shown in panels A) and B) (dashed line). Plots show the probability density of pollock distribution, with median pollock depth noted by black horizontal lines, and the mean weighted pollock depth indicated by black points.")
+
+```
+
+
+
 <!-- Historical comparison of winter time series-->
 <!-- Gather all surveyed regions here and make plots for them-->
 ```{r plot_historical_barplots, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap= cap_text, fig.alt = cap_text, fig.id = "shelikofstraitbiocomps"}

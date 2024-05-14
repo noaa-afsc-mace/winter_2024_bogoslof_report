@@ -157,15 +157,15 @@ cap_text <- paste0("Density (t/nmi^2^) attributed to pollock (vertical lines) al
 
 # for now, forcing 'by length'
 surf_ref_dataset <- vertical_dist_surf_ref_biomass_nums_by_length
-
-# build for the Shelikof Strait only
+surf_ref_dataset$region = "Bogoslof"
+# build for Bogoslof
 violin_list <- plot_depth_violins(
                    surface_referenced_data = surf_ref_dataset,
                    interval_data = current_year_interval_data,
                    length_class_cutoff = pollock_size_cutoff, 
                    age_class_cutoff = pollock_age_cutoff,
-                   species_code = 21740, 
-                   region_name = 'Shelikof Strait')
+                   species_code = 21740,
+                   region_name = "Bogoslof")
 
 # print the figure
 violin_list[[1]]
@@ -189,9 +189,7 @@ cap_text <- paste0(age_or_length_statement, violin_list[[2]], " ", current_year,
 ```{r plot_historical_barplots, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap= cap_text, fig.alt = cap_text, fig.id = "shelikofstraitbiocomps"}
 
 # for this purpose, only going back to 2003- it seems to get too 'custom' before then to make values agree with existing published survey values
-historic_summary_by_year <- historical_surveys_pollock_totals_by_length %>%
-  filter(region %in% c("Umnak", "Samalga")) %>%
-  filter(year > 2002)
+historic_summary_by_year <- historical_surveys_pollock_totals_by_length
 
 summary_barplot <- plot_historical_biomass_comparison(timeseries_data = historic_summary_by_year,
                                              historical_eva_vals = historical_eva)
@@ -207,7 +205,7 @@ cap_text <- paste0("Summary of age-1+ pollock biomass estimates (thousands of me
 `r  block_section(landscape_section)`
 
 <!-- bar/line plots for biomass and numbers at length and age, for Bogoslof-->
-```{r biomass_nums_shelikof_plot, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=4, fig.cap = cap_text, fig.alt = cap_text, fig.id = 'bogoslofbionumslength'}
+```{r biomass_nums_plot, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=4, fig.cap = cap_text, fig.alt = cap_text, fig.id = 'bogoslofbionumslength'}
 # start with a blank figure caption; add one if there's a survey
 cap_text <- c()
 
@@ -367,6 +365,39 @@ analysis_comparisons_info <- summary_analyses[[2]]
 
 # and build the caption
 cap_text <- paste0("A) Numbers- and B) biomass-at-length estimates for the primary analysis corrected for net selectivity compared with non selectivity corrected estimates ", ifelse(max(analysis_comparisons_info$ANALYSIS_ID) <= 2, ".", paste0(" and alternate analyses (", paste(paste("Analysis Number", analysis_comparisons_info$ANALYSIS_ID[!(analysis_comparisons_info$ANALYSIS_ID %in% c(1, 2))]), collapse = ", "), "see text for explanation) for the ", survey_year, " winter Shelikof Strait survey.")), " The total numbers of fish (millions) and biomass (1000s t) are also presented for each analysis.")
+
+```
+
+<!-- Set as landscape- this extends back to the last 'block_section' call -->
+`r  block_section(portrait_section)`
+
+
+```{r survey_timing, echo = FALSE, message=FALSE, warning=FALSE, suppress = T, fig.width=6, fig.height=7.5, fig.cap = cap_text, fig.alt = cap_text, fig.id = 'surveytiming'}
+# start with a plot height of 0- make the plot bigger if there's a survey
+start <- mdy(survey_timing$start_date)
+end <- mdy(survey_timing$end_date)
+year <- survey_timing$year
+timing <- data.frame(year,end,start)
+
+lubridate::year(timing$start) <- 1900
+lubridate::year(timing$end) <- 1900
+
+gantt <- timing %>%
+  pivot_longer(cols = -c('year'), names_to = 'state', values_to = 'time') %>%
+  # define a plotting color- red for current survey, otherwise black
+  mutate(current_year = ifelse(year == current_year,TRUE,FALSE))
+
+# plot everything
+plot <- ggplot(gantt, aes(x = time, y = year, group=year, color = current_year)) +
+  geom_line(linewidth = 1.25) +
+  scale_y_reverse() +
+  scale_color_manual(values = c('black', 'red')) +
+  labs(x="Date", y="Survey Year") +
+  theme_bw() +
+  theme(legend.position = 'none')
+
+
+print(plot)
 
 ```
 

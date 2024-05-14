@@ -142,7 +142,10 @@ officer::block_pour_docx("Biomass_by_area_time_series_table.docx")
 ```{r nums_at_length_table, echo = FALSE, message=FALSE, warning=FALSE, results='asis', fig.width=9}
 # return the table and caption
 temp_dat = historical_surveys_pollock_totals_by_length
+# Relabel all the regions as bogoslof so they will all be compiled into the tables by length
 temp_dat$region = "Bogoslof"
+# Remove all rows with 0, since these will show up as <1 and we don't want that.
+temp_dat = subset(temp_dat,BIOMASS>0)
 tmp_table <- MACEReports::build_numbers_at_length_table_winter_goa(biomass_nums_length_data = temp_dat, region = "Bogoslof")
 
 # print table and caption
@@ -162,6 +165,7 @@ flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepne
 
 cat("\\pagebreak")
 ```
+
 
 `r  block_section(landscape_section)`
 

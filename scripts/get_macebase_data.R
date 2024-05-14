@@ -387,6 +387,10 @@ get_macebase_data <- function(){
   # currently not using historical SST comparisons for Bogoslof!
   # historical_scs_sst <- readRDS(historical_scs_sst_path)
   
+  ##################################################
+  # Get Bogoslof survey timing data
+  survey_timing <- read_csv(bogoslof_survey_timing, show_col_types = FALSE)
+  
   ################################################
   # save all the data
   
@@ -435,6 +439,7 @@ get_macebase_data <- function(){
        scs_sst,
        scs_stats,
        scs_summary,
+       survey_timing,
        # not currently doing sst comparisons from scs
        #historical_scs_sst,
        query_run_time,

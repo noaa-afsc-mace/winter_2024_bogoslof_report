@@ -81,8 +81,8 @@ zones <- c(0)
 bot_ref_data_set <- 0
 bot_ref_analysis <- 0
 # set the comparison datasets for the bogoslof (if none, put 0)
-comp_data_sets <- 0
-comp_analyses <- 0
+comp_data_sets <- 1
+comp_analyses <- 2
 # Identify the umnak report number
 # (see macebase2.report_definitions to check for the right number)
 report_number_umnak <- 1
@@ -202,6 +202,9 @@ historical_trawl_sst <- "historical_data/winter_historical_surface_temps.rds"
 # Historical sea surface temperature from ship's flow-through system (SCS data, 2006-present)
 historical_scs_sst_path <- "historical_data/SST_from_SCS.rds"
 
+# Historical survey timing
+bogoslof_survey_timing <- "historical_data/bogoslof_survey_timing.csv"
+
 ##################################################################################
 # get the functions, shapefiles, and database connection
 
@@ -230,6 +233,7 @@ library(cowplot)
 library(ggridges)
 library(ggpubr)
 library(ggrepel)
+library(gridGraphics)
 library(RColorBrewer)
 library(lubridate)
 library(janitor)

@@ -1,6 +1,6 @@
 # process the sea surface temperature data, return summary dataframes and dataset
 
-get_sst_data <- function(ship, survey, data_set_id, analysis_id) {
+get_sst_data <- function(ship, survey, data_set_id, analysis_id, historical_scs_file_loc, apply_cal = TRUE) {
   # query the sensor data
   scs_data_query <- paste0(
     "SELECT ship, survey, time_stamp, latitude, longitude, measurement_type, measurement_value AS temp_c ",
@@ -22,7 +22,16 @@ get_sst_data <- function(ship, survey, data_set_id, analysis_id) {
   # grab the intervals data
   event_and_interval_data <- get_event_and_interval_data_function(ship = ship, survey = survey, data_set_id = data_set_id, analysis_id = analysis_id)
   interval_data <- event_and_interval_data[[1]]
-
+  
+  # in winter 2024, the SBE was not working reliably, and we decided to only use the backup sensor ("Mid-SeaTemp-C-Cal-VALUE_1_min_avg")
+  # as the primary. So, in this case, we are just forcing it to be all from this source. Otherwise, we'll go to step 2 below as usual.
+  if (survey %in% c(202401,202402,202403)){
+    
+    # set all the SBE data to be equal to the primary sensor so will be ignored in the below corrections!
+    scs_data$`TSG-SBE38-Temp_1_min_avg` <- scs_data$`Mid-SeaTemp-C-Cal-VALUE_1_min_avg`
+    
+  }
+  
   ###
   # 2 get the primary sensor reading whenever possible, secondary sensor when its not available; apply a correction to
   # the less accurate secondary sensor
@@ -38,13 +47,29 @@ get_sst_data <- function(ship, survey, data_set_id, analysis_id) {
     NA, scs_data[[primary_sensor]]
   )
 
-  # calculate the mean difference (deg C) between sensors
-  temp_offset <- scs_data[[backup_sensor]] - scs_data[[primary_sensor]]
-  temp_offset <- mean(temp_offset, na.rm = TRUE)
-
-  # if there's no value for the primary sensor, use the secondary sensor with the temp difference applied
-  scs_data$temp <- ifelse(is.na(scs_data[[primary_sensor]]), scs_data[[backup_sensor]] - temp_offset, scs_data[[primary_sensor]])
-
+  # if we aren't using a calibrated value for the backup sensor, make the calibration here
+  if (isTRUE(apply_cal)){
+    
+    
+    # calculate the mean difference (deg C) between sensors
+    temp_offset <- scs_data[[backup_sensor]] - scs_data[[primary_sensor]]
+    temp_offset <- mean(temp_offset, na.rm = TRUE)
+    
+    # if there's no value for the primary sensor, use the secondary sensor with the temp difference applied
+    scs_data$temp <- ifelse(is.na(scs_data[[primary_sensor]]), scs_data[[backup_sensor]] - temp_offset, scs_data[[primary_sensor]])
+    
+  }
+  
+  if (!isTRUE(apply_cal)){
+    
+    # set the offset to zero so it clear that there isn't one applied
+    temp_offset <- 0
+    
+    # if there's no value for the primary sensor, use the secondary sensor with NO temp difference applied
+    scs_data$temp <- ifelse(is.na(scs_data[[primary_sensor]]), scs_data[[backup_sensor]], scs_data[[primary_sensor]])
+    
+  }
+  
   # calculate the percentage of data from each sensor
   # get the total number of non-NA readings
   good_readings <- length(scs_data[[primary_sensor]][!is.na(scs_data[[primary_sensor]])])
@@ -105,67 +130,21 @@ get_sst_data <- function(ship, survey, data_set_id, analysis_id) {
   )
 
   # return some summary stats for use in text- min, mean, max, n
+  sst_summary <- surface_data %>%
+    group_by(SURVEY, REPORT_NUMBER, region, temperature_type) %>%
+    summarize(
+      mean_temp = mean(temperature),
+      min_temp = min(temperature),
+      max_temp = max(temperature),
+      n_readings = n()
+    )
+
+  # make the hauls into sf objects; this uses WGS1984 as that's the standard for GPS data (and we're using GPS data here)
+  surface_data <- st_as_sf(surface_data, coords = c("lon", "lat"), crs = 4326, remove = FALSE)
+
+  # project them as with the base map layers
+  surface_data <- st_transform(surface_data, crs = 3338)
   
-  # make sure we've actually got data
-  if (nrow(surface_data) >0){
-    sst_summary <- surface_data %>%
-      group_by(SURVEY, REPORT_NUMBER, region, temperature_type) %>%
-      summarize(
-        mean_temp = mean(temperature),
-        min_temp = min(temperature),
-        max_temp = max(temperature),
-        n_readings = n()
-      )
-    
-    # make the hauls into sf objects; this uses WGS1984 as that's the standard for GPS data 
-    # (and we're using GPS data here)
-    surface_data <- st_as_sf(surface_data, coords = c("lon", "lat"), crs = 4326, remove = FALSE)
-    
-    # project them as with the base map layers
-    surface_data <- st_transform(surface_data, crs = 3338)
-  }
-  
-  # if there's no data, just return a placeholder
-  if (nrow(surface_data) == 0){
-    sst_summary <- c()
-    surface_data <-c()
-  }
-  
-    
-  
-  #########################
-  # update the historical data
-  # not doing this in the BOGOSLOF right now!
-  
-  # # open up the historical collection
-  # sst <- readRDS(historical_scs_file_loc)
-  # 
-  # # check- does this year already exist in the historical selectivity-corrected data?
-  # if (survey %in% sst$SURVEY) {
-  #   # get rid of this year- we'll update to be safe; this will be needed in cases where
-  #   # a more recent analysis has changed values
-  #   sst <- sst %>%
-  #     filter(SURVEY != survey)
-  # }
-  # 
-  # # add the new data to the historical data- either after you've cleaned out the current entry for the year,
-  # # in which case it will update, or for entering the historical data for the first time
-  # new_sst_vals <- surface_data %>%
-  #   filter(survey == SURVEY) %>%
-  #   select(SURVEY, interval, temperature) %>%
-  #   st_drop_geometry()
-  # 
-  # # add the interval information
-  # new_sst_vals <- left_join(new_sst_vals, interval_data, by = c("SURVEY", "interval" = "INTERVAL")) %>%
-  #   # only keep the values we need
-  #   select(SURVEY, year, START_TIME, TRANSECT, REPORT_NUMBER, region, interval, lat, lon, temperature)
-  # 
-  # # add these to the dataframe
-  # sst <- bind_rows(sst, new_sst_vals)
-  # 
-  # # append the most up-top-date info to to the historical csv
-  # saveRDS(sst, file = historical_scs_file_loc)
-  ########################
 
   # return the dataframe for plotting, and some summary stats
   return(list(surface_data, sst_stats, sst_summary))

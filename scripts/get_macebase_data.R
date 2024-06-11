@@ -354,18 +354,6 @@ get_macebase_data <- function(){
                                 data_sets = historical_params$data_sets, 
                                 analyses = historical_params$analyses)
   
-  # update the historical trawl fishing location records records based on what is has been calculated in CLAMS 
-  # requires the dataframes 'event_data' and 'haul_table_data'- which should be gathered above!
-  # commented out for BOGOSLOF! Not presenting this figure yet
-  
-  # purrr::pwalk(list(ship = current_year_query_params$ships,
-  #                   survey = current_year_query_params$surveys,
-  #                   data_set_id = current_year_query_params$data_sets,
-  #                   analysis_id = current_year_query_params$analyses,
-  #                   historical_sst_loc = historical_trawl_sst),
-  #              open_and_update_sst_at_fishing_locs)
-  # 
-  # sst_at_fishing_locs <- readRDS(historical_trawl_sst)
   
   #######
   # Sea surface temps/ SCS data:
@@ -374,7 +362,8 @@ get_macebase_data <- function(){
   scs_sst_list <- purrr::pmap(list(ship = current_year_query_params$ships,
                                    survey = current_year_query_params$surveys,
                                    data_set_id = current_year_query_params$data_sets,
-                                   analysis_id = current_year_query_params$analyses),
+                                   analysis_id = current_year_query_params$analyses,
+                                   apply_cal = apply_cal_to_backup_sensor),
                          get_sst_data)
   
   # unpack this data
@@ -384,8 +373,12 @@ get_macebase_data <- function(){
   scs_summary <- dplyr::bind_rows(scs_sst_list[[3]])
   
   # open up the historical sst data now that its been updated
-  # currently not using historical SST comparisons for Bogoslof!
-  # historical_scs_sst <- readRDS(historical_scs_sst_path)
+  historical_scs_sst <- read_csv(historical_scs_sst_path, show_col_types = FALSE)
+  
+  # For now, let's just add this year's data to the historical_scs_sst dataframe
+  # and later we can put the data into the csv for use late or save an rds 
+  # like it is done for shelikof in the get_sst function
+  historical_scs_sst %>% left_join(scs_sst, by =c("SURVEY","year","REPORT_NUMBER","region","interval","lat","lon","temperature"))
   
   ##################################################
   # Get Bogoslof survey timing data
@@ -434,14 +427,11 @@ get_macebase_data <- function(){
        specimen_table_data,
        raw_specimen_data,
        sbe_data,
-       # not currently doing this comparison
-       #sst_at_fishing_locs,
        scs_sst,
        scs_stats,
        scs_summary,
        survey_timing,
-       # not currently doing sst comparisons from scs
-       #historical_scs_sst,
+       historical_scs_sst,
        query_run_time,
        file = paste0(data_set_path, "bogoslof_", current_year,  "_dataset.RData")
        )

@@ -57,7 +57,7 @@ rm(list = ls())
 # It should be set to TRUE most of the time, but if you are just adding features/working on code/etc, can be set to FALSE to
 # save re-querying. NOTE: After you do all the queries, the output is saved here so we can know exactly what base data we used to
 # make the report!
-update_datasets <- FALSE
+update_datasets <- TRUE
 
 # set database parameters and the basic info if we're updating datasets
 if (update_datasets == TRUE) {
@@ -92,10 +92,14 @@ report_number_samalga <- 2
 pocketnets_used <- FALSE # TRUE or FALSE
 
 # Sea surface temperatures: set the primary and backup temperature sensors you want to use
-# (see clamsbase2.underway_data table for what's available). Note due to issues with data 
-# from the SBE 38, we're used the usual backup as the primary sensor
-primary_sensor <- "Mid-SeaTemp-C-Cal-VALUE_1_min_avg"
+# (see clamsbase2.underway_data table for what's available)
+# The Dyson SCS data has been available with "Mid-SeaTemp-C-Cal-VALUE_1_min_avg" and "Mid-SeaTemp-C-VALUE_1_min_avg"; 
+# if you have the 'Cal' version, set apply_cal_to_backup_sensor to FALSE; if not, set to TRUE and we'll handle the cal 
+# by comparing the TSG-SBE38 to the Mid-SeaTemp sensor and determining the offset (assumes TSG is 'correct' and makes Mid match)
+# NOTE: due to data issues with the SBE 38 in 2024, we're using the usual 'backup' as the 'primary' in 2024!
+primary_sensor <-  "Mid-SeaTemp-C-Cal-VALUE_1_min_avg"
 backup_sensor <- "TSG-SBE38-Temp_1_min_avg"
+apply_cal_to_backup_sensor <- FALSE
 
 # set pollock_size_cutoff
 # we have been plotting big and little pollock as separate bars in stickplots; we have also been plotting the surface- and bottom- referenced figures in relation to this cutoff. This number is the fork length (cm) that will be used (i.e. 30 cm creates a bar <= 30 and a bar > 30)
@@ -116,7 +120,7 @@ haul_weighting_cutoff <- 30
 # right now, there are no other survey/regions allowed than what is listed below! If we do another region, we'll deal with it then.
 
 # bogoslof
-eva_perc <- 4.6
+eva_perc <- 13.34
 
 # set a few options for the methods text
 
@@ -200,7 +204,7 @@ eva_path <- "historical_data/bogoslof_historical_eva.rds"
 historical_trawl_sst <- "historical_data/winter_historical_surface_temps.rds"
 
 # Historical sea surface temperature from ship's flow-through system (SCS data, 2006-present)
-historical_scs_sst_path <- "historical_data/SST_from_SCS.rds"
+historical_scs_sst_path <- "historical_data/SST_data_full.csv"
 
 # Historical survey timing
 bogoslof_survey_timing <- "historical_data/bogoslof_survey_timing.csv"
@@ -546,16 +550,12 @@ table_of_contents
 ```
 \pagebreak
 
-<!--TODO:: intro, methods, results text! -->
-
 <!--build the introduction section  -->
 ```{r print_intro, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-##NATE commented out for now
-# intro_doc <- knitr::knit_child("intro.Rmd", quiet = TRUE)
-# cat(intro_doc)
+intro_doc <- knitr::knit_child("intro.Rmd", quiet = TRUE)
+cat(intro_doc)
 ```
 
-<!--TODO:: check on common methods with Dave before calling this done! -->
 ```{r print_methods, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
 methods_doc <- knitr::knit_child("methods.Rmd", quiet = TRUE)
 cat(methods_doc)
@@ -563,18 +563,10 @@ cat(methods_doc)
 
 \pagebreak
 
-<!--Compile the common results- cal results, etc  -->
-```{r common_results, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-##NATE: this just covers calibration stuff, you could probably comine
-# common_results <- knitr::knit_child("results_common.Rmd", quiet = TRUE)
-# cat(common_results)
-```
-
-<!--Compile the Shelikof-only results  -->
+<!--Compile the results  -->
 ```{r shelikof_results, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-##NATE: leaving this for now 
-# results <- knitr::knit_child("results.Rmd", quiet = TRUE)
-# cat(results)
+results <- knitr::knit_child("results.Rmd", quiet = TRUE)
+cat(results)
 ```
 
 
@@ -596,16 +588,6 @@ cat(common_tables_doc)
 ```
 
 \newpage
-
-<!--Shelikof Strait specific tables  -->
-<!--TODO:: EVA/historical biomass table -->
-```{r shelikof_tables, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-## NATE- I'm leaving these out for now, these are numbers/biomass at length/age and 
-# I'm not sure how to do this for the complications of the Bogoslof- happy to help though.
-
-# shelikof_tables_doc <- knitr::knit_child("tables_shelikof.Rmd", quiet = TRUE)
-
-```
 
 <!--Compile figures  -->
 

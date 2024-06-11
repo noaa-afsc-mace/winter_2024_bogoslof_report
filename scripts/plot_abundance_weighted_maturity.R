@@ -4,8 +4,12 @@ plot_abundance_weighted_maturity <- function(ship, survey, region_id) {
   #   filter(REPORT_NUMBER == report_num)
 
   # limit proportion mature data to the requested report
-  maturity_data <- prop_mature %>%
-    filter(region == region_id)
+  if (region_id==""){
+    maturity_data <- prop_mature
+  } else {
+    maturity_data <- prop_mature %>%
+      filter(region == region_id)
+  }
 
   # and get the haul weights from this
   hauls <- maturity_data %>%

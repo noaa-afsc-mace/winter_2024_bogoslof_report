@@ -2,35 +2,17 @@
 
 ```{r survey_dates, echo = FALSE, message=FALSE, warning=FALSE}
 # we'll define the entire Shelikof survey period as the start of on-transect to the end of off-transect time
-shelikof_start_date <- paste(
-  lubridate::month(min(current_year_interval_data$START_TIME[current_year_interval_data$SURVEY == survey_shelikof]), label = TRUE, abbr = FALSE),
-  lubridate::day(min(current_year_interval_data$START_TIME[current_year_interval_data$SURVEY == survey_shelikof]))
+start_date <- paste(
+  lubridate::month(min(current_year_interval_data$START_TIME), label = TRUE, abbr = FALSE),
+  lubridate::day(min(current_year_interval_data$START_TIME))
   )
 
 
-shelikof_end_date <- paste(
-  lubridate::month(max(current_year_interval_data$START_TIME[current_year_interval_data$SURVEY == survey_shelikof]), label = TRUE, abbr = FALSE),
-  lubridate::day(max(current_year_interval_data$START_TIME[current_year_interval_data$SURVEY == survey_shelikof]))
+end_date <- paste(
+  lubridate::month(max(current_year_interval_data$START_TIME), label = TRUE, abbr = FALSE),
+  lubridate::day(max(current_year_interval_data$START_TIME))
   )
 
-
-# and, if we did a shumagins survey, the same
-if (current_shumagins_survey == TRUE) {
-  shumagins_start_date <- paste(
-    lubridate::month(min(current_year_interval_data$START_TIME[current_year_interval_data$SURVEY == survey_shumagins]), label = TRUE, abbr = FALSE),
-    lubridate::day(min(current_year_interval_data$START_TIME[current_year_interval_data$SURVEY == survey_shumagins]))
-    )
-  
-
-  shumagins_end_date <- paste(
-    lubridate::month(max(current_year_interval_data$START_TIME[current_year_interval_data$SURVEY == survey_shumagins]), label = TRUE, abbr = FALSE),
-    lubridate::day(max(current_year_interval_data$START_TIME[current_year_interval_data$SURVEY == survey_shumagins]))
-    )
-
-  # if we did a shumagins survey, add a dates summary
-  shumagins_dates_sentence <- paste0("Shumagin Islands area from ", shumagins_start_date, " to ", shumagins_end_date, " and the ")
-}
 ```
 
-The Midwater Assessment and Conservation Engineering (MACE) Program of the Alaska Fisheries Science Center (AFSC) conducts annual acoustic-trawl (AT) surveys in the Gulf of Alaska (GOA) during late winter. The goal of these surveys is to estimate the distribution and abundance of pre-spawning walleye pollock (*Gadus chalcogrammus*; hereafter pollock) at their main spawning grounds (i.e., pre-spawning surveys). Shelikof Strait has been surveyed annually since 1981, except in 1982, 1999, and 2011. Historical surveys have also frequently included the Shumagin Islands, Sanak Trough, Morzhovoi Bay, and Pavlof Bay since 2002 as part of the Shumagin Islands survey, and the continental shelf break near Chirikof Island, and Marmot Bay as part of the Shelikof area survey. This report presents the AT survey results from the survey of `r ifelse(current_shumagins_survey == TRUE, shumagins_dates_sentence, '')` Shelikof Strait area from `r shelikof_start_date` to `r paste0(shelikof_end_date, ', ', current_year)`.
-
+The Midwater Assessment and Conservation Engineering (MACE) Program of the Alaska Fisheries Science Center (AFSC) conducts annual acoustic-trawl (AT) surveys in the Gulf of Alaska (GOA) during late winter. The goal of these surveys is to estimate the distribution and abundance of pre-spawning walleye pollock (*Gadus chalcogrammus*; hereafter pollock) at their main spawning grounds (i.e., pre-spawning surveys). The southeastern Aleutian Basin near Bogoslof Island was surveyed annually between 1988 and 2007 (with the exception of 1990 and 2004), and biennially starting in 2009 (with the exception of 2011). The biomass estimate for pollock within the Central Bering Sea (CBS) Convention Specific Area obtained during these AT surveys provides an index of abundance representing 60% of the Aleutian Basin pollock stock. Therefore, when the pollock biomass estimate from this survey surpasses 1 million metric tons (t), the Aleutian Basin pollock stock surpasses a 1.67 million t threshold above which targeted pollock fishing in the Aleutian Basin can be negotiated. This report summarizes observed pollock distribution and biological information from `r start_date` to `r paste0(end_date, ', ', current_year)`, provides an abundance estimate used for stock assessment (Ianelli et al. 2020), and summarizes water temperature observations and acoustic system calibration results.

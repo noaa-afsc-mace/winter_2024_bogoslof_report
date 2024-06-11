@@ -1,35 +1,29 @@
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE}
 # identify the requested report region
-region_id <- "Shelikof Strait"
+region_id <- "Bogoslof"
 
 # subset the region of interest from intervals
-region_interval_data <- current_year_interval_data %>%
-  filter(region == region_id)
+region_interval_data <- current_year_interval_data
 
 # subset the events in the region of interest- events
-region_event_data <- current_year_event_data %>%
-  filter(region == region_id)
+region_event_data <- current_year_event_data
 
 # subset the specimen table data-
-region_specimen_data <- specimen_table_data %>%
-  filter(region == region_id)
+region_specimen_data <- specimen_table_data
 
 # and the catch table....
 # subset the specimen table data-
-region_catch_data <- catch_table_data %>%
-  filter(region == region_id)
+region_catch_data <- catch_table_data
 
-# use the subset of haul data to make sure you are ONLY getting maturity data fof the shelikof.
-maturities_and_weights <- maturities_and_weights %>%
-  filter(region == region_id) 
+# use the subset of haul data to make sure you are ONLY getting maturity data
+maturities_and_weights <- maturities_and_weights
 
 # identify the survey years
 # survey year is grabbed from the 'common values' on the main script
 # get the value for the previous survey year- this should work in cases where we skip a year as it just
 # sorts all survey years and finds the next in line
-survey_years <- -desc(sort(unique(all_species_biomass_nums$year
-[all_species_biomass_nums$region == region_id])))
+survey_years <- -desc(sort(unique(all_species_biomass_nums$year)))
 last_year <- survey_years[length(survey_years) - 1]
 
 
@@ -69,11 +63,16 @@ transect_stats <- region_interval_data %>%
   )
 ```
 
-## `r region_id `
+# RESULTS AND DISCUSSION {#results}
+
+## Acoustic System Calibration
+
+Pre-survey calibration measurements of the 38 kHz echosounder showed no notable differences in on-axis gain parameters or beam pattern characteristics confirming that the acoustic system was stable throughout the survey (Table \@ref(tab:caltable)). At 38 kHz the integration gain differed by \< 0.03 dB across the two measurements. On-axis acoustic system gain, $s_{A}$ correction values, and EK80 calibration utility 3 dB beamwidths and offset angles measured during the winter 2024 calibrations were averaged in the linear domain. These averaged values were used with the nominal sound speed and absorption values appropriate for the survey areas in the final parameter set for survey data analysis. The measured equivalent beam angle recorded on the 38 kHz transducer’s specification sheet was adjusted [@Bodholt_2002] using the sound speed assumed during survey conditions for data analysis (Table \@ref(tab:caltable)).
+
 
 *Survey timing and extent*
 
-The `r current_year` winter AT survey of pre-spawning pollock in `r region_id` was conducted between `r start_date` and `r end_date`. The entire survey area encompassed `r  print_n_decimal(total_survey_area_km2, 0)` km^2^ (`r print_n_decimal(total_survey_area_nmi2, 0)` nmi^2^). Acoustic backscatter was measured along `r print_n_decimal(transect_stats$transect_length_km, 1)` km (`r print_n_decimal(transect_stats$transect_length_nmi, 1) ` nmi) of transects spaced mainly `r round(transect_stats$primary_spacing_km, digits = 1) ` km (`r round(transect_stats$primary_spacing_nmi, digits = 1) ` nmi) apart, with spacing varying from `r round(transect_stats$min_spacing_km, digits = 1) ` km to `r round(transect_stats$max_spacing_km, digits = 1) ` km (`r round(transect_stats$min_spacing_nmi, digits = 1)` to `r round(transect_stats$max_spacing_nmi, digits = 1)` nmi) in the survey area (Fig. \@ref(fig:surveylocationmap)). Bottom depths in the survey area ranged from `r round(transect_stats$min_bot_depth, digits=0) ` m to `r round(transect_stats$max_bot_depth, digits=0) ` m. 
+The `r current_year` winter AT survey of pre-spawning pollock in `r region_id` was conducted between `r start_date` and `r end_date`.  Poor weather conditions restricted the survey operations from the originally planned timing.  At the beginning of the survey, the weather and sea conditions were unfavorable for beginning the survey transects and collecting biological samples. Due to the delay, transect spacing was reduced in areas with historically low pollock biomass and only two successful trawl samples were conducted. The entire survey area encompassed `r  print_n_decimal(total_survey_area_km2, 0)` km^2^ (`r print_n_decimal(total_survey_area_nmi2, 0)` nmi^2^). Acoustic backscatter was measured along `r print_n_decimal(transect_stats$transect_length_km, 1)` km (`r print_n_decimal(transect_stats$transect_length_nmi, 1) ` nmi) of transects spaced mainly `r round(transect_stats$primary_spacing_km, digits = 1) ` km (`r round(transect_stats$primary_spacing_nmi, digits = 1) ` nmi) apart, with spacing varying from `r round(transect_stats$min_spacing_km, digits = 1) ` km to `r round(transect_stats$max_spacing_km, digits = 1) ` km (`r round(transect_stats$min_spacing_nmi, digits = 1)` to `r round(transect_stats$max_spacing_nmi, digits = 1)` nmi) in the survey area (Fig. \@ref(fig:surveylocationmap)). Bottom depths in the survey area ranged from `r round(transect_stats$min_bot_depth, digits=0) ` m to `r round(transect_stats$max_bot_depth, digits=0) ` m. 
 
 *Environmental conditions*
 
@@ -84,21 +83,12 @@ The `r current_year` winter AT survey of pre-spawning pollock in `r region_id` w
 # from the function 'plot_historical_sst_at_fishing_locs' as:
 # list item 2: historical mean
 
-region_sst <- plot_historical_sst_anomalies(
-  historical_sst_loc = historical_trawl_sst,
-  historical_sst_scs = historical_scs_sst,
-  region = "Shelikof Strait"
-)
+region_sst <- plot_historical_sst_anomalies(historical_sst_scs = historical_scs_sst)
 
 annual_mean_sst <- region_sst[[2]]
 
 # pull the historical mean, and last year's value, from here
-mean_sst_loc_1980_lstyr <- mean(annual_mean_sst$mean_sst_loc[annual_mean_sst$year != current_year], na.rm = TRUE)
-mean_sst_loc_2006_lstyr <- mean(annual_mean_sst$mean_sst_loc[annual_mean_sst$year %in% c(2006:last_year)], na.rm = TRUE)
-mean_sst_scs_2006_lstyr <- mean(annual_mean_sst$mean_sst_scs[annual_mean_sst$year %in% c(2006:last_year)], na.rm = TRUE)
-last_year_mean_sst_loc <- mean(annual_mean_sst$mean_sst_loc[annual_mean_sst$year == last_year])
 last_year_mean_sst_scs <- mean(annual_mean_sst$mean_sst_scs[annual_mean_sst$year == last_year])
-survey_year_mean_sst_loc <- mean(annual_mean_sst$mean_sst_loc[annual_mean_sst$year == current_year])
 survey_year_mean_sst_scs <- mean(annual_mean_sst$mean_sst_scs[annual_mean_sst$year == current_year])
 
 # characterize current survey year conditions relative to historical SCS SST mean
@@ -110,8 +100,7 @@ if (annual_mean_sst$sst_scs_anomaly[annual_mean_sst$year == current_year] >= abs
 
 ### SBE profiles by pollock size class
 # get the surface/gear temps for the requested region from the hauls data table
-gear_table_for_region <- haul_table_data %>%
-  filter(region == region_id)
+gear_table_for_region <- haul_table_data
 
 stemp <- NULL
 stemp_sd <- NULL
@@ -136,13 +125,11 @@ if (SBE_Nset >= 2) {
   }
 }
 
-shel_scs_summary <- scs_summary %>%
-  filter(region == region_id)
 
 
 ```
 
-Sea surface temperatures (SST) measured in Shelikof Strait `r current_year` indicate relatively `r survey_year_conditions` thermal conditions during the survey. SST ranged from `r round(shel_scs_summary$min_temp, digits=1)`°C to `r round(shel_scs_summary$max_temp, digits=1)`°C as measured by the ship's flow-through instrumentation along acoustic transects and averaged `r round(shel_scs_summary$mean_temp, digits =1)`°C (Fig. \@ref(fig:shelikofSST)). The along-transect mean SST was `r ifelse(round(abs(survey_year_mean_sst_scs - last_year_mean_sst_scs), digits = 1)>0, paste0(round(abs(survey_year_mean_sst_scs - last_year_mean_sst_scs), digits = 1),'°C ',ifelse(survey_year_mean_sst_scs > last_year_mean_sst_scs, 'warmer than', 'cooler than')), 'the same as')` observed during `r last_year` and `r round(abs(survey_year_mean_sst_scs - mean_sst_scs_2006_lstyr), digits = 1)`°C `r ifelse(survey_year_mean_sst_scs >= mean_sst_scs_2006_lstyr, "warmer", "cooler")` than the 2006–`r last_year` historical mean (`r print_n_decimal(mean_sst_scs_2006_lstyr, 1)`°C). The average SST measured by the SBE 39 at all haul locations was `r round(survey_year_mean_sst_loc, digits =1)`°C (Table \@ref(tab:surveyhaultable)), which was `r round(abs(survey_year_mean_sst_loc - last_year_mean_sst_loc), digits = 1)`°C `r ifelse(survey_year_mean_sst_loc >= last_year_mean_sst_loc, "warmer", "cooler")` than the haul-based mean SST in `r last_year`, `r round(abs(survey_year_mean_sst_loc - mean_sst_loc_2006_lstyr), digits = 1)`°C `r ifelse(survey_year_mean_sst_loc >= mean_sst_loc_2006_lstyr, "warmer", "cooler")` than the 2006–`r last_year` historical mean, and `r round(abs(survey_year_mean_sst_loc - mean_sst_loc_1980_lstyr), digits = 1)`°C `r ifelse(survey_year_mean_sst_loc >= mean_sst_loc_1980_lstyr, "warmer", "cooler")` than the long-term 1980–`r last_year` historical mean. Mean SST anomalies from both sources in `r current_year` were less than ± 0.5°C, indicating average conditions relative to the 2006–`r last_year` period (Fig. \@ref(fig:shelikofstraitsstfishingloc)). Mean temperature between the surface and deepest trawl (i.e. headrope) depth at all haul locations varied by approximately `r abs(round(mean(gear_table_for_region$SURFACE_TEMP, na.rm = TRUE) - mean(gear_table_for_region$HEAD_ROPE_TEMP, na.rm = TRUE), digits=1))`°C (Fig. \@ref(fig:shelikofstraitsbe)).
+Sea surface temperatures (SST) measured `r current_year` indicate relatively `r survey_year_conditions` thermal conditions during the survey. SST ranged from `r round(scs_summary$min_temp, digits=1)`°C to `r round(scs_summary$max_temp, digits=1)`°C as measured by the ship's flow-through instrumentation along acoustic transects and averaged `r round(scs_summary$mean_temp, digits =1)`°C (Fig. \@ref(fig:shelikofSST)). The along-transect mean SST was `r ifelse(round(abs(survey_year_mean_sst_scs - last_year_mean_sst_scs), digits = 1)>0, paste0(round(abs(survey_year_mean_sst_scs - last_year_mean_sst_scs), digits = 1),'°C ',ifelse(survey_year_mean_sst_scs > last_year_mean_sst_scs, 'warmer than', 'cooler than')), 'the same as')` observed during `r last_year`. Mean temperature between the surface and deepest trawl (i.e. headrope) depth at all haul locations varied by approximately `r abs(round(mean(gear_table_for_region$SURFACE_TEMP, na.rm = TRUE) - mean(gear_table_for_region$HEAD_ROPE_TEMP, na.rm = TRUE), digits=1))`°C (Fig. \@ref(fig:bogoslofsbe)).
 
 *Trawl Catch Summary*
 
@@ -169,32 +156,19 @@ specimen_text_data <- left_join(region_specimen_data,
 )
 
 
-if (survey_shelikof == 202003) {
-  # just for 2020, only LFS counts were used for specimen data.
-  specimen_region_summary <- specimen_text_data %>%
-    rename(gear_type = "Gear type") %>%
-    filter(gear_type == "LFS1421") %>%
-    summarize(
-      n_lengths = mean(CATCH_LENGTHS, na.rm = TRUE),
-      n_weights = mean(WEIGHTS, na.rm = TRUE),
-      n_maturities = mean(MATURITIES, na.rm = TRUE),
-      n_ages = mean(OTOLITHS, na.rm = TRUE),
-      n_all = mean(c(WEIGHTS, MATURITIES, OTOLITHS, OVARY_WEIGHTS), na.rm = TRUE),
-      n_hauls = n()
-    )
-} else {
-  # For other years all fish-containing hauls are used
-  specimen_region_summary <- specimen_text_data %>%
-    rename(gear_type = "Gear type") %>%
-    summarize(
-      n_lengths = mean(CATCH_LENGTHS, na.rm = TRUE),
-      n_weights = mean(WEIGHTS, na.rm = TRUE),
-      n_maturities = mean(MATURITIES, na.rm = TRUE),
-      n_ages = mean(OTOLITHS, na.rm = TRUE),
-      n_all = mean(c(WEIGHTS, MATURITIES, OTOLITHS, OVARY_WEIGHTS), na.rm = TRUE),
-      n_hauls = n()
-    )
-}
+
+# For other years all fish-containing hauls are used
+specimen_region_summary <- specimen_text_data %>%
+  rename(gear_type = "Gear type") %>%
+  summarize(
+    n_lengths = mean(CATCH_LENGTHS, na.rm = TRUE),
+    n_weights = mean(WEIGHTS, na.rm = TRUE),
+    n_maturities = mean(MATURITIES, na.rm = TRUE),
+    n_ages = mean(OTOLITHS, na.rm = TRUE),
+    n_all = mean(c(WEIGHTS, MATURITIES, OTOLITHS, OVARY_WEIGHTS), na.rm = TRUE),
+    n_hauls = n()
+  )
+
 
 # Catch summary by gear by weight
 catchbyarea_LFS <- region_catch_data %>%
@@ -247,41 +221,80 @@ Biological data and specimens were collected in `r region_id` from `r gearboth `
 # maturity data
 
 # historical GSI- location for each survey .csv file
-# shelikof_historical_trawl_weights =  'historical_data/shelikof_survey_weights_cutoff_30_cm.csv'
-# shelikof_historical_GSI= 'historical_data/shelikof_survey_weighted_GSI_cutoff_30_cm.csv'
 
+# Umnak
 # the function that makes plots for the figs/tables should return all the needed values here- using region_id here....
-maturity_data <- plot_abundance_weighted_maturity(ship = ship_shelikof, 
-                                                  survey = survey_shelikof,  
-                                                  region_id = "Shelikof Strait")
+umnak_maturity_data <- plot_abundance_weighted_maturity(ship = ship, 
+                                                  survey = survey,  
+                                                  region_id = "Umnak")
 
 # get the counts at each stage
-maturity_summary_stage <- maturity_data[[2]]
+umnak_maturity_summary_stage <- maturity_data[[2]]
 
 # replace "Prespawning" with "pre-spawning" to match text in report
-levels(maturity_summary_stage$MATURITY)[levels(maturity_summary_stage$MATURITY) == "Prespawning"] <- "pre-spawning"
+levels(umnak_maturity_summary_stage$MATURITY)[levels(umnak_maturity_summary_stage$MATURITY) == "Prespawning"] <- "pre-spawning"
 
 # identify most common stages
-maturities_male <- maturity_summary_stage[maturity_summary_stage$SEX == "Male", ]
-maturities_female <- maturity_summary_stage[maturity_summary_stage$SEX == "Female", ]
+umnak_maturities_male <- umnak_maturity_summary_stage[umnak_maturity_summary_stage$SEX == "Male", ]
+umnak_maturities_female <- umnak_maturity_summary_stage[umnak_maturity_summary_stage$SEX == "Female", ]
 
-most_common_male <- maturities_male$MATURITY[which.max(maturities_male$wt_percent)]
-most_common_female <- maturities_female$MATURITY[which.max(maturities_female$wt_percent)]
+umnak_most_common_male <- umnak_maturities_male$MATURITY[which.max(maturities_male$wt_percent)]
+umnak_most_common_female <- umnak_maturities_female$MATURITY[which.max(maturities_female$wt_percent)]
 
 # get the sample sizes
-maturity_nums <- maturity_data[[5]]
+umnak_maturity_nums <- umnak_maturity_data[[5]]
 
 # get the L50
-L50_val <- maturity_data[[1]]$L50
+umnak_L50_val <- umnak_maturity_data[[1]]$L50
 
 # and the GSI stats
-GSI_stats <- maturity_data[[3]]
+umnak_GSI_stats <- umnak_maturity_data[[3]]
 
 # and the minimum fork length used in L50 calcs
-min_L50_length <- min(prop_mature$FORK_LENGTH[prop_mature$region == region_id])
+umnak_min_L50_length <- min(prop_mature$FORK_LENGTH[prop_mature$region == "Umnak"])
+
+
+# the function that makes plots for the figs/tables should return all the needed values here- using region_id here....
+samalga_maturity_data <- plot_abundance_weighted_maturity(ship = ship, 
+                                                  survey = survey,  
+                                                  region_id = "Samalga")
+
+# Samalga
+# get the counts at each stage
+samalga_maturity_summary_stage <- maturity_data[[2]]
+
+# replace "Prespawning" with "pre-spawning" to match text in report
+levels(samalga_maturity_summary_stage$MATURITY)[levels(samalga_maturity_summary_stage$MATURITY) == "Prespawning"] <- "pre-spawning"
+
+# identify most common stages
+samalga_maturities_male <- samalga_maturity_summary_stage[samalga_maturity_summary_stage$SEX == "Male", ]
+samalga_maturities_female <- samalga_maturity_summary_stage[samalga_maturity_summary_stage$SEX == "Female", ]
+
+samalga_most_common_male <- samalga_maturities_male$MATURITY[which.max(maturities_male$wt_percent)]
+samalga_most_common_female <- samalga_maturities_female$MATURITY[which.max(maturities_female$wt_percent)]
+
+# get the sample sizes
+samalga_maturity_nums <- samalga_maturity_data[[5]]
+
+# get the L50
+samalga_L50_val <- samalga_maturity_data[[1]]$L50
+
+# and the GSI stats
+samalga_GSI_stats <- samalga_maturity_data[[3]]
+
+# and the minimum fork length used in L50 calcs
+samalga_min_L50_length <- min(prop_mature$FORK_LENGTH[prop_mature$region == "Samalga"])
+
+
+# All the data
+# Amended the plot_abundance_weighted_maturity function to handle no region.
+overall_maturity_data = plot_abundance_weighted_maturity(ship = ship, 
+                                                  survey = survey,
+                                                  region_id = "")
+overall_GSI_stats <- overall_maturity_data[[3]]
 ```
  
-Most female pollock in `r region_id` were in the `r tolower(most_common_female)` stage of maturity and substantially fewer were spawning or spent, which suggests that the timing of the `r current_year ` `r region_id` survey relative to the spawning period was appropriate. The maturity composition of females > 40 cm FL (n = `r maturity_nums$n[maturity_nums$SEX == 'Female']`) was `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Female' & maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Female' & maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Female' & maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Female' & maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Female' & maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent, while the maturity composition of males > 40 cm FL (n = `r maturity_nums$n[maturity_nums$SEX == 'Male']`) was `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Male' & maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Male' & maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Male' & maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Male' & maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(maturity_summary_stage$wt_percent[maturity_summary_stage$SEX == 'Male' & maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent (Fig. \@ref(fig:shelikofstraitmaturity)a). The length at which 50% of female pollock were determined to be reproductively mature (i.e., pre-spawning, spawning, or spent) is `r L50_val ` cm FL (Fig. \@ref(fig:shelikofstraitmaturity)b). The average GSI from  `r GSI_stats$n_gsi_females` pre-spawning females was `r round(GSI_stats$mean_weighted_GSI, digits =2) `  $\pm$ `r round(GSI_stats$std_weighted_GSI, digits =2) ` (Fig. \@ref(fig:shelikofstraitmaturity)c, mean $\pm$ standard deviation), which was within 1 standard deviation of the `r current_year - 1` estimate (0.14 $\pm$ 0.02) and the historical mean (`r round(GSI_stats$wtd_mean_without_current_survey, digits=2) ` $\pm$ `r round(GSI_stats$wtd_std_without_current_survey, digits =2) `). 
+The weighted maturity compositions were different in the Umnak and the Samalga regions. Most female pollock in the Umnak region were in the `r tolower(umnak_most_common_female)` stage of maturity. The maturity composition of females in the Umnak region > 30 cm FL (n = `r umnak_maturity_nums$n[umnak_maturity_nums$SEX == 'Female']`) was `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent, while the maturity composition of males > 30 cm FL (n = `r umnak_maturity_nums$n[umnak_maturity_nums$SEX == 'Male']`) was `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent (Fig. \@ref(fig:umnakmaturity)a). The maturity composition of females in the Samalga region > 30 cm FL (n = `r samalga_maturity_nums$n[samalga_maturity_nums$SEX == 'Female']`) was `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent, while the maturity composition of males > 30 cm FL (n = `r samalga_maturity_nums$n[samalga_maturity_nums$SEX == 'Male']`) was `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(samalga_maturity_summary_stage$wt_percent[usamalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent (Fig. \@ref(fig:samalgamaturity)a). The length at which 50% of female pollock were determined to be reproductively mature (i.e., pre-spawning, spawning, or spent) could not be accurately estimated for either area (Umnak or Samalga) because the female pollock specimens were all mature, and therefore, had a lack of contrast in length and maturity data.  The overall average GSI for pre-spawning mature female pollock observed in 2024 was `r overall_GSI_stats$n_gsi_females`. The average GSI in the Umnak region from  `r umnak_GSI_stats$n_gsi_females` pre-spawning females was `r round(umnak_GSI_stats$mean_weighted_GSI, digits =2) `  $\pm$ `r round(umnak_GSI_stats$std_weighted_GSI, digits =2) ` (Fig. \@ref(fig:umnakmaturity)c, mean $\pm$ standard deviation), which was within 1 standard deviation of the `r current_year - 1` estimate (0.14 $\pm$ 0.02) and the historical mean (`r round(umnak_GSI_stats$wtd_mean_without_current_survey, digits=2) ` $\pm$ `r round(umnak_GSI_stats$wtd_std_without_current_survey, digits =2) `). The average GSI in the Samalga region from  `r samalga_GSI_stats$n_gsi_females` pre-spawning females was `r round(samalga_GSI_stats$mean_weighted_GSI, digits =2) `  $\pm$ `r round(samalga_GSI_stats$std_weighted_GSI, digits =2) ` (Fig. \@ref(fig:samalgakmaturity)c, mean $\pm$ standard deviation), which was within 1 standard deviation of the `r current_year - 1` estimate (0.14 $\pm$ 0.02) and the historical mean (`r round(samalga_GSI_stats$wtd_mean_without_current_survey, digits=2) ` $\pm$ `r round(samalga_GSI_stats$wtd_std_without_current_survey, digits =2) `). 
 
 *Distribution and Abundance*
 

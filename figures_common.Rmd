@@ -33,6 +33,28 @@ cap_text <- paste0("Surface water temperatures (°C) recorded at 5-second interv
 <!-- Set as landscape- this extends back to the last 'block_section' call -->
 `r  block_section(landscape_section)`
 
+<!--SST ship's flow-through - historic anomaly comparison-->
+```{r plot_sst_comp, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=6, fig.cap = cap_text, fig.id = 'ssthistoric'}
+
+# return the historical anomolies figure and stats
+sst_summary <- plot_historical_sst_anomalies(historical_sst_scs = historical_scs_sst)
+
+# pull out plots, captions, bookmarks 
+sst_anomalies_fig <- sst_summary[[1]]
+sst_anomalies_summary <- sst_summary[[2]]
+
+# for the caption, find the last shelikof survey year
+survey_years <- -desc(sort(unique(sel_corr_surveys_pollock_totals_by_length$year)))
+shelikof_last_year <- shelikof_survey_years[length(shelikof_survey_years) - 1]
+
+# print the figure
+print(sst_anomalies_fig)
+
+# and the caption
+cap_text <- paste0("Sea surface temperature (SST, °C) anomalies recorded from the ship's flow-through system for the entire survey in Shelikof Strait. SST anomalies for each temperature source are centered and scaled by their respective mean temperature and standard deviation from the 2007–2024 period. Positive and negative anomalies are indicated by red and blue bars, respectively.")
+
+```
+
 <!--SBE plots- temp at depth-->
 ```{r get_sbe_data, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.width=6, fig.height=7.5, fig.cap= cap_text, fig.alt = cap_text, fig.id = "bogoslofsbe"}
 
@@ -72,7 +94,7 @@ print(maturity_list[[4]])
 plot_region <- unique(maturity_list[[3]]$region)
 
 # build the caption
-cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity composition for male and female pollock greater than 40 cm fork length (FL) within each stage; B) proportion mature (i.e. pre-spawning, spawning, or spent) by 1-cm size group for female pollock; C) gonadosomatic index for females greater than 40 cm FL (with historic survey mean ± 1 std. dev.). All maturity quantities are weighted by local pollock abundance.")
+cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity composition for male and female pollock greater than 30 cm fork length (FL) within each stage; B) proportion mature (i.e. pre-spawning, spawning, or spent) by 1-cm size group for female pollock; C) gonadosomatic index for pre-spawning females (with historic survey mean ± 1 std. dev.). All maturity quantities are weighted by local pollock abundance.")
 
 
 ```
@@ -91,7 +113,7 @@ print(maturity_list[[4]])
 plot_region <- unique(maturity_list[[3]]$region)
 
 # build the caption
-cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity composition for male and female pollock greater than 40 cm fork length (FL) within each stage; B) proportion mature (i.e. pre-spawning, spawning, or spent) by 1-cm size group for female pollock; C) gonadosomatic index for females greater than 40 cm FL (with historic survey mean ± 1 std. dev.). All maturity quantities are weighted by local pollock abundance.")
+cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity composition for male and female pollock greater than 30 cm fork length (FL) within each stage; B) proportion mature (i.e. pre-spawning, spawning, or spent) by 1-cm size group for female pollock; C) gonadosomatic index for pre-spawning females (with historic survey mean ± 1 std. dev.). All maturity quantities are weighted by local pollock abundance.")
 
 
 ```

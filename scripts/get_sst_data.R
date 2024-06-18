@@ -131,7 +131,7 @@ get_sst_data <- function(ship, survey, data_set_id, analysis_id, historical_scs_
 
   # return some summary stats for use in text- min, mean, max, n
   sst_summary <- surface_data %>%
-    group_by(SURVEY, REPORT_NUMBER, region, temperature_type) %>%
+    group_by(SURVEY, temperature_type) %>%
     summarize(
       mean_temp = mean(temperature),
       min_temp = min(temperature),

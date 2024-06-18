@@ -48,7 +48,6 @@ total_survey_area_km2 <- sum((0.5 * 1.852) * (region_interval_data$INTERVAL_WIDT
 
 # get total transect length/width by report number; use Mode function to report the most common spacing
 transect_stats <- region_interval_data %>%
-  group_by(REPORT_NUMBER, region) %>%
   summarize(
     transect_length_nmi = sum(LENGTH),
     transect_length_km = sum(LENGTH) * 1.852,
@@ -67,7 +66,7 @@ transect_stats <- region_interval_data %>%
 
 ## Acoustic System Calibration
 
-Pre-survey calibration measurements of the 38 kHz echosounder showed no notable differences in on-axis gain parameters or beam pattern characteristics confirming that the acoustic system was stable throughout the survey (Table \@ref(tab:caltable)). At 38 kHz the integration gain differed by \< 0.03 dB across the two measurements. On-axis acoustic system gain, $s_{A}$ correction values, and EK80 calibration utility 3 dB beamwidths and offset angles measured during the winter 2024 calibrations were averaged in the linear domain. These averaged values were used with the nominal sound speed and absorption values appropriate for the survey areas in the final parameter set for survey data analysis. The measured equivalent beam angle recorded on the 38 kHz transducer’s specification sheet was adjusted [@Bodholt_2002] using the sound speed assumed during survey conditions for data analysis (Table \@ref(tab:caltable)).
+Pre-survey calibration measurements of the 38 kHz echosounder showed no notable differences in on-axis gain parameters or beam pattern characteristics confirming that the acoustic system was stable throughout the survey (Table \@ref(tab:caltable)). At 38 kHz the integration gain differed by \< 0.02 dB across the two measurements. On-axis acoustic system gain, $s_{A}$ correction values, and EK80 calibration utility 3 dB beamwidths and offset angles measured during the winter 2024 calibrations were averaged in the linear domain. These averaged values were used with the nominal sound speed and absorption values appropriate for the survey areas in the final parameter set for survey data analysis. The measured equivalent beam angle recorded on the 38 kHz transducer’s specification sheet was adjusted [@Bodholt_2002] using the sound speed assumed during survey conditions for data analysis (Table \@ref(tab:caltable)).
 
 
 *Survey timing and extent*
@@ -129,7 +128,7 @@ if (SBE_Nset >= 2) {
 
 ```
 
-Sea surface temperatures (SST) measured `r current_year` indicate relatively `r survey_year_conditions` thermal conditions during the survey. SST ranged from `r round(scs_summary$min_temp, digits=1)`°C to `r round(scs_summary$max_temp, digits=1)`°C as measured by the ship's flow-through instrumentation along acoustic transects and averaged `r round(scs_summary$mean_temp, digits =1)`°C (Fig. \@ref(fig:shelikofSST)). The along-transect mean SST was `r ifelse(round(abs(survey_year_mean_sst_scs - last_year_mean_sst_scs), digits = 1)>0, paste0(round(abs(survey_year_mean_sst_scs - last_year_mean_sst_scs), digits = 1),'°C ',ifelse(survey_year_mean_sst_scs > last_year_mean_sst_scs, 'warmer than', 'cooler than')), 'the same as')` observed during `r last_year`. Mean temperature between the surface and deepest trawl (i.e. headrope) depth at all haul locations varied by approximately `r abs(round(mean(gear_table_for_region$SURFACE_TEMP, na.rm = TRUE) - mean(gear_table_for_region$HEAD_ROPE_TEMP, na.rm = TRUE), digits=1))`°C (Fig. \@ref(fig:bogoslofsbe)).
+Sea surface temperatures (SST) measured `r current_year` indicate relatively `r survey_year_conditions` thermal conditions during the survey. SST ranged from `r round(scs_summary$min_temp, digits=1)`°C to `r round(scs_summary$max_temp, digits=1)`°C as measured by the ship's flow-through instrumentation along acoustic transects and averaged `r round(scs_summary$mean_temp, digits =1)`°C (Fig. \@ref(fig:shelikofSST)). The along-transect mean SST was `r ifelse(round(abs(survey_year_mean_sst_scs - last_year_mean_sst_scs), digits = 1)>0, paste0(round(abs(survey_year_mean_sst_scs - last_year_mean_sst_scs), digits = 1),'°C ',ifelse(survey_year_mean_sst_scs > last_year_mean_sst_scs, 'warmer than', 'cooler than')), 'the same as')` observed during `r last_year`. The mean SST was very similar to the mean of SST measurements since 2007, indicating a year with average conditions (Fig. \@ref(fig:ssthistoric)). Mean temperature between the surface and deepest trawl (i.e. headrope) depth at all haul locations varied by approximately `r abs(round(mean(gear_table_for_region$SURFACE_TEMP, na.rm = TRUE) - mean(gear_table_for_region$HEAD_ROPE_TEMP, na.rm = TRUE), digits=1))`°C (Fig. \@ref(fig:bogoslofsbe)).
 
 *Trawl Catch Summary*
 
@@ -140,7 +139,7 @@ gear_names <- unique(as.character(region_event_data$"Gear type"))
 gear_counts <- list()
 
 for (i in 1:length(gear_names)) {
-  gear_counts[i] <- sum((region_event_data$"Gear type" == gear_names[i]), na.rm = TRUE)
+  gear_counts[i] <- sum((region_event_data$"Gear type" == gear_names[i]), na.rm = TRUE)-1
 }
 
 # get the counts of different haul types for the text
@@ -213,7 +212,7 @@ if (!any(region_catch_data$GEAR == "PNE")) {
 
 Biological data and specimens were collected in `r region_id` from `r gearboth ` hauls (Table \@ref(tab:surveyhaultable), Fig. \@ref(fig:surveylocationmap)) targeted on backscatter attributed to pollock. The lengths of an average of `r round(specimen_region_summary$n_lengths, digits = 0) `  randomly selected pollock were measured from each haul, with an average of `r round(specimen_region_summary$n_ages, digits = 0) ` individuals more extensively sampled for at least one of the following: body weight, maturity, and age (Table \@ref(tab:surveyspecimen)). A total of `r sum(specimen_text_data$OTOLITHS, na.rm = TRUE) ` otoliths used to estimate pollock ages were collected in the `r region_id` region (Table \@ref(tab:surveyspecimen)). 
 
- `r .simpleCap(catchbyarea_LFS$COMMON_NAME[1])` and `r catchbyarea_LFS$COMMON_NAME[2]` were the most abundant species by weight in the LFS1421 hauls, contributing `r round(catchbyarea_LFS$TOT_WEIGHT[1]/sum(catchbyarea_LFS$TOT_WEIGHT)*100, digits = 1)`% and `r round(catchbyarea_LFS$TOT_WEIGHT[2]/sum(catchbyarea_LFS$TOT_WEIGHT)*100, digits = 1)`% of the total catch by weight respectively (Table \@ref(tab:shelikofstraitlfs1421)). `r .simpleCap(catchbyarea2_LFS$COMMON_NAME[1])` and `r catchbyarea2_LFS$COMMON_NAME[2]`  were the most abundant species by numbers with `r round(catchbyarea2_LFS$TOT_NUMBER[1]/sum(catchbyarea2_LFS$TOT_NUMBER)*100, digits = 1)`% and `r round(catchbyarea2_LFS$TOT_NUMBER[2]/sum(catchbyarea2_LFS$TOT_NUMBER)*100, digits = 1)`% of the total catch by numbers, respectively (Table \@ref(tab:shelikofstraitlfs1421)). `r pne_statement`
+ `r .simpleCap(catchbyarea_LFS$COMMON_NAME[1])` and `r catchbyarea_LFS$COMMON_NAME[2]` were the most abundant species by weight in the LFS1421 hauls, contributing `r round(catchbyarea_LFS$TOT_WEIGHT[1]/sum(catchbyarea_LFS$TOT_WEIGHT)*100, digits = 1)`% and `r round(catchbyarea_LFS$TOT_WEIGHT[2]/sum(catchbyarea_LFS$TOT_WEIGHT)*100, digits = 1)`% of the total catch by weight respectively (Table \@ref(tab:bogosloflfs1421catch)). `r .simpleCap(catchbyarea2_LFS$COMMON_NAME[1])` and `r catchbyarea2_LFS$COMMON_NAME[2]`  were the most abundant species by numbers with `r round(catchbyarea2_LFS$TOT_NUMBER[1]/sum(catchbyarea2_LFS$TOT_NUMBER)*100, digits = 1)`% and `r round(catchbyarea2_LFS$TOT_NUMBER[2]/sum(catchbyarea2_LFS$TOT_NUMBER)*100, digits = 1)`% of the total catch by numbers, respectively (Table \@ref(tab:bogosloflfs1421catch)). `r pne_statement`
 
 *Pollock Maturity*
 
@@ -229,7 +228,7 @@ umnak_maturity_data <- plot_abundance_weighted_maturity(ship = ship,
                                                   region_id = "Umnak")
 
 # get the counts at each stage
-umnak_maturity_summary_stage <- maturity_data[[2]]
+umnak_maturity_summary_stage <- umnak_maturity_data[[2]]
 
 # replace "Prespawning" with "pre-spawning" to match text in report
 levels(umnak_maturity_summary_stage$MATURITY)[levels(umnak_maturity_summary_stage$MATURITY) == "Prespawning"] <- "pre-spawning"
@@ -238,8 +237,8 @@ levels(umnak_maturity_summary_stage$MATURITY)[levels(umnak_maturity_summary_stag
 umnak_maturities_male <- umnak_maturity_summary_stage[umnak_maturity_summary_stage$SEX == "Male", ]
 umnak_maturities_female <- umnak_maturity_summary_stage[umnak_maturity_summary_stage$SEX == "Female", ]
 
-umnak_most_common_male <- umnak_maturities_male$MATURITY[which.max(maturities_male$wt_percent)]
-umnak_most_common_female <- umnak_maturities_female$MATURITY[which.max(maturities_female$wt_percent)]
+umnak_most_common_male <- umnak_maturities_male$MATURITY[which.max(umnak_maturities_male$wt_percent)]
+umnak_most_common_female <- umnak_maturities_female$MATURITY[which.max(umnak_maturities_female$wt_percent)]
 
 # get the sample sizes
 umnak_maturity_nums <- umnak_maturity_data[[5]]
@@ -261,7 +260,7 @@ samalga_maturity_data <- plot_abundance_weighted_maturity(ship = ship,
 
 # Samalga
 # get the counts at each stage
-samalga_maturity_summary_stage <- maturity_data[[2]]
+samalga_maturity_summary_stage <- samalga_maturity_data[[2]]
 
 # replace "Prespawning" with "pre-spawning" to match text in report
 levels(samalga_maturity_summary_stage$MATURITY)[levels(samalga_maturity_summary_stage$MATURITY) == "Prespawning"] <- "pre-spawning"
@@ -270,8 +269,8 @@ levels(samalga_maturity_summary_stage$MATURITY)[levels(samalga_maturity_summary_
 samalga_maturities_male <- samalga_maturity_summary_stage[samalga_maturity_summary_stage$SEX == "Male", ]
 samalga_maturities_female <- samalga_maturity_summary_stage[samalga_maturity_summary_stage$SEX == "Female", ]
 
-samalga_most_common_male <- samalga_maturities_male$MATURITY[which.max(maturities_male$wt_percent)]
-samalga_most_common_female <- samalga_maturities_female$MATURITY[which.max(maturities_female$wt_percent)]
+samalga_most_common_male <- samalga_maturities_male$MATURITY[which.max(samalga_maturities_male$wt_percent)]
+samalga_most_common_female <- samalga_maturities_female$MATURITY[which.max(samalga_maturities_female$wt_percent)]
 
 # get the sample sizes
 samalga_maturity_nums <- samalga_maturity_data[[5]]
@@ -294,7 +293,7 @@ overall_maturity_data = plot_abundance_weighted_maturity(ship = ship,
 overall_GSI_stats <- overall_maturity_data[[3]]
 ```
  
-The weighted maturity compositions were different in the Umnak and the Samalga regions. Most female pollock in the Umnak region were in the `r tolower(umnak_most_common_female)` stage of maturity. The maturity composition of females in the Umnak region > 30 cm FL (n = `r umnak_maturity_nums$n[umnak_maturity_nums$SEX == 'Female']`) was `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent, while the maturity composition of males > 30 cm FL (n = `r umnak_maturity_nums$n[umnak_maturity_nums$SEX == 'Male']`) was `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent (Fig. \@ref(fig:umnakmaturity)a). The maturity composition of females in the Samalga region > 30 cm FL (n = `r samalga_maturity_nums$n[samalga_maturity_nums$SEX == 'Female']`) was `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent, while the maturity composition of males > 30 cm FL (n = `r samalga_maturity_nums$n[samalga_maturity_nums$SEX == 'Male']`) was `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(samalga_maturity_summary_stage$wt_percent[usamalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent (Fig. \@ref(fig:samalgamaturity)a). The length at which 50% of female pollock were determined to be reproductively mature (i.e., pre-spawning, spawning, or spent) could not be accurately estimated for either area (Umnak or Samalga) because the female pollock specimens were all mature, and therefore, had a lack of contrast in length and maturity data.  The overall average GSI for pre-spawning mature female pollock observed in 2024 was `r overall_GSI_stats$n_gsi_females`. The average GSI in the Umnak region from  `r umnak_GSI_stats$n_gsi_females` pre-spawning females was `r round(umnak_GSI_stats$mean_weighted_GSI, digits =2) `  $\pm$ `r round(umnak_GSI_stats$std_weighted_GSI, digits =2) ` (Fig. \@ref(fig:umnakmaturity)c, mean $\pm$ standard deviation), which was within 1 standard deviation of the `r current_year - 1` estimate (0.14 $\pm$ 0.02) and the historical mean (`r round(umnak_GSI_stats$wtd_mean_without_current_survey, digits=2) ` $\pm$ `r round(umnak_GSI_stats$wtd_std_without_current_survey, digits =2) `). The average GSI in the Samalga region from  `r samalga_GSI_stats$n_gsi_females` pre-spawning females was `r round(samalga_GSI_stats$mean_weighted_GSI, digits =2) `  $\pm$ `r round(samalga_GSI_stats$std_weighted_GSI, digits =2) ` (Fig. \@ref(fig:samalgakmaturity)c, mean $\pm$ standard deviation), which was within 1 standard deviation of the `r current_year - 1` estimate (0.14 $\pm$ 0.02) and the historical mean (`r round(samalga_GSI_stats$wtd_mean_without_current_survey, digits=2) ` $\pm$ `r round(samalga_GSI_stats$wtd_std_without_current_survey, digits =2) `). 
+The weighted maturity compositions were different between the Umnak and the Samalga regions. Most female pollock in the Umnak region were in the `r tolower(umnak_most_common_female)` stage of maturity. The maturity composition of females in the Umnak region > 30 cm FL (n = `r umnak_maturity_nums$n[umnak_maturity_nums$SEX == 'Female']`) was `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Female' & umnak_maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent, while the maturity composition of males > 30 cm FL (n = `r umnak_maturity_nums$n[umnak_maturity_nums$SEX == 'Male']`) was `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(umnak_maturity_summary_stage$wt_percent[umnak_maturity_summary_stage$SEX == 'Male' & umnak_maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent (Fig. \@ref(fig:umnakmaturity)a). The maturity composition of females in the Samalga region > 30 cm FL (n = `r samalga_maturity_nums$n[samalga_maturity_nums$SEX == 'Female']`) was `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Female' & samalga_maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent, while the maturity composition of males > 30 cm FL (n = `r samalga_maturity_nums$n[samalga_maturity_nums$SEX == 'Male']`) was `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'Immature'], digits = 0)`% immature, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'Developing'], digits = 0)`% developing, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'pre-spawning'], digits = 0)`% pre-spawning, `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'Spawning'], digits = 0)`% spawning, and `r round(samalga_maturity_summary_stage$wt_percent[samalga_maturity_summary_stage$SEX == 'Male' & samalga_maturity_summary_stage$MATURITY == 'Spent'], digits = 0)`% spent (Fig. \@ref(fig:samalgamaturity)a). The length at which 50% of female pollock were determined to be reproductively mature (i.e., pre-spawning, spawning, or spent) could not be accurately estimated for either area (Umnak or Samalga) because the female pollock specimens were all mature, and therefore, had a lack of contrast in length and maturity data.  The overall average GSI for pre-spawning mature female pollock observed in 2024 was `r overall_GSI_stats$n_gsi_females`. The average GSI in the Umnak region from  `r umnak_GSI_stats$n_gsi_females` pre-spawning females was `r round(umnak_GSI_stats$mean_weighted_GSI, digits =2) `  $\pm$ `r round(umnak_GSI_stats$std_weighted_GSI, digits =3) ` (Fig. \@ref(fig:umnakmaturity)c, mean $\pm$ standard deviation), which was within 1 standard deviation of the `r last_year` estimate (0.15 $\pm$ 0.03) and the historical mean (`r round(umnak_GSI_stats$wtd_mean_without_current_survey, digits=2) ` $\pm$ `r round(umnak_GSI_stats$wtd_std_without_current_survey, digits =2) `). The average GSI in the Samalga region from  `r samalga_GSI_stats$n_gsi_females` pre-spawning females was `r round(samalga_GSI_stats$mean_weighted_GSI, digits =2) `  $\pm$ `r round(samalga_GSI_stats$std_weighted_GSI, digits =3) ` (Fig. \@ref(fig:samalgamaturity)c, mean $\pm$ standard deviation), which was within 1 standard deviation of the `r last_year` estimate (0.18 $\pm$ 0.004) and the historical mean (`r round(samalga_GSI_stats$wtd_mean_without_current_survey, digits=2) ` $\pm$ `r round(samalga_GSI_stats$wtd_std_without_current_survey, digits =2) `). 
 
 *Distribution and Abundance*
 
@@ -302,8 +301,7 @@ The weighted maturity compositions were different in the Umnak and the Samalga r
 # get the numbers at length by report number
 num_bio_at_length_summary <- current_year_pollock_biomass_nums %>%
   # for this report- make sure we're only reporting the requested region
-  filter(region == region_id) %>%
-  group_by(REPORT_NUMBER, region, LENGTH) %>%
+  group_by(LENGTH) %>%
   summarize(
     num_individuals = sum(NUMBERS),
     biomass_kg = sum(BIOMASS)
@@ -398,7 +396,7 @@ rawbio <- sum(num_bio_at_length_summary$biomass_kg)
 rawnum <- sum(num_bio_at_length_summary$num_individuals)
 
 # compare to last year's biomass/nums
-last_year_vals <- sel_corr_surveys_pollock_totals_by_length %>%
+last_year_vals <- historical_surveys_pollock_totals_by_length %>%
   # for this report- make sure we're only reporting the requested region
   filter(region == region_id & year == last_year) %>%
   group_by(year) %>%
@@ -411,7 +409,9 @@ last_year_vals <- sel_corr_surveys_pollock_totals_by_length %>%
 # pctoflastyr=((last_year_vals$biomass_kg-rawbio)/last_year_vals$biomass_kg)*100
 biomass_change_from_last_year <- (rawbio - last_year_vals$biomass_kg) / last_year_vals$biomass_kg * 100
 
-meanHistBiomass <- calculate_mean_historical_biomass_function(pre_sel_corr_data_path = pre_selectivity_biomass_nums_ages_path, post_sel_corr_data = sel_corr_surveys_pollock_totals_by_length, region_id = region_id)
+# Here we amend the code to just generate the mean biomass without pre and post sel and without regions
+# Everything that is in the data frame is for each survey
+meanHistBiomass <- calculate_mean_historical_biomass_function(historical_surveys_pollock_totals_by_length)
 
 # calculate the percent of the historic biomass
 pctofhistoric <- (rawbio / 1e6) / meanHistBiomass * 100
@@ -438,51 +438,19 @@ if (!isTRUE(age_data)) {
 ```
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE}
-# load geostat model outputs generated in 'plot_interpolated_survey_comparisons_winter_function.R' script & create objects for historical (2008-2021), prior year, & current year eastings & northings
 
-plot_cog <- readRDS("geostat_outputs/COG_point_estimates.rds") # object 'plot_cog'
-#test <- readRDS("geostat_outputs/Inertia_axes_estimates.rds") # object 'plot_axes'
-historical_COG_eastings <- mean(plot_cog$Eastings[plot_cog$Year != current_year] / 1000, na.rm = T)
-historical_COG_northings <- mean(plot_cog$Northings[plot_cog$Year != current_year] / 1000, na.rm = T)
-last_year_COG_eastings <- plot_cog$Eastings[plot_cog$Year == last_year] / 1000
-last_year_COG_northings <- plot_cog$Northings[plot_cog$Year == last_year] / 1000
-surv_year_COG_eastings <- plot_cog$Eastings[plot_cog$Year == current_year] / 1000
-surv_year_COG_northings <- plot_cog$Northings[plot_cog$Year == current_year] / 1000
-
-# for the bottom-referenced data, report depths as heights and then calculate the total biomass/nums within each layer
-if (!is.null(vertical_dist_bot_ref_biomass_nums_by_length)) {
-  bottom_referenced_summary <- vertical_dist_bot_ref_biomass_nums_by_length %>%
-    # limit things to the shelikof survey
-    filter(region == region_id & SPECIES_CODE == 21740) %>%
-    # report height (i.e. inverse of depth) of upper ref line, this will set bottom bin @ o (seafloor);
-    # label observations by size class and year
-    mutate(
-      height = -depth,
-      size_class = ifelse(LENGTH <= pollock_size_cutoff, "juvenile_layer_biomass", "adult_layer_biomass")
-    )
+# We aren't currently doing bottom referenced data for Bogoslof, so changed this a bit
+# to handle just working with surface referenced data sets
+if (!is.null(vertical_dist_surf_ref_biomass_nums_by_length)) {
 
   # for the surface-referenced data, calculate the total biomass/nums within each layer
   surface_referenced_summary <- vertical_dist_surf_ref_biomass_nums_by_length %>%
     # limit things to the shelikof survey
-    filter(region == region_id & SPECIES_CODE == 21740) %>%
+    filter(SPECIES_CODE == 21740) %>%
     # report depth as the range from upper reference to be consistent;
     # label observations by size class and year
     mutate(size_class = ifelse(LENGTH <= pollock_size_cutoff, "juvenile_layer_biomass", "adult_layer_biomass"))
 
-  # pull out a few stats to report: mwd, ranges pollock observed at, etc
-
-  # report the mwd for each dataset
-  mwd_bottom_ref <- bottom_referenced_summary %>%
-    # sum biomass/numbers in each layer/size class
-    group_by(year, height, size_class) %>%
-    summarize(
-      layer_biomass = sum(BIOMASS),
-      layer_nums = sum(NUMBERS)
-    ) %>%
-    # get the mean weighted depth for each size class
-    group_by(year, size_class) %>%
-    summarize(mwd = sum(height * layer_biomass) / sum(layer_biomass)) %>%
-    mutate(ref = "bottom")
 
   mwd_surf_ref <- surface_referenced_summary %>%
     group_by(year, depth, size_class) %>%
@@ -527,66 +495,6 @@ if (!is.null(vertical_dist_bot_ref_biomass_nums_by_length)) {
     probs = c(0.125, 0.875)
   )
 
-  # calculate the middle 50%  off bottom for adults and juveniles as well
-  most_common_height_off_bot <- bottom_referenced_summary %>%
-    group_by(year, height, size_class) %>%
-    # sum biomass/numbers in each layer/size class
-    summarize(
-      layer_biomass = sum(BIOMASS),
-      layer_nums = sum(NUMBERS)
-    ) %>%
-    # to be safe, arrange by depth
-    arrange(height)
-
-  # and pull out the adult/juvenile ranges
-  adult_common_height_off_bot <- most_common_height_off_bot[most_common_height_off_bot$size_class == "adult_layer_biomass" &
-    most_common_height_off_bot$year == current_year, ]
-
-  adult_common_height_off_bot <- Hmisc::wtd.quantile(adult_common_height_off_bot$height,
-    weights = adult_common_height_off_bot$layer_biomass,
-    probs = c(0.125, 0.875)
-  )
-
-  juv_common_height_off_bot <- most_common_height_off_bot[most_common_height_off_bot$size_class == "juvenile_layer_biomass" &
-    most_common_height_off_bot$year == current_year, ]
-
-  juv_common_height_off_bot <- Hmisc::wtd.quantile(juv_common_height_off_bot$height,
-    weights = juv_common_height_off_bot$layer_biomass,
-    probs = c(0.125, 0.875, 0.95)
-  )
-
-
-  # how much biomass was in the bottom 10m vs the rest of the water column?
-  bot_10m_summary <- bottom_referenced_summary %>%
-    mutate(bottom_10 = ifelse(height <= 10, "bottom_10", "off_bottom_10")) %>%
-    # sum biomass/numbers in each layer/size class
-    group_by(year, size_class, bottom_10) %>%
-    summarize(
-      layer_biomass = sum(BIOMASS),
-      layer_nums = sum(NUMBERS)
-    ) %>%
-    mutate(perc_biomass = layer_biomass / sum(layer_biomass) * 100)
-
-  # how much biomass was in the bottom 50m vs the rest of the water column?
-  bot_50m_summary <- bottom_referenced_summary %>%
-    mutate(bottom_50 = ifelse(height <= 50, "bottom_50", "off_bottom_50")) %>%
-    # sum biomass/numbers in each layer/size class
-    group_by(year, size_class, bottom_50) %>%
-    summarize(
-      layer_biomass = sum(BIOMASS),
-      layer_nums = sum(NUMBERS)
-    ) %>%
-    mutate(perc_biomass = layer_biomass / sum(layer_biomass) * 100)
-
-  # pull out a few values for the text
-  adult_within_10_current_year <- bot_10m_summary$perc_biomass[bot_10m_summary$year == current_year &
-    bot_10m_summary$size_class == "adult_layer_biomass" &
-    bot_10m_summary$bottom_10 == "bottom_10"]
-
-  adult_within_50_current_year <- bot_50m_summary$perc_biomass[bot_50m_summary$year == current_year &
-    bot_50m_summary$size_class == "adult_layer_biomass" &
-    bot_50m_summary$bottom_50 == "bottom_50"]
-
 
   # compare to last 4 years- how did the mean weighted pollock depth from surface compare?
   region_only_surveys <- unique(vertical_dist_surf_ref_biomass_nums_by_length$year[vertical_dist_surf_ref_biomass_nums_by_length$region == region_id])
@@ -622,41 +530,24 @@ if (!is.null(vertical_dist_bot_ref_biomass_nums_by_length)) {
   )
 }
 
-# if there's no bottom-ref dataset, just add a note and set some initial values to dummy values in the text
-if (is.null(vertical_dist_bot_ref_biomass_nums_by_length)) {
-  depth_distribution_paragraph <- "**Once you run a bottom-referenced dataset, a description of the vertical distribution will show up here.**"
-  
-  adult_common_depths <- c()
-  juvenile_common_depths <- c()
-  adult_common_height_off_bot <-c()
-  juv_common_height_off_bot <- c()
-  last_4_comps <- c()
-  previous_4_years_statement <- c()
-  adult_within_10_current_year <-0
-  adult_within_50_current_year <- 0
-  
-}
-
 ```
 
 
-Adult pollock (defined as > 30 cm FL) were detected throughout the Strait, with the largest aggregations concentrated in the center of the sea valley south of Cape Igvak (Fig. \@ref(fig:shelikofsticks)). Compared to previous years adult pollock were notably less abundant along the Alaska Peninsula side of the Strait between Cape Nukshak and Cape Kekurnoi where large numbers of pre-spawning fish have been observed during most previous Shelikof surveys. Juvenile pollock (≤ 30 cm FL and largely comprised of age-2 fish from `r (last_year-1)` year class)—typically found in large midwater aggregations shallower than but in proximity to adult aggregations in the middle portion of the Strait in prior surveys—were observed near the ends of transects in the southern portion of the Strait distinctly separated from adult aggregations. The center of gravity for pollock biomass shifted `r round(abs(surv_year_COG_eastings - last_year_COG_eastings), digits=1)` km to the `r ifelse((surv_year_COG_eastings - last_year_COG_eastings)>0, "east", "west")` and `r round(abs(surv_year_COG_northings - last_year_COG_northings), digits=1)` km to the `r ifelse((surv_year_COG_northings - last_year_COG_northings)>0, "north", "south")` from the `r last_year` distribution, continuing a more pronounced shift of `r round(abs(surv_year_COG_eastings - historical_COG_eastings), digits=1)` km to the `r ifelse((surv_year_COG_eastings - historical_COG_eastings)>0, "east", "west")` and `r round(abs(surv_year_COG_northings - historical_COG_northings), digits=1)` km to the `r ifelse((surv_year_COG_northings - historical_COG_northings)>0, "north", "south")` from the historical mean center of gravity between 2008 and `r last_year` (Fig. \@ref(fig:pollockdistribution)). While similar southwestward shifts have occurred since 2008, such a pronounced contraction of the distribution's mean location, as indicated by the reduced inertia axes, is atypical for the past 15-year period (Fig. \@ref(fig:pollockdistribution)). 
+Adult pollock (defined as > 30 cm FL) were detected throughout the survey area near Bogoslof Island, with the largest aggregations concentrated north of the eastern point of Umnak Island and north of Samalga Pass (Fig. \@ref(fig:bogoslofsticks)). Compared to previous years, this distribution was consistent with two large aggregations in these areas. 
 
-Most adult pollock (comprising `r round(adultfishbiopct,1)`% of total biomass) were detected between depths of `r adult_common_depths[[1]]`–`r adult_common_depths[[2]]` m (Fig. \@ref(fig:shelikofstraitviolins)a). Most juvenile pollock (comprising `r round(juvfishnumpct,1)`% of total abundance) were between depths of `r juvenile_common_depths[[1]]`–`r juvenile_common_depths[[2]]` m (Fig. \@ref(fig:shelikofstraitviolins)b). The 'bottom-referenced' analysis indicated that adult pollock were primarily observed within `r adult_common_height_off_bot[[2]]` m of the seafloor with most juveniles found within `r juv_common_height_off_bot[[2]]` m and ranging up to `r juv_common_height_off_bot[[3]]` m (includes 95% of the biomass) off the seafloor (Fig. \@ref(fig:shelikofstraitviolins)c, d). Adult pollock depth distributions in `r current_year` were `r  last_4_comps$current_survey_comp[last_4_comps$comparison_year == last_year]` than those in `r last_year` and `r previous_4_years_statement` than in the prior 4 years (Fig. \@ref(fig:shelikofstraitviolins)a, c), with about `r print_n_decimal(adult_within_10_current_year, 0)`% of the biomass observed within 10m of the seafloor, and `r  print_n_decimal(adult_within_50_current_year, 0)`% percent of biomass within 50 m of the seafloor (Fig. \@ref(fig:shelikofstraitviolins)c).
+Most adult pollock (comprising `r round(adultfishbiopct,1)`% of total biomass) were detected between depths of `r adult_common_depths[[1]]`–`r adult_common_depths[[2]]` m (Fig. \@ref(fig:violins)a). No juvenile pollock (<= 30 cm FL) were detected, although they were observed in 2014 and 2020 (Fig. \@ref(fig:violins)b). Adult pollock depth distributions in `r current_year` were `r  last_4_comps$current_survey_comp[last_4_comps$comparison_year == last_year]` than those in `r last_year` and `r previous_4_years_statement` than in the prior 4 years (Fig. \@ref(fig:violins)a, b).
 
-A total of `r print_n_decimal(rawnum/1e6 , 1) ` million pollock weighing `r print_n_decimal(rawbio/1000, 1)` t were estimated to be in Shelikof Strait at the time of the survey (Tables \@ref(tab:shelikofeva), \@ref(tab:shelikofnumlength)). The `r current_year` biomass `r ifelse(biomass_change_from_last_year > 0, 'increased', 'decreased')` `r print_n_decimal(abs(biomass_change_from_last_year), 1)`% from that observed in `r last_year` (`r print_n_decimal(last_year_vals$biomass_kg/1000, 0)` t) and was `r round(pctofhistoric, digits = 1)`% of the historical mean of `r print_n_decimal(meanHistBiomass, 1)` thousand tons (Table \@ref(tab:shelikofeva), Fig. \@ref(fig:shelikofstraitbiocomps)). The `r current_year` survey biomass estimate is the lowest since 2009 (Fig. \@ref(fig:shelikofstraitbiocomps)). The relative estimation error of the `r current_year` biomass estimate based on the 1-D geostatistical analysis was `r eva_shelikof_perc`% (Table \@ref(tab:shelikofeva)).
+A total of `r print_n_decimal(rawnum/1e6 , 1) ` million pollock weighing `r print_n_decimal(rawbio/1000, 1)` t were estimated to be in region near Bogoslof Island at the time of the survey (Tables \@ref(tab:biotable), \@ref(tab:numlength)). The `r current_year` biomass `r ifelse(biomass_change_from_last_year > 0, 'increased', 'decreased')` `r print_n_decimal(abs(biomass_change_from_last_year), 1)`% from that observed in `r last_year` (`r print_n_decimal(last_year_vals$biomass_kg/1000, 0)` t) and was `r round(pctofhistoric, digits = 1)`% of the historical mean of `r print_n_decimal(meanHistBiomass, 1)` thousand tons (Table \@ref(tab:biotable), Fig. \@ref(fig:biocomps)). The relative estimation error of the `r current_year` biomass estimate based on the 1-D geostatistical analysis was `r eva_perc`% (Table \@ref(tab:biotable)).
 
-Adult pollock with modal lengths of ~48 cm were most abundant by weight (Table \@ref(tab:shelikofbiolength), Fig. \@ref(fig:shelikofbionumslength)), and primarily composed of ages 5, and 11 fish from the 2018, and 2012 year classes that accounted for `r round(yr2018fishbiopct, digits=1)`% and `r round(yr2012fishbiopct, digits=1)`% of total biomass, respectively (Table \@ref(tab:shelikofbioage), Fig. \@ref(fig:shelikofbionumsages)). Age-3 pollock (modal length ~35 cm FL, `r (last_year-1)` year class) contributed minimally in terms of numbers (`r round(age2numpct, digits=1)`%) and only accounted for `r round(age3biopct, digits=1)`% of the biomass (Tables \@ref(tab:shelikofnumlength) - \@ref(tab:shelikofnumage), Figs. \@ref(fig:shelikofbionumslength), \@ref(fig:shelikofbionumsages)). This is a notable decline in numbers and biomass of the `r (last_year-1)` year class from the `r last_year` survey when they were particularly numerous as age-2s (Tables \@ref(tab:shelikofbioage), \@ref(tab:shelikofnumage), Figs. \@ref(fig:shelikofridgelineslength), \@ref(fig:shelikofridgelinesages)). In addition, very few age-1 pollock (< 17 cm FL, `r last_year` year class) were observed in `r current_year`, accounting for only `r round(age1numpct, digits=1)`% of the numbers and $\le$ `r round(age1biopct, digits=1)`% of the biomass of all pollock observed in Shelikof Strait (Figs. \@ref(fig:shelikofbionumslength), \@ref(fig:shelikofbionumsages)). Compared to the same age groups from previous surveys (2008–`r last_year`), pollock that were age 12 and older were shorter and lighter (Fig. \@ref(fig:shelikofstraitlwage)).   
 
-*Effects of Net Selectivity Corrections and Estimated Strength of `r last_year` Year Class*
+*Effects of Net Selectivity Corrections*
 
 ```{r, shelikof_selectivity_paragraph, echo = FALSE, message=FALSE, warning=FALSE}
 # Current year non-selectivity based estimate- numbers of age 1 fish for McKelvey index and comparisons; we can get this from our comparisons dataset- it has pollock summarized by length
 NoSelect <- analysis_comparisons %>%
-  filter(region == region_id) %>%
   # get the non-selectivity dataset for the region; this relies on having that as a comparison dataset and assumes the first comparison
   # is non-selectivity
-  filter(DATA_SET_ID == comp_data_sets_shelikof[1] & ANALYSIS_ID == comp_analyses_shelikof[1] & region == region_id)
+  filter(DATA_SET_ID == comp_data_sets[1] & ANALYSIS_ID == comp_analyses[1])
 
 pctofprimarybio <- ((sum(NoSelect$BIOMASS) - rawbio) / rawbio) * 100
 pctofprimarynum <- ((sum(NoSelect$NUMBERS) - rawnum) / rawnum) * 100
@@ -665,9 +556,9 @@ age1fishnoselect <- NoSelect %>%
   filter(LENGTH <= 16)
 ```
 
-The results presented here account for escapement of organisms from the net based on the prior LFS1421 selectivity values obtained from catches in the codend and recapture nets from the 2020 and 2021 winter Shelikof Strait surveys. These results also reflect adjustments to the backscatter allotted to the target species by removing backscatter that would be attributable to other species based on the catch composition of the nearest haul and their estimated scattering properties. While this reflects analysis procedures in the winter Shelikof Strait survey time series since 2019, analyses in previous years have not fully taken these factors into account. Thus an alternate analysis was conducted that would more closely approximate analyses in prior years for comparison, and resulting abundances are presented (Fig. \@ref(fig:shelikofanalysiscomps)). Specifically, an alternate analysis was conducted that did not include the effect of net selectivity (referred to as the 'no-selectivity' analysis below). This is similar to the comparison performed in 2021 to evaluate the effects of net selectivity corrections [@Honkalehto_etal_InPrep]. 
+The results presented here account for escapement of organisms from the net based on the prior LFS1421 selectivity values obtained from catches in the codend and recapture nets from the 2020 winter Bogoslof survey. These results also reflect adjustments to the backscatter allotted to the target species by removing backscatter that would be attributable to other species based on the catch composition of the nearest haul and their estimated scattering properties. While this reflects analysis procedures in the winter Bogoslof survey time series since 2020, analyses in previous years have not fully taken these factors into account. Thus an alternate analysis was conducted that would more closely approximate analyses in prior years for comparison, and resulting abundances are presented (Fig. \@ref(fig:analysiscomps)). Specifically, an alternate analysis was conducted that did not include the effect of net selectivity (referred to as the 'no-selectivity' analysis below). This is similar to the comparison performed in 2020 to evaluate the effects of net selectivity corrections [**McKelvey and Levine, 2023**]. 
 
-The no-selectivity analysis for `r current_year` generated an overall `r ifelse(pctofprimarynum <0, 'decrease', 'increase')` of `r print_n_decimal(abs(pctofprimarynum), 1)`% by numbers (to `r print_n_decimal(sum(NoSelect$NUMBERS)/1e6, 0)` million) and an `r ifelse(pctofprimarybio <0, 'decrease', 'increase')` of `r print_n_decimal(abs(pctofprimarybio), 1)`% by weight (to `r print_n_decimal(sum(NoSelect$BIOMASS, na.rm = TRUE)/1000,0)` t) for pollock in the Shelikof Strait area compared to the primary analysis (i.e. "selectivity corrected", Fig. \@ref(fig:shelikofanalysiscomps)). The negligible effect of net selectivity corrections on the `r current_year` primary analysis estimates is expected given the spatial separation between juvenile (≤ 30 cm FL) and adult (> 30 cm FL) pollock (Fig. \@ref(fig:shelikofsticks)), which resulted in relatively low mixing of juveniles (i.e. low retention in codend) with adults (i.e. high retention) in trawl catches [see Appendix IV in Honkalehto et al. -@Honkalehto_etal_InPrep].
+The no-selectivity analysis for `r current_year` generated an overall `r ifelse(pctofprimarynum <0, 'decrease', 'increase')` of `r print_n_decimal(abs(pctofprimarynum), 2)`% by numbers (to `r print_n_decimal(sum(NoSelect$NUMBERS)/1e6, 0)` million) and an `r ifelse(pctofprimarybio <0, 'decrease', 'increase')` of `r print_n_decimal(abs(pctofprimarybio), 2)`% by weight (to `r print_n_decimal(sum(NoSelect$BIOMASS, na.rm = TRUE)/1000,0)` t) for pollock in the area compared to the primary analysis (i.e. "selectivity corrected", Fig. \@ref(fig:analysiscomps)). The negligible effect of net selectivity corrections on the `r current_year` primary analysis estimates is expected given the lack of juvenile pollock (≤ 30 cm FL) observations in the survey region (Fig. \@ref(fig:bogoslofbionumslength)).
 
-Historic population trends in Shelikof Strait as observed by winter pre-spawning AT surveys track the strong year classes well through time starting from relatively small sizes and young ages (Figs. \@ref(fig:shelikofridgelineslength), \@ref(fig:shelikofridgelinesages)). @McKelvey_1996 showed that there was a strong relationship between the estimated number of age-1 pollock from the winter Shelikof Strait survey and year-class strength for GOA pollock. The McKelvey index is based on data that did not include a correction for escapement of age-1 pollock, therefore, the `r current_year` non-selectivity based estimate (Analysis `r comp_analyses_shelikof[1]`) was used to classify the strength of the `r last_year` year class (age-1 pollock observed in `r current_year`) in the context of the McKelvey index. This estimate was `r print_n_decimal(sum(age1fishnoselect$NUMBERS)/1e6, 1)` million age-1 pollock, which is considered a low or weak year class based on the McKelvey index. 
 
+*Survey Time Series*

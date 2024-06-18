@@ -9,11 +9,11 @@
 
 get_nice_region_names <- function(longitude, latitude) {
   
-  if (longitude <= -168.5 & latitude < 55.0) {
+  if (longitude <= -168.2 & latitude < 55.0) {
     region <- "Samalga"
   }
   
-  else if (longitude > -168.5 & longitude < -167.0 & latitude < 55.0){
+  else if (longitude > -168.2 & longitude < -167.0 & latitude < 55.0){
     region <- "Umnak"
   }
   

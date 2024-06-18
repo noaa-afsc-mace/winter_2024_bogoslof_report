@@ -16,7 +16,7 @@ plot_historical_sst_anomalies <- function(historical_sst_scs) {
     
   # summarizing SCS temp data
   historical_comp_scs = plot_sst_scs %>% 
-    group_by(year, region) %>%
+    group_by(year) %>%
     summarise(mean_sst_scs = mean(temperature, na.rm = TRUE), 
               sd_sst_scs = sd(temperature, na.rm = TRUE)) %>%
     mutate(plot_col = ifelse(unique(year) == current_year, "#d73027", "black")
@@ -27,8 +27,8 @@ plot_historical_sst_anomalies <- function(historical_sst_scs) {
   ## Calculate SST summary stats for the period between 2006-2022 to standardize anomaly plots
   # ...
   # SCS values
-  scs_mean <- mean(historical_comp_scs$mean_sst_scs[historical_comp_scs$year %in% c(2006:2022)], na.rm = TRUE)
-  scs_sd <- sd(historical_comp_scs$mean_sst_scs[historical_comp_scs$year %in% c(2006:2022)], na.rm = TRUE)
+  scs_mean <- mean(historical_comp_scs$mean_sst_scs[historical_comp_scs$year %in% c(2007:2022)], na.rm = TRUE)
+  scs_sd <- sd(historical_comp_scs$mean_sst_scs[historical_comp_scs$year %in% c(2007:2022)], na.rm = TRUE)
   
   # Calculate SST anomaly indices based on 2006-2022 period, centered and scaled using 2009-2022 anomaly summary stats
   scs_index <- (historical_comp_scs$mean_sst_scs - scs_mean) / scs_sd
@@ -38,15 +38,17 @@ plot_historical_sst_anomalies <- function(historical_sst_scs) {
   
   
   year_anomaly = historical_comp_scs%>%
-    group_by(year, region)%>%
+    group_by(year)%>%
     mutate(scspos = sst_scs_anomaly >= 0)
   
+  # changed the 2024 anomaly slightly to be visible in the plot
+  year_anomaly$sst_scs_anomaly[year_anomaly$year==2024] = year_anomaly$sst_scs_anomaly[year_anomaly$year==2024]+.02
 
  scs <- ggplot(year_anomaly, aes(year, sst_scs_anomaly, fill = scspos))+
     theme_classic()+
     geom_col(position = "identity", colour = "black", linewidth = 0.25)+
     scale_fill_manual(values = c("#0000cd", "#FF0000"), guide = "none")+
-    scale_x_continuous(n.breaks = 8) +
+    scale_x_continuous(n.breaks = 10) +
    ylim(-2,2)+
    labs(
      title = "Entire Survey",

@@ -40,7 +40,7 @@ nocite: |
 ---
   
   
-<!-- This document is currently written to produce a 'first draft' of the winter Shelikof/Shumagins cruise report-->
+<!-- This document is currently written to produce a 'first draft' of the winter Bogoslof report-->
 <!-- All of the parameters you'll need to set are in the first code chunk below. Set those, and then click the 'Knit' button above-->
   
   
@@ -57,7 +57,7 @@ rm(list = ls())
 # It should be set to TRUE most of the time, but if you are just adding features/working on code/etc, can be set to FALSE to
 # save re-querying. NOTE: After you do all the queries, the output is saved here so we can know exactly what base data we used to
 # make the report!
-update_datasets <- TRUE
+update_datasets <- FALSE
 
 # set database parameters and the basic info if we're updating datasets
 if (update_datasets == TRUE) {
@@ -100,6 +100,9 @@ pocketnets_used <- FALSE # TRUE or FALSE
 primary_sensor <-  "Mid-SeaTemp-C-Cal-VALUE_1_min_avg"
 backup_sensor <- "TSG-SBE38-Temp_1_min_avg"
 apply_cal_to_backup_sensor <- FALSE
+
+# If you want to compare multiple sets of SBE profiles, set this to 2
+SBE_Nset = 1
 
 # set pollock_size_cutoff
 # we have been plotting big and little pollock as separate bars in stickplots; we have also been plotting the surface- and bottom- referenced figures in relation to this cutoff. This number is the fork length (cm) that will be used (i.e. 30 cm creates a bar <= 30 and a bar > 30)
@@ -433,7 +436,7 @@ knit_engines$set(asis = function(options) {
 # set the parameters for landscape section pages; call these to switch to landscape pages
 landscape_section <- prop_section(
   type = "continuous",
-  page_size = page_size(orient = "landscape"),
+  page_size = page_size(orient = "landscape", width = 11, height = 8.5),
   page_margins = page_mar(
     bottom = 1.0,
     top = 1.0,
@@ -447,7 +450,7 @@ landscape_section <- prop_section(
 # set the parameters for portrait section pages; call these to switch to portrait pages
 portrait_section <- prop_section(
   type = "continuous",
-  page_size = page_size(orient = "portrait"),
+  page_size = page_size(orient = "portrait", width = 8.5, height = 11),
   page_margins = page_mar(
     bottom = 1.0,
     top = 1.0,
@@ -564,7 +567,7 @@ cat(methods_doc)
 \pagebreak
 
 <!--Compile the results  -->
-```{r shelikof_results, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+```{r print_results, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
 results <- knitr::knit_child("results.Rmd", quiet = TRUE)
 cat(results)
 ```

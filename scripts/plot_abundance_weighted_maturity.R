@@ -65,10 +65,11 @@ plot_abundance_weighted_maturity <- function(ship, survey, region_id) {
     ) +
     labs(x = NULL, y = "Proportion Mature") +
     # add the model fit value
-    annotate("text",
-      x = min(glm_vals$lengths) + 2, y = 0.5,
-      label = paste("~L[50]==~", round(-glm.out$coefficients[1] / glm.out$coefficients[2], digits = 1)), parse = TRUE
-    ) +
+    # Commenting this out since there wasn't a good fit for 2024 for either region
+    #annotate("text",
+    #  x = min(glm_vals$lengths) + 2, y = 0.5,
+    #  label = paste("~L[50]==~", round(-glm.out$coefficients[1] / glm.out$coefficients[2], digits = 1)), parse = TRUE
+    #) +
     theme_bw() +
     # cruise_report_plots_theme+
     # move the legend, make the fonts a bit bigger
@@ -97,20 +98,20 @@ plot_abundance_weighted_maturity <- function(ship, survey, region_id) {
   # if these hauls are included, your total # of fish won't sum to 100%; the denominator for weighting should only
   # include hauls that actually had mature fish!
   mat_hauls_denominator_female <- maturities_and_weights_data %>%
-    filter(SEX == "Female" & LENGTH > 40) %>%
+    filter(SEX == "Female" & LENGTH > 30) %>%
     distinct(HAUL) %>%
     # join the haul weights
     left_join(hauls, by = c("HAUL" = "EVENT_ID"))
 
   mat_hauls_denominator_male <- maturities_and_weights_data %>%
-    filter(SEX == "Male" & LENGTH > 40) %>%
+    filter(SEX == "Male" & LENGTH > 30) %>%
     distinct(HAUL) %>%
     # join the haul weights
     left_join(hauls, by = c("HAUL" = "EVENT_ID"))
 
   # Determine maturities by stage for female & male separately, use standard 40cm maturity cutoff
   maturities_male <- maturities_and_weights_data %>%
-    filter(SEX == "Male" & LENGTH > 40) %>%
+    filter(SEX == "Male" & LENGTH > 30) %>%
     group_by(HAUL, SEX, MATURITY) %>%
     # calulcate the number at each maturity by haul, sex
     summarize(num_mat = length(MATURITY)) %>%
@@ -124,7 +125,7 @@ plot_abundance_weighted_maturity <- function(ship, survey, region_id) {
 
   # Determine maturities by stage for female & male separately, use standard 40cm maturity cutoff
   maturities_female <- maturities_and_weights_data %>%
-    filter(SEX == "Female" & LENGTH > 40) %>%
+    filter(SEX == "Female" & LENGTH > 30) %>%
     group_by(HAUL, SEX, MATURITY) %>%
     # calulcate the number at each maturity by haul, sex
     summarize(num_mat = length(MATURITY)) %>%
@@ -157,7 +158,7 @@ plot_abundance_weighted_maturity <- function(ship, survey, region_id) {
 
   # get the sample sizes for males and females too
   sample_sizes <- maturities_and_weights_data %>%
-    filter(SEX != "Unsexed" & LENGTH > 40) %>%
+    filter(SEX != "Unsexed" & LENGTH > 30) %>%
     group_by(SEX) %>%
     summarize(n = length(SEX))
 
@@ -208,9 +209,9 @@ plot_abundance_weighted_maturity <- function(ship, survey, region_id) {
 
   # Determine GSI for females > 40cm maturity cutoff
   GSI <- maturities_and_weights_data %>%
-    # only keep female fish >40 cm; also only keep the prespawning females!
+    # only keep female fish >30 cm; also only keep the prespawning females!
     # in cases where we've collected ovaries, there may be non pre-spawners with weights that shouldn't be in GSI calc
-    filter(SEX == "Female" & LENGTH > 40 & MATURITY == "Prespawning") %>%
+    filter(SEX == "Female" & LENGTH > 30 & MATURITY == "Prespawning") %>%
     # calulcate female GSI as gonad wt/organism weight
     mutate(GSI = GONAD_WEIGHT / ORGANISM_WEIGHT) %>%
     # get rid of NAs (cases without both gonad and organism weight)
@@ -261,9 +262,14 @@ plot_abundance_weighted_maturity <- function(ship, survey, region_id) {
   # get the historical weighted mean +/- SD to annotate plot
 
   # this mean and sd will not include the current survey, which is good
-  summary_data <- historical_GSI %>%
-    # and filter to applicable region
-    filter(region == unique(maturity_data$region))
+  if (region_id==""){
+  summary_data <- historical_GSI
+  }
+  else {
+    summary_data <- historical_GSI %>%
+      # and filter to applicable region
+      filter(region == unique(maturity_data$region))
+  }
 
   # for plotting/calculation here- be sure that there aren't any 'future' surveys included (i.e. if a 2021 survey exists but user wants
   # a 2020 report). This will exclude the future from means

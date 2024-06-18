@@ -373,12 +373,12 @@ get_macebase_data <- function(){
   scs_summary <- dplyr::bind_rows(scs_sst_list[[3]])
   
   # open up the historical sst data now that its been updated
-  historical_scs_sst <- read_csv(historical_scs_sst_path, show_col_types = FALSE)
+  historical_scs_sst_temp <- read_csv(historical_scs_sst_path, show_col_types = FALSE)
   
   # For now, let's just add this year's data to the historical_scs_sst dataframe
   # and later we can put the data into the csv for use late or save an rds 
   # like it is done for shelikof in the get_sst function
-  historical_scs_sst %>% left_join(scs_sst, by =c("SURVEY","year","REPORT_NUMBER","region","interval","lat","lon","temperature"))
+  historical_scs_sst <- bind_rows(scs_sst,historical_scs_sst_temp)
   
   ##################################################
   # Get Bogoslof survey timing data

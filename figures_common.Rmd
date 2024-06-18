@@ -44,14 +44,14 @@ sst_anomalies_fig <- sst_summary[[1]]
 sst_anomalies_summary <- sst_summary[[2]]
 
 # for the caption, find the last shelikof survey year
-survey_years <- -desc(sort(unique(sel_corr_surveys_pollock_totals_by_length$year)))
-shelikof_last_year <- shelikof_survey_years[length(shelikof_survey_years) - 1]
+survey_years <- -desc(sort(unique(historical_surveys_pollock_totals_by_length$year)))
+last_year <- survey_years[length(survey_years) - 1]
 
 # print the figure
 print(sst_anomalies_fig)
 
 # and the caption
-cap_text <- paste0("Sea surface temperature (SST, °C) anomalies recorded from the ship's flow-through system for the entire survey in Shelikof Strait. SST anomalies for each temperature source are centered and scaled by their respective mean temperature and standard deviation from the 2007–2024 period. Positive and negative anomalies are indicated by red and blue bars, respectively.")
+cap_text <- paste0("Sea surface temperature (SST, °C) anomalies recorded from the ship's flow-through system for the entire survey near Bogoslof Island. SST anomalies for temperature data are centered and scaled by their respective mean temperature and standard deviation from the 2007–2024 period. Positive and negative anomalies are indicated by red and blue bars, respectively.")
 
 ```
 
@@ -208,7 +208,7 @@ cap_text <- paste0(age_or_length_statement, violin_list[[2]], " ", current_year,
 
 <!-- Historical comparison of winter time series-->
 <!-- Gather all surveyed regions here and make plots for them-->
-```{r plot_historical_barplots, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap= cap_text, fig.alt = cap_text, fig.id = "shelikofstraitbiocomps"}
+```{r plot_historical_barplots, echo = FALSE, message=FALSE, warning=FALSE, dpi= 300, fig.height = 5, fig.width= 8.8, fig.cap= cap_text, fig.alt = cap_text, fig.id = "biocomps"}
 
 # for this purpose, only going back to 2003- it seems to get too 'custom' before then to make values agree with existing published survey values
 historic_summary_by_year <- historical_surveys_pollock_totals_by_length

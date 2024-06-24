@@ -232,7 +232,13 @@ plot_abundance_weighted_maturity <- function(ship, survey, region_id) {
   # get the mean weighted GSI using the haul weights generated in step 2 above
   mean_wtd_GSI <- sum(GSI_stats$mean_GSI * GSI_stats$WEIGHTS, na.rm = TRUE) / sum(GSI_stats$WEIGHTS, na.rm = TRUE)
   # get the standard deviation, also weighted by weights, as in Nate's Matlab code
-  std_wtd_GSI <- sqrt(Hmisc::wtd.var(GSI_stats$mean_GSI, GSI_stats$WEIGHTS, method = "ML"))
+  # The weighted feature for std breaks when there is only one weight (i.e. one haul), 
+  # so I built in a condition
+  if (length(GSI_stats$WEIGHTS)==1) {
+    std_wtd_GSI <- sqrt(var(GSI$GSI))
+  } else {
+    std_wtd_GSI <- sqrt(Hmisc::wtd.var(GSI_stats$mean_GSI, GSI_stats$WEIGHTS, method = "ML"))
+  }
 
   #####
   # Update the historical GSI values with what's been calculated here for the current surveys
@@ -240,32 +246,45 @@ plot_abundance_weighted_maturity <- function(ship, survey, region_id) {
   # it will overwrite these.
 
   # get the data to update (if any)
-  current_data <- historical_GSI %>%
+  if (region_id==""){
+    current_data <- historical_GSI %>%
+      filter(survey == unique(maturity_data$SURVEY))
+  } else{
+    current_data <- historical_GSI %>%
     filter(survey == unique(maturity_data$SURVEY) & region == unique(maturity_data$region))
-
+  }
+  
   # if there is any, get rid of it
   if (nrow(current_data) > 0) {
     # remove the current data before updating it
-    historical_GSI <- anti_join(historical_GSI, current_data, by = c("ship", "survey", "region", "mean_weighted_GSI", "std_weighted_GSI"))
+    if (region_id=="") {
+      historical_GSI <- anti_join(historical_GSI, current_data, by = c("ship", "survey", "region", "mean_weighted_GSI", "std_weighted_GSI"))
+    } else{
+      historical_GSI <- anti_join(historical_GSI, current_data, by = c("ship", "survey", "mean_weighted_GSI", "std_weighted_GSI"))
+    }
+  }
+  # now update the historical data with the newest records
+  if (region_id == "") {
+    update_historic_GSI <- cbind.data.frame(ship, survey, mean_wtd_GSI, std_wtd_GSI)
+    colnames(update_historic_GSI) <- c("ship", "survey", "mean_weighted_GSI", "std_weighted_GSI")
+  } else{
+    update_historic_GSI <- cbind.data.frame(ship, survey, unique(maturity_data$region), mean_wtd_GSI, std_wtd_GSI)
+    colnames(update_historic_GSI) <- c("ship", "survey", "region", "mean_weighted_GSI", "std_weighted_GSI")
   }
 
-  # now update the historical data with the newest records
-  update_historic_GSI <- cbind.data.frame(ship, survey, unique(maturity_data$region), mean_wtd_GSI, std_wtd_GSI)
-  colnames(update_historic_GSI) <- c("ship", "survey", "region", "mean_weighted_GSI", "std_weighted_GSI")
-
-  # add this to the historical data
-  historical_update_GSI <- rbind.data.frame(historical_GSI, update_historic_GSI)
-
   # save the updated file
-  saveRDS(historical_update_GSI, file = out_file_GSI)
+  if (region_id!="") {
+    # add this to the historical data
+    historical_update_GSI <- rbind.data.frame(historical_GSI, update_historic_GSI)
+    saveRDS(historical_update_GSI, file = out_file_GSI)
+  }
 
   # get the historical weighted mean +/- SD to annotate plot
 
   # this mean and sd will not include the current survey, which is good
   if (region_id==""){
-  summary_data <- historical_GSI
-  }
-  else {
+    summary_data <- historical_GSI
+  } else{
     summary_data <- historical_GSI %>%
       # and filter to applicable region
       filter(region == unique(maturity_data$region))

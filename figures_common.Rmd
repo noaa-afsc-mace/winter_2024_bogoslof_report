@@ -152,7 +152,7 @@ current_biomass_sticks
 
 
 # build the figure caption- this uses an ifelse statement to make the 'cutoff some bars' text or the 'all bars included' text
-cap_text <- paste0("Density (t/nmi^2^) attributed to pollock (vertical lines) along tracklines surveyed during the winter ", current_year, " acoustic-trawl survey of the Bogoslof. The The 1000 (— —), 500 (- -), and 200 (--) contour lines are noted.")
+cap_text <- paste0("Density (t/nmi^2^) attributed to pollock (vertical lines) along tracklines surveyed during the winter ", current_year, " acoustic-trawl survey of the Bogoslof. The 1000 (— —), 500 (- -), and 200 (--) contour lines are noted.")
 ```
 
 <!-- bottom-and surface- referenced vertical distribution figs -->

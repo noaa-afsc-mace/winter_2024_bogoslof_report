@@ -522,7 +522,7 @@ cat(cover_sheet)
 
 
 <!--Add the title page  -->
-```{r print_abstract, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+```{r print_title_page, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
 
 title_page <- knitr::knit_child("title_page.Rmd", quiet = TRUE)
 cat(title_page)
@@ -533,10 +533,10 @@ cat(title_page)
 \pagebreak
 
 <!--build the abstract section  -->
-```{r print_title_page, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
-##NATE: commented out for now.
-#abstract_doc <- knitr::knit_child("abstract.Rmd", quiet = TRUE)
-#cat(abstract_doc)
+```{r print_abstract, echo = FALSE, message=FALSE, warning=FALSE, results = 'asis'}
+
+abstract_doc <- knitr::knit_child("abstract.Rmd", quiet = TRUE)
+cat(abstract_doc)
 ```
 
 \pagebreak

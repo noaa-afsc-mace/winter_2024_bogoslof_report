@@ -9,7 +9,7 @@ intervals_hauls_map <- plot_intervals_hauls_map_function(gear_type_options = mac
 print(intervals_hauls_map)
 
 # build the figure caption
-cap_text <- paste0("Transect lines and trawl haul locations during the ", current_year, " winter pre-spawning acoustic-trawl surveys. The survey region associated with each transect is indicated by the transect color. The location of trawl events are indicated with purple markers. The 1000 (— —), 500 (- -), and 200 (--) contour lines are noted.")
+cap_text <- paste0("Transect lines and trawl haul locations during the ", current_year, " winter pre-spawning acoustic-trawl survey. The survey region associated with each transect is indicated by the transect color. The location of trawl events are indicated with purple markers. The 1000 (— —), 500 (- -), and 200 (--) contour lines are noted.")
 
 ```
 
@@ -94,7 +94,7 @@ print(maturity_list[[4]])
 plot_region <- unique(maturity_list[[3]]$region)
 
 # build the caption
-cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity composition for male and female pollock greater than 30 cm fork length (FL) within each stage; B) proportion mature (i.e. pre-spawning, spawning, or spent) by 1-cm size group for female pollock; C) gonadosomatic index for pre-spawning females (with historic survey mean ± 1 std. dev.). All maturity quantities are weighted by local pollock abundance.")
+cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity composition for male and female pollock greater than 30 cm fork length (FL) within each stage; B) proportion mature (i.e. pre-spawning, spawning, or spent) by 1-cm size group for female pollock; C) gonadosomatic index for pre-spawning females (with historic survey mean ± 1 std. dev.). All maturity quantities are weighted by local pollock abundance. Note that B) could not be accurately estimated because the female pollock specimens were all mature, and therefore, had a lack of contrast in length and maturity data.")
 
 
 ```
@@ -113,7 +113,7 @@ print(maturity_list[[4]])
 plot_region <- unique(maturity_list[[3]]$region)
 
 # build the caption
-cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity composition for male and female pollock greater than 30 cm fork length (FL) within each stage; B) proportion mature (i.e. pre-spawning, spawning, or spent) by 1-cm size group for female pollock; C) gonadosomatic index for pre-spawning females (with historic survey mean ± 1 std. dev.). All maturity quantities are weighted by local pollock abundance.")
+cap_text <- paste0("Pollock maturity in ", plot_region, ". A) Maturity composition for male and female pollock greater than 30 cm fork length (FL) within each stage; B) proportion mature (i.e. pre-spawning, spawning, or spent) by 1-cm size group for female pollock; C) gonadosomatic index for pre-spawning females (with historic survey mean ± 1 std. dev.). All maturity quantities are weighted by local pollock abundance. Note that B) could not be accurately estimated because the female pollock specimens were all mature, and therefore, had a lack of contrast in length and maturity data")
 
 
 ```
@@ -198,9 +198,9 @@ violin_list[[1]]
 #                                   paste0("Estimated biomass distributions of adult (> ", pollock_size_cutoff, " cm FL) and juvenile (≤ ", pollock_size_cutoff, " cm FL) pollock A,B) depth and C,D) height above the seafloor in the "))
 
 # again forcing length only for now
-age_or_length_statement <- paste0("Estimated biomass distributions of adult (> ", pollock_size_cutoff, " cm FL) and juvenile (≤ ", pollock_size_cutoff, " cm FL) pollock A,B) depth and C,D) height above the seafloor in the ")
+age_or_length_statement <- paste0("Estimated biomass distributions of adult (> ", pollock_size_cutoff, " cm FL) and juvenile (≤ ", pollock_size_cutoff, " cm FL) pollock A,B) depth in the ")
 
-cap_text <- paste0(age_or_length_statement, violin_list[[2]], " ", current_year, " acoustic-trawl survey. Results for the winter ", min(surf_ref_dataset$year), "-", sort(unique(surf_ref_dataset$year), decreasing = TRUE)[2], " acoustic-trawl surveys are included for comparison. Depth is referenced to the surface and height is referenced to the bottom. Data were averaged in 10 m depth bins. Mean bottom depth for ", current_year, " is shown in panels A) and B) (dashed line). Plots show the probability density of pollock distribution, with median pollock depth noted by black horizontal lines, and the mean weighted pollock depth indicated by black points.")
+cap_text <- paste0(age_or_length_statement, violin_list[[2]], " ", current_year, " acoustic-trawl survey. Results for the winter ", min(surf_ref_dataset$year), "-", sort(unique(surf_ref_dataset$year), decreasing = TRUE)[2], " acoustic-trawl surveys are included for comparison. No juvenile pollock were observed in all years except 2014 and 2020, so no data are plotted for other years in B). Depth is referenced to the surface. Data were averaged in 10 m depth bins. Plots show the probability density of pollock distribution, with median pollock depth noted by black horizontal lines, and the mean weighted pollock depth indicated by black points.")
 
 ```
 
@@ -418,6 +418,7 @@ plot <- ggplot(gantt, aes(x = time, y = year, group=year, color = current_year))
   theme_bw() +
   theme(legend.position = 'none')
 
+cap_text <- paste0("Bogoslof acoustic-trawl timing for surveys conducted by the Alaska Fisheries Science Center (all years except 1999) and Japan (1999).")
 
 print(plot)
 

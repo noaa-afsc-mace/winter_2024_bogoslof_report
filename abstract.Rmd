@@ -1,8 +1,8 @@
-### Abstract
+# ABSTRACT
 
 
-Scientists from the Alaska Fisheries Science Center conducted an acoustic-trawl (AT) survey in the southeastern Aleutian Basin near Bogoslof Island during mid-February `r current_year` to estimate the distribution and abundance of walleye pollock (*Gadus chalcogrammus*). Nineteen transect lines were surveyed, and 2 successful trawl hauls were conducted for biological measurements during the survey. This report summarizes the observed pollock distribution and biological information and provides an abundance estimate used for stock assessment.
+Scientists from the Alaska Fisheries Science Center conducted an acoustic-trawl (AT) survey in the southeastern Aleutian Basin near Bogoslof Island during mid-February `r current_year` to estimate the distribution and abundance of walleye pollock (*Gadus chalcogrammus*, hereafter pollock). Nineteen transect lines were surveyed, and 2 successful trawl hauls were conducted for biological measurements during the survey. This report summarizes the observed pollock distribution and biological information and provides an abundance estimate used for stock assessment.
 
-The `r current_year` Bogoslof AT survey measured pollock across the entire region surveyed. Most of the pollock (63%) was distributed in the Samalga region but large aggregations were observed in both the Umnak and Samalga areas. Walleye pollock dominated the trawl catches and ranged in size between 38 and 63 cm fork length (FL) with a primary mode at 45 cm FL. The estimated numbers of pollock in `r current_year` were 298.0 million pollock weighing 245 thousand metric tons (t).  This was a 31% decrease in biomass from 2020.
+The `r current_year` Bogoslof AT survey observed pollock across the entire region surveyed. Most of the pollock (63%) was distributed in the Samalga region but large aggregations were observed in both the Umnak and Samalga areas. Pollock dominated the trawl catches and ranged in size between 38 and 63 cm fork length (FL) with a primary mode at 45 cm FL. The estimated numbers of pollock in `r current_year` were 298.0 million pollock weighing 245 thousand metric tons (t).  This was a 31% decrease in biomass from 2020.
 
 

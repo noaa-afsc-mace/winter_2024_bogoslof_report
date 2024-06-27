@@ -8,7 +8,7 @@
 ## NOTE! This will need to be updated for 2024 still!
 
 officer::block_caption(
-  label = paste0("Simrad EK80 38 kHz acoustic system description and settings used during the ", current_year, " winter acoustic-trawl surveys. These include environmental parameters and results from standard sphere acoustic system calibrations conducted in association with the survey and final values used to calculate biomass & abundance data. The collection settings column contains 12 February EK80 calibration utility results. Other columns are a combination of on-axis and EK80 calibration utility results (see Methods and Results and Discussion sections of text for details)."),
+  label = paste0("Simrad EK80 38 kHz acoustic system description and settings used during the ", current_year, " winter acoustic-trawl surveys. These include environmental parameters and results from standard sphere acoustic system calibrations conducted in association with the survey and final values used to calculate biomass & abundance data. The collection settings column contains 5 February EK80 calibration utility results. Other columns are a combination of on-axis and EK80 calibration utility results (see Methods and Results and Discussion sections of text for details)."),
   style = "Table Caption",
   autonum = run_autonum(
     seq_id = "tab",
@@ -116,7 +116,7 @@ flextable_to_rmd(x = print_table, ft.align = "left", ft.split = FALSE, ft.keepne
 ```{r add_biomass_series_table, echo = FALSE, message=FALSE, warning=FALSE, fig.width=9}
 
 officer::block_caption(
-  label = paste0("Walleye pollock biomass (tons (t)) estimated by survey area and management area from February-March acoustic-trawl surveys in the Bogoslof Island area between 1988 and 2024."),
+  label = paste0("Pollock biomass (tons (t)) estimated by survey area and management area from February-March acoustic-trawl surveys in the Bogoslof Island area between 1988 and 2024."),
   style = "Table Caption",
   autonum = run_autonum(
     seq_id = "tab",
@@ -197,7 +197,7 @@ cat("\\pagebreak")
 ```{r add_maturity_table, echo = FALSE, message=FALSE, warning=FALSE, fig.width=6.5}
 
 officer::block_caption(
-  label = paste0("Unweighted percent female walleye pollock in spawning and post-spawning maturity condition by regions during Bogoslof survey years 1988-2020. Percentages greater than 50% are outlined, and n = total number of female pollock examined."),
+  label = paste0("Unweighted percent female pollock in spawning and post-spawning maturity condition by regions during Bogoslof survey years 1988-2020. Percentages greater than 50% are outlined, and n = total number of female pollock examined."),
   style = "Table Caption",
   autonum = run_autonum(
     seq_id = "tab",
